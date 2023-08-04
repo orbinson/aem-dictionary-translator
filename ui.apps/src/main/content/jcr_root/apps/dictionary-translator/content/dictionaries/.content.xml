@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jcr:root xmlns:sling="http://sling.apache.org/jcr/sling/1.0" xmlns:cq="http://www.day.com/jcr/cq/1.0"
+          xmlns:jcr="http://www.jcp.org/jcr/1.0" xmlns:nt="http://www.jcp.org/jcr/nt/1.0"
+          xmlns:granite="http://www.adobe.com/jcr/granite/1.0"
+          jcr:primaryType="cq:Page">
+    <jcr:content
+            jcr:primaryType="nt:unstructured"
+            jcr:title="Dictionaries"
+            sling:resourceType="granite/ui/components/shell/collectionpage"
+            sling:vanityPath="/tools/translation/dictionaries"
+            pageURITemplate="/tools/translation/dictionaries/labels.html{+id}"
+            modeGroup="dictionary-list"
+            targetCollection=".dictionary-list"
+            consoleId="translation">
+        <head jcr:primaryType="nt:unstructured">
+            <clientlibs
+                    jcr:primaryType="nt:unstructured"
+                    sling:resourceType="granite/ui/components/coral/foundation/includeclientlibs"
+                    categories="[coralui3,granite.ui.coral.foundation,dictionary-translator.dictionary]"/>
+        </head>
+        <actions jcr:primaryType="nt:unstructured">
+            <primary jcr:primaryType="nt:unstructured">
+                <add-dictionary
+                        jcr:primaryType="nt:unstructured"
+                        sling:resourceType="granite/ui/components/coral/foundation/collection/action"
+                        action="foundation.dialog"
+                        icon="add"
+                        variant="primary"
+                        text="Create Dictionary">
+                    <data jcr:primaryType="nt:unstructured"
+                          src.uritemplate="/apps/dictionary-translator/content/granite/dialog/dictionary/create.html"/>
+                </add-dictionary>
+            </primary>
+            <selection jcr:primaryType="nt:unstructured">
+                <edit
+                        jcr:primaryType="nt:unstructured"
+                        sling:resourceType="granite/ui/components/coral/foundation/collection/action"
+                        activeSelectionCount="single"
+                        action="foundation.link"
+                        actionConfigName="granite/ui/shell/actions/edit"
+                        icon="edit"
+                        variant="actionBar"
+                        text="Edit">
+                    <data jcr:primaryType="nt:unstructured"
+                          href.uritemplate="/tools/translation/dictionaries/labels.html{+item}"/>
+                </edit>
+                <publish
+                        jcr:primaryType="nt:unstructured"
+                        sling:resourceType="granite/ui/components/coral/foundation/collection/action"
+                        activeSelectionCount="single"
+                        action="foundation.dialog"
+                        command="p"
+                        icon="globe"
+                        variant="actionBar"
+                        text="Publish">
+                    <data jcr:primaryType="nt:unstructured"
+                          src.uritemplate="/apps/dictionary-translator/content/granite/dialog/dictionary/publish.html?dictionary={+item}"/>
+                </publish>
+                <create-language
+                        jcr:primaryType="nt:unstructured"
+                        sling:resourceType="granite/ui/components/coral/foundation/collection/action"
+                        activeSelectionCount="single"
+                        action="foundation.dialog"
+                        command="c"
+                        icon="book"
+                        variant="actionBar"
+                        text="Create Language">
+                    <data jcr:primaryType="nt:unstructured"
+                          src.uritemplate="/apps/dictionary-translator/content/granite/dialog/dictionary/language/create.html?dictionary={+item}"/>
+                </create-language>
+                <delete-language
+                        jcr:primaryType="nt:unstructured"
+                        sling:resourceType="granite/ui/components/coral/foundation/collection/action"
+                        activeSelectionCount="single"
+                        action="foundation.dialog"
+                        command="d"
+                        icon="deleteOutline"
+                        variant="actionBar"
+                        text="Delete Language">
+                    <data jcr:primaryType="nt:unstructured"
+                          src.uritemplate="/apps/dictionary-translator/content/granite/dialog/dictionary/language/delete.html{+item}"/>
+                </delete-language>
+                <delete
+                        jcr:primaryType="nt:unstructured"
+                        sling:resourceType="granite/ui/components/coral/foundation/collection/action"
+                        activeSelectionCount="multiple"
+                        action="foundation.dialog"
+                        actionConfigName="granite/ui/shell/actions/delete"
+                        icon="delete"
+                        variant="actionBar"
+                        text="Delete">
+                    <data jcr:primaryType="nt:unstructured"
+                          src.uritemplate="/apps/dictionary-translator/content/granite/dialog/dictionary/delete.html?dictionaries={+item}"/>
+                </delete>
+            </selection>
+        </actions>
+        <views jcr:primaryType="nt:unstructured">
+            <table
+                    jcr:primaryType="nt:unstructured"
+                    sling:resourceType="granite/ui/components/coral/foundation/table"
+                    modeGroup="dictionary-list"
+                    granite:class="dictionary-list"
+                    granite:rel="dictionary-list"
+                    limit="{Long}50"
+                    selectionMode="row">
+                <datasource
+                        jcr:primaryType="nt:unstructured"
+                        sling:resourceType="dictionary-translator/datasource/dictionary"
+                        itemResourceType="dictionary-translator/components/dictionary"
+                        limit="${empty requestPathInfo.selectors[1] ? 50 : requestPathInfo.selectors[1]}"
+                        offset="${requestPathInfo.selectors[0]}"/>
+                <columns jcr:primaryType="nt:unstructured">
+                    <select
+                            jcr:primaryType="nt:unstructured"
+                            select="{Boolean}true"/>
+                    <dictionary
+                            jcr:primaryType="nt:unstructured"
+                            jcr:title="Dictionary"
+                            sortable="true"/>
+                    <languages
+                            jcr:primaryType="nt:unstructured"
+                            jcr:title="Languages"
+                            sortable="false"/>
+                    <last-modified
+                            jcr:primaryType="nt:unstructured"
+                            jcr:title="Last Modified"
+                            sortable="true"/>
+                    <basename
+                            jcr:primaryType="nt:unstructured"
+                            jcr:title="Basename"
+                            sortable="true"/>
+                    <editable
+                            jcr:primaryType="nt:unstructured"
+                            jcr:title="Editable"
+                            sortable="true"/>
+                    <labels
+                            jcr:primaryType="nt:unstructured"
+                            jcr:title="Labels"
+                            sortable="true"/>
+                </columns>
+            </table>
+        </views>
+    </jcr:content>
+</jcr:root>

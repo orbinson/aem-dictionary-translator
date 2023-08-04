@@ -1,0 +1,5 @@
+{
+  "user.mapping": [
+    "be.orbinson.aem.dictionary-translator.core:dictionary-service=[dictionary-service]"
+  ]
+}

@@ -1,0 +1,86 @@
+{
+  "jcr:primaryType": "sling:OrderedFolder",
+  "dictionaries": {
+    "jcr:primaryType": "sling:Folder",
+    "jcr:title": "Dictionaries",
+    "retail": {
+      "jcr:primaryType": "sling:Folder",
+      "jcr:created": "Wed Jul 05 2023 01:56:20 GMT+0200",
+      "en": {
+        "jcr:primaryType": "sling:Folder",
+        "jcr:mixinTypes": [
+          "mix:language"
+        ],
+        "sling:basename": "/content/dictionaries/retail",
+        "jcr:language": "en",
+        "sling:resourceType": "sling:Folder",
+        "hello": {
+          "jcr:primaryType": "sling:MessageEntry",
+          "sling:message": "Hello",
+          "sling:key": "hello"
+        },
+        "boy": {
+          "jcr:primaryType": "sling:MessageEntry",
+          "sling:message": "Boy",
+          "sling:key": "boy"
+        }
+      },
+      "fr": {
+        "jcr:primaryType": "sling:Folder",
+        "jcr:mixinTypes": [
+          "mix:language"
+        ],
+        "sling:basename": "/content/dictionaries/retail",
+        "jcr:language": "fr",
+        "sling:resourceType": "sling:Folder",
+        "hello": {
+          "jcr:primaryType": "sling:MessageEntry",
+          "sling:message": "Bonjour",
+          "sling:key": "hello"
+        },
+        "boy": {
+          "jcr:primaryType": "sling:MessageEntry",
+          "sling:message": "Garçon",
+          "sling:key": "boy"
+        }
+      }
+    },
+    "business": {
+      "jcr:primaryType": "sling:Folder",
+      "jcr:created": "Wed Jul 05 2023 01:56:20 GMT+0200",
+      "en": {
+        "jcr:primaryType": "sling:Folder",
+        "jcr:mixinTypes": [
+          "mix:language"
+        ],
+        "sling:basename": "",
+        "jcr:language": "en",
+        "sling:resourceType": "sling:Folder",
+        "product": {
+          "jcr:primaryType": "sling:MessageEntry",
+          "sling:message": "Product",
+          "sling:key": "product"
+        },
+        "buy": {
+          "jcr:primaryType": "sling:MessageEntry",
+          "sling:message": "Buy",
+          "sling:key": "buy"
+        }
+      },
+      "fr": {
+        "jcr:primaryType": "sling:Folder",
+        "jcr:mixinTypes": [
+          "mix:language"
+        ],
+        "sling:basename": "",
+        "jcr:language": "fr",
+        "sling:resourceType": "sling:Folder",
+        "product": {
+          "jcr:primaryType": "sling:MessageEntry",
+          "sling:message": "Product",
+          "sling:key": "Produit"
+        }
+      }
+    }
+  }
+}

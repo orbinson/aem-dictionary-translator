@@ -1,0 +1,19 @@
+# Do not push builds into the repository
+*/target
+
+# Ignore VLT meta files
+.vlt
+
+# Maven files
+.mvn/maven.config
+**/pom.xml.versionsBackup
+
+# Ignore Mac meta files
+.DS_Store
+._.DS_Store
+._*
+
+# Ignore IntelliJ IDEA files
+.idea
+*/*.iml
+parent.iml

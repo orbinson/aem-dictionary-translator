@@ -1,0 +1,176 @@
+{
+  "jcr:primaryType": "sling:Folder",
+  "languages": {
+    "jcr:created": "2022-08-23T10:42:50.469+02:00",
+    "jcr:primaryType": "sling:Folder",
+    "en": {
+      "jcr:language": "en",
+      "jcr:mixinTypes": "mix:language",
+      "jcr:primaryType": "sling:Folder",
+      "hello": {
+        "jcr:primaryType": "sling:MessageEntry",
+        "sling:key": "hello",
+        "sling:message": "hello"
+      },
+      "one": {
+        "jcr:mixinTypes": "sling:Message",
+        "jcr:primaryType": "nt:folder",
+        "sling:message": "one"
+      },
+      "two": {
+        "jcr:mixinTypes": "sling:Message",
+        "jcr:primaryType": "nt:folder",
+        "sling:message": "two"
+      }
+    },
+    "fr": {
+      "jcr:language": "fr",
+      "jcr:mixinTypes": "mix:language",
+      "jcr:primaryType": "sling:Folder",
+      "hello": {
+        "jcr:primaryType": "sling:MessageEntry",
+        "sling:key": "hello",
+        "sling:message": "bonjour"
+      },
+      "one": {
+        "jcr:mixinTypes": "sling:Message",
+        "jcr:primaryType": "nt:folder",
+        "sling:message": "un"
+      },
+      "three": {
+        "jcr:mixinTypes": "sling:Message",
+        "jcr:primaryType": "nt:folder",
+        "sling:message": "trois"
+      }
+    },
+    "something wrong": {
+      "jcr:mixinTypes": "mix:language",
+      "jcr:primaryType": "sling:Folder"
+    },
+    "hidden language": {
+      "jcr:language": "de",
+      "jcr:mixinTypes": "mix:language",
+      "jcr:primaryType": "sling:Folder"
+    }
+  },
+  "modified": {
+    "jcr:created": "2022-08-23T10:42:50.469+02:00",
+    "jcr:primaryType": "sling:Folder",
+    "jcr:lastModified": "2022-08-24T10:42:50.469+02:00"
+  },
+  "label": {
+    "jcr:created": "2022-08-23T10:42:50.469+02:00",
+    "jcr:primaryType": "sling:Folder",
+    "sling:key": "hello",
+    "en": {
+      "jcr:language": "en",
+      "jcr:mixinTypes": "mix:language",
+      "jcr:primaryType": "sling:Folder",
+      "hello": {
+        "jcr:primaryType": "sling:MessageEntry",
+        "sling:key": "hello",
+        "sling:message": "hello"
+      },
+      "one": {
+        "jcr:mixinTypes": "sling:Message",
+        "jcr:primaryType": "nt:folder",
+        "sling:message": "one"
+      },
+      "two": {
+        "jcr:mixinTypes": "sling:Message",
+        "jcr:primaryType": "nt:folder",
+        "sling:message": "two"
+      }
+    },
+    "fr": {
+      "jcr:language": "fr",
+      "jcr:mixinTypes": "mix:language",
+      "jcr:primaryType": "sling:Folder",
+      "hello": {
+        "jcr:primaryType": "sling:MessageEntry",
+        "sling:key": "hello",
+        "sling:message": "bonjour"
+      },
+      "one": {
+        "jcr:mixinTypes": "sling:Message",
+        "jcr:primaryType": "nt:folder",
+        "sling:message": "un"
+      },
+      "three": {
+        "jcr:mixinTypes": "sling:Message",
+        "jcr:primaryType": "nt:folder",
+        "sling:message": "trois"
+      }
+    },
+    "something wrong": {
+      "jcr:mixinTypes": "mix:language",
+      "jcr:primaryType": "sling:Folder"
+    },
+    "hidden language": {
+      "jcr:language": "de",
+      "jcr:mixinTypes": "mix:language",
+      "jcr:primaryType": "sling:Folder"
+    }
+  },
+  "translationField": {
+    "value": "text",
+    "fieldLabel": "label",
+    "label": "hello",
+    "language": "en",
+    "en": {
+      "jcr:language": "en",
+      "jcr:mixinTypes": "mix:language",
+      "jcr:primaryType": "sling:Folder",
+      "hello": {
+        "jcr:primaryType": "sling:MessageEntry",
+        "sling:key": "hello",
+        "sling:message": "hello"
+      },
+      "one": {
+        "jcr:mixinTypes": "sling:Message",
+        "jcr:primaryType": "nt:folder",
+        "sling:message": "one"
+      },
+      "two": {
+        "jcr:mixinTypes": "sling:Message",
+        "jcr:primaryType": "nt:folder",
+        "sling:message": "two"
+      }
+    },
+    "fr": {
+      "jcr:language": "fr",
+      "jcr:mixinTypes": "mix:language",
+      "jcr:primaryType": "sling:Folder",
+      "hello": {
+        "jcr:primaryType": "sling:MessageEntry",
+        "sling:key": "hello",
+        "sling:message": "bonjour"
+      },
+      "one": {
+        "jcr:mixinTypes": "sling:Message",
+        "jcr:primaryType": "nt:folder",
+        "sling:message": "un"
+      },
+      "three": {
+        "jcr:mixinTypes": "sling:Message",
+        "jcr:primaryType": "nt:folder",
+        "sling:message": "trois"
+      }
+    },
+    "something wrong": {
+      "jcr:mixinTypes": "mix:language",
+      "jcr:primaryType": "sling:Folder"
+    },
+    "hidden language": {
+      "jcr:language": "de",
+      "jcr:mixinTypes": "mix:language",
+      "jcr:primaryType": "sling:Folder"
+    }
+  },
+  "newTranslationField": {
+    "value": "text",
+    "fieldLabel": "label",
+    "label": "/new",
+    "language": "en"
+  }
+}

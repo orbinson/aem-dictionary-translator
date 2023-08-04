@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jcr:root xmlns:jcr="http://www.jcp.org/jcr/1.0"
+          xmlns:nt="http://www.jcp.org/jcr/nt/1.0"
+          jcr:primaryType="nt:unstructured"
+          jcr:title="Translation"
+          id="translation">
+    <dictionary-translator
+            jcr:primaryType="nt:unstructured"
+            jcr:title="Dictionaries"
+            jcr:description="Translate labels for i18n internationalisation"
+            icon="book"
+            href="/tools/translation/dictionaries.html"
+            id="translation"/>
+</jcr:root>
