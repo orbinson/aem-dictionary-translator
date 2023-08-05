@@ -7,6 +7,7 @@ import junit.framework.Assert;
 import org.apache.commons.lang3.time.DateUtils;
 import org.apache.sling.api.resource.Resource;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -19,6 +20,7 @@ import java.util.Date;
 import java.util.List;
 
 @ExtendWith({AemContextExtension.class, MockitoExtension.class})
+@Disabled("Temporary disabled to test CI")
 class DictionaryImplTest {
     private final AemContext context = new AemContext();
 

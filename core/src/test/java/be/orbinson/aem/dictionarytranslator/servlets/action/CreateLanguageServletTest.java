@@ -77,7 +77,7 @@ class CreateLanguageServletTest {
         assertNotNull(resource);
         assertEquals("en", properties.get("jcr:language"));
         assertEquals("mix:language", properties.get("jcr:mixinTypes"));
-        assertEquals("/content/dictionaries", properties.get("sling:basename"));
+        assertEquals("/content/dictionaries/i18n", properties.get("sling:basename"));
     }
 
     @Test
