@@ -24,7 +24,7 @@ import java.util.Map;
 @Component(service = Servlet.class)
 @SlingServletResourceTypes(
         resourceSuperType = "granite/ui/components/coral/foundation/form",
-        resourceTypes = "dictionary-translator/servlet/action/create-label",
+        resourceTypes = "aem-dictionary-translator/servlet/action/create-label",
         methods = "POST"
 )
 public class CreateLabelServlet extends SlingAllMethodsServlet {

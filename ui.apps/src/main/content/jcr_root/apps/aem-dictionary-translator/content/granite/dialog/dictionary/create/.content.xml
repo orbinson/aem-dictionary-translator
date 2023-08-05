@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jcr:root
+        xmlns:sling="http://sling.apache.org/jcr/sling/1.0"
+        xmlns:jcr="http://www.jcp.org/jcr/1.0" xmlns:nt="http://www.jcp.org/jcr/nt/1.0"
+        xmlns:granite="http://www.adobe.com/jcr/granite/1.0"
+        jcr:primaryType="nt:unstructured"
+        sling:resourceType="granite/ui/components/coral/foundation/dialog"
+        jcr:title="Create Dictionary">
+    <items jcr:primaryType="nt:unstructured">
+        <properties
+                jcr:primaryType="nt:unstructured"
+                sling:resourceType="granite/ui/components/coral/foundation/container">
+            <items jcr:primaryType="nt:unstructured">
+                <columns
+                        jcr:primaryType="nt:unstructured"
+                        sling:resourceType="granite/ui/components/coral/foundation/fixedcolumns">
+                    <items jcr:primaryType="nt:unstructured">
+                        <column
+                                jcr:primaryType="nt:unstructured"
+                                sling:resourceType="granite/ui/components/coral/foundation/container">
+                            <items jcr:primaryType="nt:unstructured">
+                                <form
+                                        jcr:primaryType="nt:unstructured"
+                                        sling:resourceType="aem-dictionary-translator/servlet/action/create-dictionary"
+                                        granite:id="create-dictionary"
+                                        action="${requestPathInfo.resourcePath}"
+                                        foundationForm="true"
+                                        method="post"
+                                        style="vertical">
+                                    <successresponse
+                                            jcr:primaryType="nt:unstructured"
+                                            jcr:title="Dictionary created"
+                                            sling:resourceType="granite/ui/components/coral/foundation/form/responses/reload"/>
+                                    <items jcr:primaryType="nt:unstructured">
+                                        <basic
+                                                jcr:primaryType="nt:unstructured"
+                                                sling:resourceType="granite/ui/components/coral/foundation/form/fieldset"
+                                                jcr:title="Basic">
+                                            <items jcr:primaryType="nt:unstructured">
+                                                <name
+                                                        jcr:primaryType="nt:unstructured"
+                                                        sling:resourceType="granite/ui/components/coral/foundation/form/textfield"
+                                                        name="name"
+                                                        required="{Boolean}true"
+                                                        fieldLabel="Dictionary Name"/>
+                                                <languages
+                                                        jcr:primaryType="nt:unstructured"
+                                                        fieldLabel="Languages"
+                                                        required="{Boolean}true"
+                                                        sling:resourceType="granite/ui/components/coral/foundation/form/multifield">
+                                                    <field
+                                                            jcr:primaryType="nt:unstructured"
+                                                            sling:resourceType="granite/ui/components/coral/foundation/container">
+                                                        <items jcr:primaryType="nt:unstructured">
+                                                            <language
+                                                                    jcr:primaryType="nt:unstructured"
+                                                                    sling:resourceType="granite/ui/components/foundation/include"
+                                                                    path="/apps/aem-dictionary-translator/content/granite/field/language"/>
+                                                        </items>
+                                                    </field>
+                                                </languages>
+                                            </items>
+                                        </basic>
+                                        <advanced
+                                                jcr:primaryType="nt:unstructured"
+                                                sling:resourceType="granite/ui/components/coral/foundation/form/fieldset"
+                                                jcr:title="Advanced">
+                                            <items jcr:primaryType="nt:unstructured">
+                                                <path
+                                                        jcr:primaryType="nt:unstructured"
+                                                        sling:resourceType="granite/ui/components/coral/foundation/form/pathfield"
+                                                        name="path"
+                                                        required="{Boolean}true"
+                                                        rootPath="/content/dictionaries"
+                                                        value="/content/dictionaries"
+                                                        forceSelection="{Boolean}true"
+                                                        fieldLabel="Path"/>
+                                                <basename
+                                                        jcr:primaryType="nt:unstructured"
+                                                        sling:resourceType="granite/ui/components/coral/foundation/form/textfield"
+                                                        name="basename"
+                                                        required="{Boolean}false"
+                                                        fieldDescription="Used to make sure that the right dictionary will be picked in case of multiple available translations, if empty the dictionary path will be used"
+                                                        fieldLabel="Basename"/>
+                                            </items>
+                                        </advanced>
+                                    </items>
+                                </form>
+                            </items>
+                        </column>
+                    </items>
+                </columns>
+            </items>
+        </properties>
+    </items>
+    <footer jcr:primaryType="nt:unstructured">
+        <close
+                jcr:primaryType="nt:unstructured"
+                sling:resourceType="granite/ui/components/coral/foundation/button"
+                text="Cancel">
+            <parentConfig
+                    jcr:primaryType="nt:unstructured"
+                    close="true"/>
+        </close>
+        <submit
+                jcr:primaryType="nt:unstructured"
+                sling:resourceType="granite/ui/components/coral/foundation/button"
+                granite:class="foundation-validation-bind"
+                disabled="{Boolean}true"
+                text="Create"
+                type="submit"
+                variant="primary"
+                formId="create-dictionary"/>
+    </footer>
+</jcr:root>

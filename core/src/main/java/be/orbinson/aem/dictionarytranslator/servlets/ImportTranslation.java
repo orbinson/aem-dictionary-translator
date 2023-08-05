@@ -26,7 +26,7 @@ import java.util.Map;
 
 @Component(service = Servlet.class)
 @SlingServletResourceTypes(
-        resourceTypes = "dictionary-translator/endpoints/import-translations",
+        resourceTypes = "aem-dictionary-translator/endpoints/import-translations",
         methods = "POST")
 public class ImportTranslation extends SlingAllMethodsServlet {
     private static final Logger LOG = LoggerFactory.getLogger(ImportTranslation.class);

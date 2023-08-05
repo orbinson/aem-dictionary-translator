@@ -28,7 +28,7 @@ import java.util.*;
 public class LabelResourceProvider extends ResourceProvider<Object> {
     public static final String ROOT = "/mnt/dictionary";
 
-    public static final String RESOURCE_TYPE = "dictionary-translator/components/label";
+    public static final String RESOURCE_TYPE = "aem-dictionary-translator/components/label";
     public static final String LANGUAGES = "languages";
 
     @Reference

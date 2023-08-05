@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 
 @Component(service = Servlet.class)
 @SlingServletResourceTypes(
-        resourceTypes = "dictionary-translator/endpoints/copy-language",
+        resourceTypes = "aem-dictionary-translator/endpoints/copy-language",
         methods = "POST")
 public class CopyLanguage extends SlingAllMethodsServlet {
     private static final Logger LOG = LoggerFactory.getLogger(CopyLanguage.class);

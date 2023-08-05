@@ -19,7 +19,7 @@ import java.util.List;
 
 @Component(service = Servlet.class)
 @SlingServletResourceTypes(
-        resourceTypes = "dictionary-translator/endpoints/export-translations",
+        resourceTypes = "aem-dictionary-translator/endpoints/export-translations",
         methods = "GET")
 public class ExportTranslation extends SlingAllMethodsServlet {
     private static final Logger LOG = LoggerFactory.getLogger(ExportTranslation.class);

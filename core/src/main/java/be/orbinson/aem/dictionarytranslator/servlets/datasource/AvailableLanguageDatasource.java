@@ -23,7 +23,7 @@ import java.util.*;
 
 @Component(service = Servlet.class)
 @SlingServletResourceTypes(
-        resourceTypes = "dictionary-translator/datasource/available-language",
+        resourceTypes = "aem-dictionary-translator/datasource/available-language",
         methods = "GET"
 )
 public class AvailableLanguageDatasource extends SlingSafeMethodsServlet {

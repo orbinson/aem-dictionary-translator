@@ -4,7 +4,7 @@
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>be.orbinson.aem</groupId>
-    <artifactId>dictionary-translator</artifactId>
+    <artifactId>aem-dictionary-translator</artifactId>
     <packaging>pom</packaging>
     <version>1.0.0-SNAPSHOT</version>
 

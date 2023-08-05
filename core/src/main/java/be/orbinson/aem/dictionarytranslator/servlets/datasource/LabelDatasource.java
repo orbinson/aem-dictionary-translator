@@ -26,7 +26,7 @@ import java.util.Map;
 
 @Component(service = Servlet.class)
 @SlingServletResourceTypes(
-        resourceTypes = "dictionary-translator/datasource/label",
+        resourceTypes = "aem-dictionary-translator/datasource/label",
         methods = "GET"
 )
 public class LabelDatasource extends SlingSafeMethodsServlet {

@@ -8,7 +8,7 @@
     <!-- ====================================================================== -->
     <parent>
         <groupId>be.orbinson.aem</groupId>
-        <artifactId>dictionary-translator</artifactId>
+        <artifactId>aem-dictionary-translator</artifactId>
         <version>1.0.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
@@ -16,7 +16,7 @@
     <!-- ====================================================================== -->
     <!-- P R O J E C T  D E S C R I P T I O N                                   -->
     <!-- ====================================================================== -->
-    <artifactId>dictionary-translator.ui.apps.structure</artifactId>
+    <artifactId>aem-dictionary-translator.ui.apps.structure</artifactId>
     <packaging>content-package</packaging>
     <name>Repository Structure Package</name>
     <description>
@@ -40,7 +40,7 @@
                             <root>/apps</root>
                         </filter>
                         <filter>
-                            <root>/apps/dictionary-translator</root>
+                            <root>/apps/aem-dictionary-translator</root>
                         </filter>
 
                         <!-- Common overlay roots -->

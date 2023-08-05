@@ -4,12 +4,12 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>be.orbinson.aem</groupId>
-        <artifactId>dictionary-translator</artifactId>
+        <artifactId>aem-dictionary-translator</artifactId>
         <version>1.0.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>dictionary-translator.core</artifactId>
+    <artifactId>aem-dictionary-translator.core</artifactId>
     <name>Core</name>
     <description>Core bundle for the Dictionary Translator</description>
     <build>

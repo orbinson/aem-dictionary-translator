@@ -20,7 +20,7 @@ import java.io.IOException;
 @Component(service = Servlet.class)
 @SlingServletResourceTypes(
         resourceSuperType = "granite/ui/components/coral/foundation/form",
-        resourceTypes = "dictionary-translator/servlet/action/delete-language",
+        resourceTypes = "aem-dictionary-translator/servlet/action/delete-language",
         methods = "POST"
 )
 public class DeleteLanguageServlet extends SlingAllMethodsServlet {

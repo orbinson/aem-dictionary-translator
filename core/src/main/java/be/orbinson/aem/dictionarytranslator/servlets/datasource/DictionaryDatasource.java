@@ -20,7 +20,7 @@ import java.util.List;
 
 @Component(service = Servlet.class)
 @SlingServletResourceTypes(
-        resourceTypes = "dictionary-translator/datasource/dictionary",
+        resourceTypes = "aem-dictionary-translator/datasource/dictionary",
         methods = "GET"
 )
 public class DictionaryDatasource extends SlingSafeMethodsServlet {
@@ -32,7 +32,7 @@ public class DictionaryDatasource extends SlingSafeMethodsServlet {
         ResourceResolver resourceResolver = request.getResourceResolver();
         List<Resource> resourceList = new ArrayList<>();
 
-        dictionaryService.getDictionaries(resourceResolver).forEach(resource -> resourceList.add(new ValueMapResource(resourceResolver, resource.getPath(), "dictionary-translator/components/dictionary", resource.getValueMap())));
+        dictionaryService.getDictionaries(resourceResolver).forEach(resource -> resourceList.add(new ValueMapResource(resourceResolver, resource.getPath(), "aem-dictionary-translator/components/dictionary", resource.getValueMap())));
 
         DataSource dataSource = new SimpleDataSource(resourceList.iterator());
         request.setAttribute(DataSource.class.getName(), dataSource);
