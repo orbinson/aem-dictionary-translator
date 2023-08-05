@@ -1,4 +1,4 @@
-name: Create release
+name: Release
 
 on:
   workflow_dispatch:
@@ -24,7 +24,7 @@ permissions:
 
 jobs:
   release:
-
+    name: Maven and GitHub release
     runs-on: ubuntu-latest
 
     steps:
