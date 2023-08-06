@@ -39,7 +39,7 @@
         <componentName>Dictionary Translator</componentName>
         <componentGroupName>Orbinson Tools</componentGroupName>
 
-        <aem.sdk.api.version>2023.6.12255.20230608T053118Z-230400</aem.sdk.api.version>
+        <aem.sdk.api.version>2023.7.12697.20230713T151945Z-230601</aem.sdk.api.version>
         <aemanalyser.version>1.5.8</aemanalyser.version>
 
         <sonar.organization>orbinson</sonar.organization>
