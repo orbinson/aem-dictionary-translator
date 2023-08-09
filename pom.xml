@@ -19,6 +19,27 @@
         <module>ui.config</module>
     </modules>
 
+    <developers>
+        <developer>
+            <name>Barry d'Hoine</name>
+            <email>barrydhoine@gmail.com</email>
+            <id>bdhoine</id>
+        </developer>
+        <developer>
+            <name>Roy Teeuwen</name>
+            <email>roy@orbinson.be</email>
+            <id>royteeuwen</id>
+        </developer>
+    </developers>
+
+    <licenses>
+        <license>
+            <name>The Apache Software License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
     <scm>
         <connection>scm:git:https://github.com/orbinson/aem-dictionary-translator.git</connection>
         <developerConnection>scm:git:https://github.com/orbinson/aem-dictionary-translator.git</developerConnection>
