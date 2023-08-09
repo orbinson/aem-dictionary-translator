@@ -15,5 +15,4 @@
 
 # Ignore IntelliJ IDEA files
 .idea
-*/*.iml
-parent.iml
+*.iml
