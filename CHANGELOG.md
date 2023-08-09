@@ -7,11 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Use correct user mapping for service user
+
 ## [1.0.0] - 2023-08-09
 
 ### Added
 
--   Initial creation of the project
+- Initial creation of the project
 
 [Unreleased]: https://github.com/orbinson/aem-dictionary-translator/compare/1.0.0...HEAD
 
