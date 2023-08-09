@@ -9,6 +9,10 @@ AEM TouchUI tool to translate labels for i18n internationalisation in AEM on pre
 Dictionary Translator is a replacement for the
 ClassicUI [translator](http://localhost:4502/libs/cq/i18n/translator.html) which is not available on AEMaaCS.
 
+![Dictionaries](docs/assets/dictionaries.png)
+
+![Labels](docs/assets/labels.png)
+
 ## Development
 
 To build all the modules run in the project root directory the following command
