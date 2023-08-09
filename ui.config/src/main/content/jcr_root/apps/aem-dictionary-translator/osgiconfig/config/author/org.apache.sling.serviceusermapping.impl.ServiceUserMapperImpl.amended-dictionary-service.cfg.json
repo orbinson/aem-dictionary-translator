@@ -1,5 +1,5 @@
 {
   "user.mapping": [
-    "be.orbinson.aem.dictionary-translator.core:dictionary-service=[dictionary-service]"
+    "be.orbinson.aem.aem-dictionary-translator.core:dictionary-service=[dictionary-service]"
   ]
 }
