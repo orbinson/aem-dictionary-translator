@@ -7,17 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.1] - 2023-08-10
+
 ### Fixed
 
-- Use correct user mapping for service user
+-   Use correct user mapping for service user
 
 ## [1.0.0] - 2023-08-09
 
 ### Added
 
-- Create, publish and edit dictionaries
-- Create, delete and update labels in a dictionary
+-   Create, publish and edit dictionaries
+-   Create, delete and update labels in a dictionary
 
-[Unreleased]: https://github.com/orbinson/aem-dictionary-translator/compare/1.0.0...HEAD
+[Unreleased]: https://github.com/orbinson/aem-dictionary-translator/compare/1.0.1...HEAD
+
+[1.0.1]: https://github.com/orbinson/aem-dictionary-translator/compare/1.0.0...1.0.1
 
 [1.0.0]: https://github.com/orbinson/aem-dictionary-translator/compare/aef9658ce0967039de44f69228c16744d45e2764...1.0.0
