@@ -15,7 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Initial creation of the project
+- Create, publish and edit dictionaries
+- Create, delete and update labels in a dictionary
 
 [Unreleased]: https://github.com/orbinson/aem-dictionary-translator/compare/1.0.0...HEAD
 
