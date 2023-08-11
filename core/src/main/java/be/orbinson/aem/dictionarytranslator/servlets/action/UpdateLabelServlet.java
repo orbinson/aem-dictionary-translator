@@ -1,6 +1,7 @@
 package be.orbinson.aem.dictionarytranslator.servlets.action;
 
 import be.orbinson.aem.dictionarytranslator.services.DictionaryService;
+import com.day.cq.commons.jcr.JcrUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
@@ -13,6 +14,8 @@ import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.jcr.RepositoryException;
+import javax.jcr.Session;
 import javax.servlet.Servlet;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -73,16 +76,25 @@ public class UpdateLabelServlet extends SlingAllMethodsServlet {
         Resource languageResource = dictionary.getChild(language);
         if (languageResource != null) {
             try {
-                Resource labelResource = languageResource.getChild(name);
+                Resource labelResource = getLabelResource(resourceResolver, languageResource, name);
                 if (labelResource != null) {
                     ValueMap valueMap = labelResource.adaptTo(ModifiableValueMap.class);
                     valueMap.put("sling:message", message);
                     LOG.trace("Updated label with name '{}' and message '{}' on path '{}'", name, message, labelResource.getPath());
                 }
                 resourceResolver.commit();
-            } catch (PersistenceException e) {
+            } catch (PersistenceException | RepositoryException e) {
                 LOG.error("Unable to update label for name '{}'", name);
             }
         }
+    }
+
+    private Resource getLabelResource(ResourceResolver resourceResolver, Resource languageResource, String name) throws RepositoryException {
+        if (languageResource.getChild(name) == null) {
+            Session session = resourceResolver.adaptTo(Session.class);
+            JcrUtil.createPath(languageResource.getPath() + "/" + name, "sling:MessageEntry", session);
+            session.save();
+        }
+        return languageResource.getChild(name);
     }
 }
