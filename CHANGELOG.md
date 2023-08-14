@@ -7,11 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.3] - 2023-08-14
+
 ## [1.0.2] - 2023-08-11
 
 ### Fixed
 
--  When adding new languages existing labels could not be updated
+-   When adding new languages existing labels could not be updated
 
 ### Changed
 
@@ -30,7 +32,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   Create, publish and edit dictionaries
 -   Create, delete and update labels in a dictionary
 
-[Unreleased]: https://github.com/orbinson/aem-dictionary-translator/compare/1.0.2...HEAD
+[Unreleased]: https://github.com/orbinson/aem-dictionary-translator/compare/1.0.3...HEAD
+
+[1.0.3]: https://github.com/orbinson/aem-dictionary-translator/compare/1.0.2...1.0.3
 
 [1.0.2]: https://github.com/orbinson/aem-dictionary-translator/compare/1.0.1...1.0.2
 
