@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.0.3] - 2023-08-14
 
+### Changed
+
+-   Set minimum required SDK version to 2023.6.12255.20230608T053118Z-230400
+
 ## [1.0.2] - 2023-08-11
 
 ### Fixed
