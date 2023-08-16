@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.4] - 2023-08-16
+
 ### Fixed
 
 -   Use the distribution API to be able to deep replicate a dictionary: [#1](https://github.com/orbinson/aem-dictionary-translator/pull/1)
@@ -40,7 +42,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   Create, publish and edit dictionaries
 -   Create, delete and update labels in a dictionary
 
-[Unreleased]: https://github.com/orbinson/aem-dictionary-translator/compare/1.0.3...HEAD
+[Unreleased]: https://github.com/orbinson/aem-dictionary-translator/compare/1.0.4...HEAD
+
+[1.0.4]: https://github.com/orbinson/aem-dictionary-translator/compare/1.0.3...1.0.4
 
 [1.0.3]: https://github.com/orbinson/aem-dictionary-translator/compare/1.0.2...1.0.3
 
