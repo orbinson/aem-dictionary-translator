@@ -1,6 +1,5 @@
 package be.orbinson.aem.dictionarytranslator.servlets.action;
 
-import com.day.cq.replication.Replicator;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
@@ -40,7 +39,7 @@ public class ReplicateDictionaryServlet extends SlingAllMethodsServlet {
         String path = request.getParameter("path");
 
         if (StringUtils.isEmpty(path)) {
-            LOG.warn("Invalid parameters to replicate dictionary, 'path={}',", path);
+            LOG.warn("Invalid parameters to replicate dictionary");
             response.sendError(HttpServletResponse.SC_BAD_REQUEST);
         } else {
             final ResourceResolver resourceResolver = request.getResourceResolver();
@@ -49,9 +48,16 @@ public class ReplicateDictionaryServlet extends SlingAllMethodsServlet {
             if (resource != null) {
                 DistributionRequest distributionRequest = new SimpleDistributionRequest(DistributionRequestType.ADD, true, path);
                 distributor.distribute("publish", resourceResolver, distributionRequest);
-                LOG.debug("Replicated dictionary, 'path={}'", path);
+
+                if (LOG.isDebugEnabled()) {
+                    // javasecurity:S5145
+                    LOG.debug("Replicated dictionary, 'path={}'", path.replaceAll("[\n\r]", "_"));
+                }
             } else {
-                LOG.warn("Unable to get resource for path '{}", path);
+                if (LOG.isWarnEnabled()) {
+                    // javasecurity:S5145
+                    LOG.warn("Unable to get resource for path '{}", path.replaceAll("[\n\r]", "_"));
+                }
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST);
             }
         }
