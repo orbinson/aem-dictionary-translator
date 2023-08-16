@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+-   Use the distribution API to be able to deep replicate a dictionary
+
 ## [1.0.3] - 2023-08-14
 
 ### Changed

@@ -21,9 +21,9 @@
                             <items jcr:primaryType="nt:unstructured">
                                 <form
                                         jcr:primaryType="nt:unstructured"
-                                        sling:resourceType="granite/ui/components/coral/foundation/form"
+                                        sling:resourceType="aem-dictionary-translator/servlet/action/replicate-dictionary"
                                         granite:id="publish-dictionary"
-                                        action="/bin/replicate"
+                                        action="${requestPathInfo.resourcePath}"
                                         foundationForm="true"
                                         method="post"
                                         style="vertical">
@@ -42,16 +42,6 @@
                                                 sling:resourceType="granite/ui/components/coral/foundation/form/hidden"
                                                 name="path"
                                                 value="${param.dictionary}"/>
-                                        <agentId
-                                                jcr:primaryType="nt:unstructured"
-                                                sling:resourceType="granite/ui/components/coral/foundation/form/hidden"
-                                                name="agentId"
-                                                value="publish"/>
-                                        <cmd
-                                                jcr:primaryType="nt:unstructured"
-                                                sling:resourceType="granite/ui/components/coral/foundation/form/hidden"
-                                                name="cmd"
-                                                value="Activate"/>
                                     </items>
                                 </form>
                             </items>
