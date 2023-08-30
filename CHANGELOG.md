@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.5] - 2023-08-30
+
 ### Fixed
 
 -   Fix labels not working anymore when a new language is added
@@ -46,7 +48,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   Create, publish and edit dictionaries
 -   Create, delete and update labels in a dictionary
 
-[Unreleased]: https://github.com/orbinson/aem-dictionary-translator/compare/1.0.4...HEAD
+[Unreleased]: https://github.com/orbinson/aem-dictionary-translator/compare/1.0.5...HEAD
+
+[1.0.5]: https://github.com/orbinson/aem-dictionary-translator/compare/1.0.4...1.0.5
 
 [1.0.4]: https://github.com/orbinson/aem-dictionary-translator/compare/1.0.3...1.0.4
 
