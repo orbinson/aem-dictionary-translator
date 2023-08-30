@@ -100,11 +100,14 @@ public class LabelResourceProvider extends ResourceProvider<Object> {
     private boolean isLabel(Resource dictionaryResource, String labelName) {
         List<String> languages = dictionaryService.getLanguages(dictionaryResource);
         if (!languages.isEmpty()) {
-            String firstLanguage = languages.get(0);
-            Resource languageResource = dictionaryResource.getChild(firstLanguage);
-            if (languageResource != null) {
-                Resource labelResource = languageResource.getChild(labelName);
-                return labelResource != null && labelResource.isResourceType("sling:MessageEntry");
+            for (String language : languages) {
+                Resource languageResource = dictionaryResource.getChild(language);
+                if (languageResource != null) {
+                    Resource labelResource = languageResource.getChild(labelName);
+                    if (labelResource != null && labelResource.isResourceType("sling:MessageEntry")) {
+                        return true;
+                    }
+                }
             }
         }
         return false;
