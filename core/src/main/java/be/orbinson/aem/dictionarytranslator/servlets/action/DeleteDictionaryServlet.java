@@ -40,6 +40,7 @@ public class DeleteDictionaryServlet extends SlingAllMethodsServlet {
                     resourceResolver.delete(resource);
                 } else {
                     LOG.warn("Dictionary '{}' not found to delete", dictionary);
+                    response.sendError(HttpServletResponse.SC_NOT_FOUND);
                 }
 
                 try {
