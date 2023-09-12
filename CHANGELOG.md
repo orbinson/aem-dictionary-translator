@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+-   Add breadcrumbs to the dictionary labels page: [#3](https://github.com/orbinson/aem-dictionary-translator/issues/3)
+
 ## [1.0.5] - 2023-08-30
 
 ### Fixed
