@@ -48,10 +48,13 @@ public class CreateLabelServlet extends SlingAllMethodsServlet {
             try {
                 if (resource != null) {
                     for (String language : dictionaryService.getLanguages(resource)) {
+                        // javasecurity:S5145
+                        LOG.debug("Create label on path '{}/{}'", dictionary, key);
                         String message = request.getParameter(language);
                         addMessage(resourceResolver, resource, language, key, message);
                     }
                 } else {
+                    // javasecurity:S5145
                     LOG.warn("Unable to get dictionary '{}'", dictionary);
                     response.sendError(HttpServletResponse.SC_BAD_REQUEST);
                 }

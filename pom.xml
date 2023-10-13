@@ -8,7 +8,7 @@
     <packaging>pom</packaging>
     <version>1.0.7-SNAPSHOT</version>
 
-    <name>Dictionary Translator</name>
+    <name>AEM Dictionary Translator</name>
     <description>Tool to translate AEM i18 labels for internationalization</description>
 
     <modules>

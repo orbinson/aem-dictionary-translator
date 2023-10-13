@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jcr:root
+        xmlns:sling="http://sling.apache.org/jcr/sling/1.0"
+        xmlns:jcr="http://www.jcp.org/jcr/1.0" xmlns:nt="http://www.jcp.org/jcr/nt/1.0"
+        xmlns:granite="http://www.adobe.com/jcr/granite/1.0"
+        jcr:primaryType="nt:unstructured"
+        sling:resourceType="granite/ui/components/coral/foundation/dialog"
+        jcr:title="Publish Label">
+    <items jcr:primaryType="nt:unstructured">
+        <properties
+                jcr:primaryType="nt:unstructured"
+                sling:resourceType="granite/ui/components/coral/foundation/container">
+            <items jcr:primaryType="nt:unstructured">
+                <columns
+                        jcr:primaryType="nt:unstructured"
+                        sling:resourceType="granite/ui/components/coral/foundation/fixedcolumns">
+                    <items jcr:primaryType="nt:unstructured">
+                        <column
+                                jcr:primaryType="nt:unstructured"
+                                sling:resourceType="granite/ui/components/coral/foundation/container">
+                            <items jcr:primaryType="nt:unstructured">
+                                <form
+                                        jcr:primaryType="nt:unstructured"
+                                        sling:resourceType="aem-dictionary-translator/servlet/action/publish-label"
+                                        action="${requestPathInfo.resourcePath}?labels=${granite:encodeURIComponent(param.labels)}"
+                                        granite:id="publish-label-form"
+                                        foundationForm="true"
+                                        method="post">
+                                    <successresponse
+                                            jcr:primaryType="nt:unstructured"
+                                            jcr:title="Label published"
+                                            sling:resourceType="granite/ui/components/coral/foundation/form/responses/reload"/>
+                                    <items jcr:primaryType="nt:unstructured">
+                                        <message
+                                                jcr:primaryType="nt:unstructured"
+                                                jcr:title="Are you sure you want to publish the selected labels?"
+                                                sling:resourceType="granite/ui/components/coral/foundation/alert"
+                                                variant="info"/>
+                                    </items>
+                                </form>
+                            </items>
+                        </column>
+                    </items>
+                </columns>
+            </items>
+        </properties>
+    </items>
+    <footer jcr:primaryType="nt:unstructured">
+        <close
+                jcr:primaryType="nt:unstructured"
+                sling:resourceType="granite/ui/components/coral/foundation/button"
+                text="Cancel">
+            <parentConfig
+                    jcr:primaryType="nt:unstructured"
+                    close="true"/>
+        </close>
+        <submit
+                jcr:primaryType="nt:unstructured"
+                sling:resourceType="granite/ui/components/coral/foundation/button"
+                granite:class="foundation-validation-bind"
+                text="Publish"
+                type="submit"
+                variant="primary"
+                formId="publish-label-form"/>
+    </footer>
+</jcr:root>

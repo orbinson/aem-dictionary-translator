@@ -79,37 +79,45 @@ public class LabelDatasource extends SlingSafeMethodsServlet {
 
         String dictionaryPath = request.getRequestPathInfo().getSuffix();
         if (dictionaryPath != null) {
-            Resource dictionaryResource = resourceResolver.getResource(dictionaryPath);
-            if (dictionaryResource != null) {
-                Dictionary dictionary = modelFactory.getModelFromWrappedRequest(request, dictionaryResource, Dictionary.class);
-                if (dictionary != null) {
-                    if ("columnsdatasource".equals(request.getResource().getName())) {
-                        setColumnsDataSource(resourceResolver, resourceList, dictionary);
-                    } else {
-                        setDataSource(resourceResolver, resourceList, dictionary);
-                    }
-                }
-            }
+            createDictionaryDataSource(request, resourceResolver, dictionaryPath, resourceList);
         }
 
         String labelPath = request.getParameter("label");
         if (labelPath != null) {
-            Resource resource = resourceResolver.getResource(labelPath);
-            if (resource != null) {
-                ValueMap properties = resource.getValueMap();
-                String[] languages = properties.get("languages", String[].class);
-
-                createTextFieldResource(resourceResolver, resourceList, "Label", properties.get("key", String.class), false, true);
-                if (languages != null) {
-                    for (String language : languages) {
-                        String label = properties.get(language, StringUtils.EMPTY);
-                        createTextFieldResource(resourceResolver, resourceList, language, label);
-                    }
-                }
-            }
+            createLabelDataSource(resourceResolver, labelPath, resourceList);
         }
 
         DataSource dataSource = new SimpleDataSource(resourceList.iterator());
         request.setAttribute(DataSource.class.getName(), dataSource);
+    }
+
+    private static void createLabelDataSource(ResourceResolver resourceResolver, String labelPath, List<Resource> resourceList) {
+        Resource resource = resourceResolver.getResource(labelPath);
+        if (resource != null) {
+            ValueMap properties = resource.getValueMap();
+            String[] languages = properties.get("languages", String[].class);
+
+            createTextFieldResource(resourceResolver, resourceList, "Label", properties.get("key", String.class), false, true);
+            if (languages != null) {
+                for (String language : languages) {
+                    String label = properties.get(language, StringUtils.EMPTY);
+                    createTextFieldResource(resourceResolver, resourceList, language, label);
+                }
+            }
+        }
+    }
+
+    private void createDictionaryDataSource(@NotNull SlingHttpServletRequest request, ResourceResolver resourceResolver, String dictionaryPath, List<Resource> resourceList) {
+        Resource dictionaryResource = resourceResolver.getResource(dictionaryPath);
+        if (dictionaryResource != null) {
+            Dictionary dictionary = modelFactory.getModelFromWrappedRequest(request, dictionaryResource, Dictionary.class);
+            if (dictionary != null) {
+                if ("columnsdatasource".equals(request.getResource().getName())) {
+                    setColumnsDataSource(resourceResolver, resourceList, dictionary);
+                } else {
+                    setDataSource(resourceResolver, resourceList, dictionary);
+                }
+            }
+        }
     }
 }

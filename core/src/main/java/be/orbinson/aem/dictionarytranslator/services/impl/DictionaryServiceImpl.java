@@ -21,6 +21,7 @@ import static org.apache.jackrabbit.JcrConstants.JCR_LANGUAGE;
 @Component
 public class DictionaryServiceImpl implements DictionaryService {
     private static final Logger LOG = LoggerFactory.getLogger(DictionaryServiceImpl.class);
+    private static final String SLING_BASENAME = "sling:basename";
 
     @Reference
     private TranslationConfig translationConfig;
@@ -37,9 +38,9 @@ public class DictionaryServiceImpl implements DictionaryService {
         properties.put("jcr:mixinTypes", "mix:language");
 
         if (StringUtils.isNotEmpty(basename)) {
-            properties.put("sling:basename", basename);
+            properties.put(SLING_BASENAME, basename);
         } else {
-            properties.put("sling:basename", dictionary.getPath());
+            properties.put(SLING_BASENAME, dictionary.getPath());
         }
 
         LOG.debug("Add language '{}' to dictionary '{}' with properties '{}'", language, dictionary, properties);
@@ -81,7 +82,9 @@ public class DictionaryServiceImpl implements DictionaryService {
     public @NotNull List<Resource> getDictionaries(ResourceResolver resourceResolver) {
         Map<String, Resource> result = new TreeMap<>();
 
-        resourceResolver.findResources("//element(*, mix:language)[@jcr:language]/..", "xpath").forEachRemaining(resource -> result.put(resource.getPath(), resource));
+        resourceResolver
+                .findResources("//element(*, mix:language)[@jcr:language and @jcr:primaryType='sling:Folder']/..", "xpath")
+                .forEachRemaining(resource -> result.put(resource.getPath(), resource));
 
         return new ArrayList<>(result.values());
     }
@@ -107,7 +110,7 @@ public class DictionaryServiceImpl implements DictionaryService {
             ValueMap properties = child.getValueMap();
             if (properties.containsKey(JCR_LANGUAGE) && basename.get() == null) {
                 LOG.trace("Found language with path '{}'", child.getPath());
-                basename.set(properties.get("sling:basename", String.class));
+                basename.set(properties.get(SLING_BASENAME, String.class));
             }
         });
         return basename.get();
@@ -116,7 +119,7 @@ public class DictionaryServiceImpl implements DictionaryService {
     public void createDictionary(Resource parent, String name, String[] languages, String basename) throws PersistenceException {
         LOG.debug("Create dictionary '{}'", name);
         ResourceResolver resourceResolver = parent.getResourceResolver();
-        String dictionaryPath = parent.getPath() + "/" + JcrUtil.createValidName(name) + "/i18n";
+        String dictionaryPath = String.format("%s/%s/i18n", parent.getPath(), JcrUtil.createValidName(name));
         Resource dictionaryResource = ResourceUtil.getOrCreateResource(resourceResolver, dictionaryPath, "sling:Folder", "sling:Folder", true);
 
         for (String language : languages) {
