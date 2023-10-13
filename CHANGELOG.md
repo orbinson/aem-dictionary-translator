@@ -7,52 +7,62 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Dictionaries with .json files are no longer showed in dictionary
+  list: [#8](https://github.com/orbinson/aem-dictionary-translator/pull/5)
+
+### Added
+
+- Publish specific labels in a dictionary: [#8](https://github.com/orbinson/aem-dictionary-translator/pull/5)
+
 ## [1.0.6] - 2023-09-12
 
 ### Changed
 
--   Add breadcrumbs to the dictionary labels page: [#3](https://github.com/orbinson/aem-dictionary-translator/issues/3)
+- Add breadcrumbs to the dictionary labels page: [#3](https://github.com/orbinson/aem-dictionary-translator/issues/3)
 
 ## [1.0.5] - 2023-08-30
 
 ### Fixed
 
--   Fix labels not working anymore when a new language is added
+- Fix labels not working anymore when a new language is added
 
 ## [1.0.4] - 2023-08-16
 
 ### Fixed
 
--   Use the distribution API to be able to deep replicate a dictionary: [#1](https://github.com/orbinson/aem-dictionary-translator/pull/1)
+- Use the distribution API to be able to deep replicate a
+  dictionary: [#1](https://github.com/orbinson/aem-dictionary-translator/pull/1)
 
 ## [1.0.3] - 2023-08-14
 
 ### Changed
 
--   Set minimum required SDK version to 2023.6.12255.20230608T053118Z-230400
+- Set minimum required SDK version to 2023.6.12255.20230608T053118Z-230400
 
 ## [1.0.2] - 2023-08-11
 
 ### Fixed
 
--   When adding new languages existing labels could not be updated
+- When adding new languages existing labels could not be updated
 
 ### Changed
 
--   Update README.md documentation
+- Update README.md documentation
 
 ## [1.0.1] - 2023-08-10
 
 ### Fixed
 
--   Use correct user mapping for service user
+- Use correct user mapping for service user
 
 ## [1.0.0] - 2023-08-09
 
 ### Added
 
--   Create, publish and edit dictionaries
--   Create, delete and update labels in a dictionary
+- Create, publish and edit dictionaries
+- Create, delete and update labels in a dictionary
 
 [Unreleased]: https://github.com/orbinson/aem-dictionary-translator/compare/1.0.6...HEAD
 

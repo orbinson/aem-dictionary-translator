@@ -39,9 +39,11 @@ public class DeleteLabelServlet extends SlingAllMethodsServlet {
                 Resource resource = resourceResolver.getResource(label);
                 try {
                     if (resource != null) {
-                        LOG.debug("Delete label on path '{}'", label);
+                        // javasecurity:S5145
+                        LOG.debug("Delete label on path '{}'", labels);
                         resourceResolver.delete(resource);
                     } else {
+                        // javasecurity:S5145
                         LOG.warn("Unable to get label '{}'", labels);
                         response.sendError(HttpServletResponse.SC_BAD_REQUEST);
                     }
