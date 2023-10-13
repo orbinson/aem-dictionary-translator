@@ -48,6 +48,7 @@ public class CreateLabelServlet extends SlingAllMethodsServlet {
             try {
                 if (resource != null) {
                     for (String language : dictionaryService.getLanguages(resource)) {
+                        LOG.debug("Create label on path '{}/{}'", dictionary, key);
                         String message = request.getParameter(language);
                         addMessage(resourceResolver, resource, language, key, message);
                     }

@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+-   Dictionaries with .json files are no longer showed in dictionary list: [#5](https://github.com/orbinson/aem-dictionary-translator/pull/5)
+
+### Added
+
+-   Publish specific labels in a dictionary: [#5](https://github.com/orbinson/aem-dictionary-translator/pull/5)
+
 ## [1.0.6] - 2023-09-12
 
 ### Changed

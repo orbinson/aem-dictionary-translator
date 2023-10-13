@@ -74,6 +74,22 @@
                             sling:resourceType="granite/ui/components/coral/foundation/renderconditions/simple"
                             expression="${granite:contains(granite:relativeParent(requestPathInfo.suffix, 0), '/content')}"/>
                 </delete>
+                <publish
+                        jcr:primaryType="nt:unstructured"
+                        sling:resourceType="granite/ui/components/coral/foundation/collection/action"
+                        action="foundation.dialog"
+                        actionConfigName="granite/ui/shell/actions/publish"
+                        target="#translation-listview"
+                        icon="publish"
+                        variant="actionBar"
+                        text="Publish">
+                    <data jcr:primaryType="nt:unstructured"
+                          src.uritemplate="/apps/aem-dictionary-translator/content/granite/dialog/dictionary/label/publish.html?labels={+item}"/>
+                    <granite:rendercondition
+                            jcr:primaryType="nt:unstructured"
+                            sling:resourceType="granite/ui/components/coral/foundation/renderconditions/simple"
+                            expression="${granite:contains(granite:relativeParent(requestPathInfo.suffix, 0), '/content')}"/>
+                </publish>
             </selection>
         </actions>
         <views jcr:primaryType="nt:unstructured">
