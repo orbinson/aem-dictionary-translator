@@ -55,8 +55,13 @@ public class ImportDictionaryServlet extends SlingAllMethodsServlet {
                 CSVFormat format = null;
                 if (result.contains(";")) {
                     format = CSVFormat.newFormat(';').withFirstRecordAsHeader();
-                } else {
+                } else if (result.contains(",")){
                     format = CSVFormat.DEFAULT.withFirstRecordAsHeader();
+                } else {
+                    String error = "Invalid CSV file. The Delimiter should be ',' or ';'.";
+                    LOG.error(error);
+                    response.setStatus(400, error);
+                    return;
                 }
                 CSVParser csvParser = new CSVParser(reader, format);
                 Map<String, Integer> headers = csvParser.getHeaderMap();

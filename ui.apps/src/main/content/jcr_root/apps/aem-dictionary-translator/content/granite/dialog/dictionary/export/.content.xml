@@ -30,14 +30,25 @@
                                         async="false">
                                     <successresponse
                                             jcr:primaryType="nt:unstructured"
-                                            jcr:title="Exported"
-                                            sling:resourceType="granite/ui/components/coral/foundation/form/responses/reload"/>
-                                    <items jcr:primaryType="nt:unstructured">
-                                        <message
+                                            jcr:title="Exported selected dictionary"
+                                            sling:resourceType="granite/ui/components/coral/foundation/form/responses/reload"/>                                    <items jcr:primaryType="nt:unstructured">
+                                        <linkTarget
                                                 jcr:primaryType="nt:unstructured"
-                                                jcr:title="Are you sure you want to export the selected dictionary?"
-                                                sling:resourceType="granite/ui/components/coral/foundation/alert"
-                                                variant="info"/>
+                                                sling:resourceType="granite/ui/components/coral/foundation/form/select"
+                                                fieldLabel="Select the desired CSV delimiter:"
+                                                name="./delimiter">
+                                            <items jcr:primaryType="nt:unstructured">
+                                                <semicolon
+                                                        jcr:primaryType="nt:unstructured"
+                                                        selected="{Boolean}true"
+                                                        text="semicolon [ ; ]"
+                                                        value=";"/>
+                                                <comma
+                                                        jcr:primaryType="nt:unstructured"
+                                                        text="comma [ , ]"
+                                                        value=","/>
+                                            </items>
+                                        </linkTarget>
                                     </items>
                                 </form>
                             </items>
@@ -63,6 +74,10 @@
                 text="Export"
                 type="submit"
                 variant="primary"
-                formId="export-dictionary-form"/>
+                formId="export-dictionary-form">
+        <parentConfig
+                jcr:primaryType="nt:unstructured"
+                close="true"/>
+        </submit>
     </footer>
 </jcr:root>

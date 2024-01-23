@@ -2,6 +2,7 @@ package be.orbinson.aem.dictionarytranslator.servlets.action;
 
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
+import org.apache.sling.api.request.RequestParameter;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.servlets.SlingAllMethodsServlet;
@@ -29,6 +30,7 @@ public class ExportDictionaryServlet extends SlingAllMethodsServlet {
     @Override
     public void doPost(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
         String dictionary = request.getParameter("dictionary");
+        RequestParameter delimiter = request.getRequestParameter("./delimiter");
 
         response.setContentType("text/csv");
         response.setHeader("Content-disposition", "attachment; filename=\"dictionary_" + dictionary + ".csv");
@@ -42,7 +44,7 @@ public class ExportDictionaryServlet extends SlingAllMethodsServlet {
                 Iterator<Resource> children = resource.listChildren();
                 while (children.hasNext()) {
                     Resource child = children.next();
-                    csvHeader.append(";");
+                    csvHeader.append(delimiter);
                     csvHeader.append(child.getName());
                     languageResources.add(child);
                 }
@@ -57,7 +59,7 @@ public class ExportDictionaryServlet extends SlingAllMethodsServlet {
                         StringBuilder csvRow = new StringBuilder(labelResource.getValueMap().get("sling:key", String.class));
                         for (Resource languageResource : languageResources) {
                             Resource correspondingLabelResource = languageResource.getChild(labelResource.getName());
-                            csvRow.append(";");
+                            csvRow.append(delimiter);
                             String translation = correspondingLabelResource.getValueMap().get("sling:message", String.class);
                             csvRow.append(translation);
                         }
@@ -65,6 +67,10 @@ public class ExportDictionaryServlet extends SlingAllMethodsServlet {
                         LOG.info("CSV row: " + csvRow);
                     }
                 }
+            } else {
+                String error = "Dictionary resource not found.";
+                LOG.error(error);
+                response.setStatus(404, error);
             }
         } catch (IOException e) {
             String error = "Error while writing CSV file";
