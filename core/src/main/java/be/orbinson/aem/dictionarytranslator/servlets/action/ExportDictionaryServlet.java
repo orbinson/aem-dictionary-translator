@@ -38,7 +38,7 @@ public class ExportDictionaryServlet extends SlingAllMethodsServlet {
         try (PrintWriter writer = response.getWriter()) {
             ResourceResolver resolver = request.getResourceResolver();
             Resource resource = resolver.getResource(dictionary);
-            StringBuilder csvHeader = new StringBuilder("Labelname");
+            StringBuilder csvHeader = new StringBuilder("KEY");
             List<Resource> languageResources = new ArrayList<>();
             if (resource != null) {
                 Iterator<Resource> children = resource.listChildren();

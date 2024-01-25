@@ -44,7 +44,7 @@ public class ImportDictionaryServlet extends SlingAllMethodsServlet {
             InputStream csvContent = csvfile.getInputStream();
 
             List<String> languages = new ArrayList<>();
-            List<String> labelNames = new ArrayList<>();
+            List<String> KEYs = new ArrayList<>();
             List<List<String>> translations = new ArrayList<>();
 
             ResourceResolver resourceResolver = request.getResourceResolver();
@@ -66,27 +66,27 @@ public class ImportDictionaryServlet extends SlingAllMethodsServlet {
                 CSVParser csvParser = new CSVParser(reader, format);
                 Map<String, Integer> headers = csvParser.getHeaderMap();
 
-                if (!headers.containsKey("Labelname") || headers.get("Labelname") != 0) {
-                    String error = "Invalid CSV file. The first column must be 'Labelname'. The Delimiter should be ',' or ';'.";
+                if (!headers.containsKey("KEY") || headers.get("KEY") != 0) {
+                    String error = "Invalid CSV file. The first column must be 'KEY'. The Delimiter should be ',' or ';'.";
                     LOG.error(error);
                     response.setStatus(400, error);
                     return;
                 }
 
-                headers.remove("Labelname");
+                headers.remove("KEY");
                 for (String language : headers.keySet()) {
                     languages.add(language);
                     translations.add(new ArrayList<>());
                 }
 
                 for (CSVRecord record : csvParser) {
-                    if (record.size() != languages.size() + 1) {  // +1 for the 'Labelname' column.
+                    if (record.size() != languages.size() + 1) {  // +1 for the 'KEY' column.
                         LOG.warn("Ignoring row with incorrect number of translations: " + record);
                         continue;
                     }
 
-                    String label = record.get("Labelname");
-                    labelNames.add(label);
+                    String label = record.get("KEY");
+                    KEYs.add(label);
 
                     for (String language : languages) {
                         int index = languages.indexOf(language);
@@ -115,7 +115,9 @@ public class ImportDictionaryServlet extends SlingAllMethodsServlet {
                         if (mvm != null) {
                             mvm.put("jcr:primaryType", "sling:MessageEntry");
                             mvm.put("sling:key", label);
-                            mvm.put("sling:message", translation);
+                            if (!translation.isBlank()){
+                                mvm.put("sling:message", translation);
+                            }
                         }
                     }
                 }
