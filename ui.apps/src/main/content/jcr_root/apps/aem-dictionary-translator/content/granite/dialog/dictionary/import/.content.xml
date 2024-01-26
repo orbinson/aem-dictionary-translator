@@ -40,7 +40,7 @@
                                                 autoStart="{Boolean}false"
                                                 mimeTypes="[text/csv]"
                                                 multiple="{Boolean}false"
-                                                name="./csvfile"
+                                                name="csvfile"
                                                 title="CSV File"
                                                 class="cq-droptarget"
                                                 sizeLimit="100000000"

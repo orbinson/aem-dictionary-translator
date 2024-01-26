@@ -22,84 +22,130 @@ class ImportDictionaryServletTest {
 
     private ImportDictionaryServlet importTranslation;
 
-    private AemContext context;
+    private AemContext context = new AemContext();
 
     @BeforeEach
-    void setUp(final AemContext ctx) {
-        context = ctx;
+    void setUp() {
         importTranslation = context.registerInjectActivateService(new ImportDictionaryServlet());
         context.create().resource("/content");
-    }
+    }//
 
     @Test
-    void testDoPost_successful() throws Exception {
+    void doPostOneLabel() throws Exception {
         MockSlingHttpServletRequest request = context.request();
         MockSlingHttpServletResponse response = context.response();
 
-        // Set request parameters
         request.addRequestParameter("dictionary", "/content");
-        String csvData = "Labelname,EN,NL\nhello,Hello,Hallo\n";
+        String csvData = "KEY,en,nl\nhello,Hello,Hallo\n";
         InputStream csvStream = new ByteArrayInputStream(csvData.getBytes());
-        request.addRequestParameter("./csvfile", csvStream.readAllBytes(), "text/csv", "translations.csv");
+        request.addRequestParameter("csvfile", csvStream.readAllBytes(), "text/csv", "translations.csv");
 
-        // Call servlet's doPost method
         importTranslation.doPost(request, response);
 
-        // Assert successful response
         assertEquals(200, response.getStatus());
 
-        // Get the resourceResolver and assert that the nodes have been created
         ResourceResolver resourceResolver = context.resourceResolver();
-        Resource enHelloResource = resourceResolver.getResource("/content/EN/hello");
+        Resource enHelloResource = resourceResolver.getResource("/content/en/hello");
         assertNotNull(enHelloResource);
 
-        // Check the value of the sling:message property
         ValueMap properties = enHelloResource.getValueMap();
         String message = properties.get("sling:message", String.class);
         assertEquals("Hello", message);
 
-        Resource nlHelloResource = resourceResolver.getResource("/content/NL/hello");
+        Resource nlHelloResource = resourceResolver.getResource("/content/nl/hello");
         assertNotNull(nlHelloResource);
 
-        // Check the value of the sling:message property for Dutch
         properties = nlHelloResource.getValueMap();
         message = properties.get("sling:message", String.class);
         assertEquals("Hallo", message);
     }
 
     @Test
-    void testDoPost_invalidCSV_WrongHeader() throws Exception {
+    void doPostMultipleLabels() throws Exception {
         MockSlingHttpServletRequest request = context.request();
         MockSlingHttpServletResponse response = context.response();
 
-        // Set request parameters
         request.addRequestParameter("dictionary", "/content");
-        String csvData = "WRONGHEADER,EN,NL\nhello,Hello,Hallo\n";
+        String csvData = "KEY,en,nl\nhello,Hello,Hallo\nday,Day,Dag\n";
         InputStream csvStream = new ByteArrayInputStream(csvData.getBytes());
-        request.addRequestParameter("./csvfile", csvStream.readAllBytes(), "text/csv", "translations.csv");
+        request.addRequestParameter("csvfile", csvStream.readAllBytes(), "text/csv", "translations.csv");
 
-        // Call servlet's doPost method
         importTranslation.doPost(request, response);
 
-        // Assert successful response
+        assertEquals(200, response.getStatus());
+
+        ResourceResolver resourceResolver = context.resourceResolver();
+        Resource enHelloResource = resourceResolver.getResource("/content/en/hello");
+        assertNotNull(enHelloResource);
+
+        ValueMap helloProperties = enHelloResource.getValueMap();
+        String message = helloProperties.get("sling:message", String.class);
+        assertEquals("Hello", message);
+
+        Resource nlHelloResource = resourceResolver.getResource("/content/nl/hello");
+        assertNotNull(nlHelloResource);
+
+        helloProperties = nlHelloResource.getValueMap();
+        message = helloProperties.get("sling:message", String.class);
+        assertEquals("Hallo", message);
+
+        Resource enDayResource = resourceResolver.getResource("/content/en/day");
+        assertNotNull(enDayResource);
+
+        ValueMap dayProperties = enDayResource.getValueMap();
+        String dayMessage = dayProperties.get("sling:message", String.class);
+        assertEquals("Day", dayMessage);
+
+        Resource nlDayResource = resourceResolver.getResource("/content/nl/day");
+        assertNotNull(nlDayResource);
+
+        dayProperties = nlDayResource.getValueMap();
+        dayMessage = dayProperties.get("sling:message", String.class);
+        assertEquals("Dag", dayMessage);
+    }
+
+    @Test
+    void doPostWrongHeader() throws Exception {
+        MockSlingHttpServletRequest request = context.request();
+        MockSlingHttpServletResponse response = context.response();
+
+        request.addRequestParameter("dictionary", "/content");
+        String csvData = "WRONGHEADER,en,nl\nhello,Hello,Hallo\n";
+        InputStream csvStream = new ByteArrayInputStream(csvData.getBytes());
+        request.addRequestParameter("csvfile", csvStream.readAllBytes(), "text/csv", "translations.csv");
+
+        importTranslation.doPost(request, response);
+
         assertEquals(400, response.getStatus());
     }
 
     @Test
-    void testDoPost_invalidCSV_UnsupportedDelimiter() throws Exception {
+    void doPostNoLabels() throws Exception {
         MockSlingHttpServletRequest request = context.request();
         MockSlingHttpServletResponse response = context.response();
 
-        // Set request parameters
         request.addRequestParameter("dictionary", "/content");
-        String csvData = "Labelname-EN-NL\nhello-Hello-Hallo\n";
+        String csvData = "KEY,en,nl\n";
         InputStream csvStream = new ByteArrayInputStream(csvData.getBytes());
-        request.addRequestParameter("./csvfile", csvStream.readAllBytes(), "text/csv", "translations.csv");
+        request.addRequestParameter("csvfile", csvStream.readAllBytes(), "text/csv", "translations.csv");
 
-        // Call servlet's doPost method
         importTranslation.doPost(request, response);
 
-        // Assert successful response
+        assertEquals(200, response.getStatus());
+    }
+
+    @Test
+    void doPostUnsupportedDelimiter() throws Exception {
+        MockSlingHttpServletRequest request = context.request();
+        MockSlingHttpServletResponse response = context.response();
+
+        request.addRequestParameter("dictionary", "/content");
+        String csvData = "KEY-en-nl\nhello-Hello-Hallo\n";
+        InputStream csvStream = new ByteArrayInputStream(csvData.getBytes());
+        request.addRequestParameter("csvfile", csvStream.readAllBytes(), "text/csv", "translations.csv");
+
+        importTranslation.doPost(request, response);
+
         assertEquals(400, response.getStatus());
     }
 }

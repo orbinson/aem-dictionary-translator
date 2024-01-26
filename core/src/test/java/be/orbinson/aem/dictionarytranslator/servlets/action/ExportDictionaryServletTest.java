@@ -11,10 +11,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 
 import javax.jcr.Session;
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
@@ -25,11 +23,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class ExportDictionaryServletTest {
 
     private final AemContext context = new AemContext();
-    private ExportDictionaryServlet exportTranslation;
+    private ExportDictionaryServlet exportDictionaryServlet;
 
     @BeforeEach
-    void setUp() throws Exception {
-        exportTranslation = new ExportDictionaryServlet();
+    void setUp() {
+        exportDictionaryServlet = new ExportDictionaryServlet();
 
         context.request().setMethod("POST");
         context.response().setCharacterEncoding("UTF-8");
@@ -40,49 +38,89 @@ class ExportDictionaryServletTest {
                 return Mockito.mock(Session.class);
             }
         });
-
-        createLanguageResource("en", "champion", "champion");
-        createLanguageResource("nl", "champion", "kampioen");
-        createLanguageResource("it", "champion", "campione");
-        context.resourceResolver().commit();
-
     }
 
     @Test
-    void doGet_ExportTranslationWithSemiColon_Success() throws ServletException, IOException {
+    void doPostWithSemiColon() throws Exception {
+        createLanguageResource("en", "champion", "champion");
+        createLanguageResource("nl", "champion", "kampioen");
+        createLanguageResource("it", "champion", "campione");
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("dictionary", "/test/path");
-        parameters.put("./delimiter", ";");
+        parameters.put("delimiter", ";");
         context.request().setParameterMap(parameters);
-        exportTranslation.doPost(context.request(), context.response());
+        exportDictionaryServlet.doPost(context.request(), context.response());
 
         String csvContent = context.response().getOutputAsString();
-        String expectedContent = "Labelname;en;nl;it\n" +
+        String expectedContent = "KEY;en;nl;it\n" +
                 "champion;champion;kampioen;campione\n";
         assertEquals(expectedContent, csvContent);
     }
 
     @Test
-    void doGet_ExportTranslation_ResourceNotFound() throws ServletException, IOException {
+    void doPostWithMultipleLabels() throws Exception {
+        createLanguageResource("en", "champion", "champion");
+        createLanguageResource("nl", "champion", "kampioen");
+        createLanguageResource("it", "champion", "campione");
+        createLanguageResource("en", "apple", "apple");
+        createLanguageResource("nl", "apple", "appel");
+        createLanguageResource("it", "apple", "pomme");
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("dictionary", "/test/path");
+        parameters.put("delimiter", ";");
+        context.request().setParameterMap(parameters);
+        exportDictionaryServlet.doPost(context.request(), context.response());
+
+        String csvContent = context.response().getOutputAsString();
+        String expectedContent = "KEY;en;nl;it\n" +
+                "champion;champion;kampioen;campione\n" +
+                "apple;apple;appel;pomme\n";
+        assertEquals(expectedContent, csvContent);
+    }
+
+    @Test
+    void doPostNoLabels() throws Exception {
+        createLanguageResource("en", "", "");
+        createLanguageResource("nl", "", "");
+        createLanguageResource("it", "", "");
+        context.request().setParameterMap(Map.of(
+                "dictionary", "/test/path",
+                "delimiter", ";"
+        ));
+        exportDictionaryServlet.doPost(context.request(), context.response());
+
+        String csvContent = context.response().getOutputAsString();
+        String expectedContent = "KEY;en;nl;it\n";
+        assertEquals(expectedContent, csvContent);
+    }
+
+    @Test
+    void doPostResourceNotFound() throws Exception {
+        createLanguageResource("en", "champion", "champion");
+        createLanguageResource("nl", "champion", "kampioen");
+        createLanguageResource("it", "champion", "campione");
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("dictionary", "/no/such/resource");
-        parameters.put("./delimiter", ";");
+        parameters.put("delimiter", ";");
         context.request().setParameterMap(parameters);
-        exportTranslation.doPost(context.request(), context.response());
+        exportDictionaryServlet.doPost(context.request(), context.response());
 
         assertEquals(HttpServletResponse.SC_NOT_FOUND, context.response().getStatus());
     }
 
     @Test
-    void doGet_ExportTranslationWithComma_Success() throws ServletException, IOException {
+    void doPostWithComma() throws Exception {
+        createLanguageResource("en", "champion", "champion");
+        createLanguageResource("nl", "champion", "kampioen");
+        createLanguageResource("it", "champion", "campione");
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("dictionary", "/test/path");
-        parameters.put("./delimiter", ",");
+        parameters.put("delimiter", ",");
         context.request().setParameterMap(parameters);
-        exportTranslation.doPost(context.request(), context.response());
+        exportDictionaryServlet.doPost(context.request(), context.response());
 
         String csvContent = context.response().getOutputAsString();
-        String expectedContent = "Labelname,en,nl,it\n" +
+        String expectedContent = "KEY,en,nl,it\n" +
                 "champion,champion,kampioen,campione\n";
         assertEquals(expectedContent, csvContent);
     }
@@ -92,18 +130,24 @@ class ExportDictionaryServletTest {
         Session session = resourceResolver.adaptTo(Session.class);
         if (session != null) {
             String path = "/test/path";
-            Map<String, Object> newFolderProperties = new HashMap<>();
-            newFolderProperties.put(JcrConstants.JCR_PRIMARYTYPE, "sling:Folder");
-            newFolderProperties.put("jcr:language", language);
-            newFolderProperties.put("jcr:basename", language);
-            newFolderProperties.put("sling:resourceType", "sling:Folder");
-            newFolderProperties.put(JcrConstants.JCR_MIXINTYPES, new String[]{"mix:language"});
-            Resource languageResource = resourceResolver.create(resourceResolver.getResource(path), language, newFolderProperties);
-            Map<String, Object> mvm = new HashMap<>();
-            mvm.put("jcr:primaryType", "sling:MessageEntry");
-            mvm.put("sling:key", label);
-            mvm.put("sling:message", translation);
-            resourceResolver.create(languageResource, label, mvm);
+            Resource languageResource;
+            if (resourceResolver.getResource(path + "/" + language) == null){
+                languageResource = resourceResolver.create(resourceResolver.getResource(path), language, Map.of(
+                        JcrConstants.JCR_PRIMARYTYPE, "sling:Folder",
+                        "jcr:language", language,
+                        "jcr:basename", language,
+                        "sling:resourceType", "sling:Folder",
+                        JcrConstants.JCR_MIXINTYPES, new String[]{"mix:language"}
+                ));
+            } else {
+                languageResource = resourceResolver.getResource(path + "/" + language);
+            }
+            resourceResolver.create(languageResource, label, Map.of(
+                    "jcr:primaryType", "sling:MessageEntry",
+                    "sling:key", label,
+                    "sling:message", translation
+            ));
         }
+        context.resourceResolver().commit();
     }
 }
