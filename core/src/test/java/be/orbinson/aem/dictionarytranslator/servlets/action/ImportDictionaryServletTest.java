@@ -14,6 +14,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
+import static be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants.SLING_MESSAGE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -28,7 +29,7 @@ class ImportDictionaryServletTest {
     void setUp() {
         importTranslation = context.registerInjectActivateService(new ImportDictionaryServlet());
         context.create().resource("/content");
-    }//
+    }
 
     @Test
     void doPostOneLabel() throws Exception {
@@ -49,14 +50,14 @@ class ImportDictionaryServletTest {
         assertNotNull(enHelloResource);
 
         ValueMap properties = enHelloResource.getValueMap();
-        String message = properties.get("sling:message", String.class);
+        String message = properties.get(SLING_MESSAGE, String.class);
         assertEquals("Hello", message);
 
         Resource nlHelloResource = resourceResolver.getResource("/content/nl/hello");
         assertNotNull(nlHelloResource);
 
         properties = nlHelloResource.getValueMap();
-        message = properties.get("sling:message", String.class);
+        message = properties.get(SLING_MESSAGE, String.class);
         assertEquals("Hallo", message);
     }
 
@@ -79,28 +80,28 @@ class ImportDictionaryServletTest {
         assertNotNull(enHelloResource);
 
         ValueMap helloProperties = enHelloResource.getValueMap();
-        String message = helloProperties.get("sling:message", String.class);
+        String message = helloProperties.get(SLING_MESSAGE, String.class);
         assertEquals("Hello", message);
 
         Resource nlHelloResource = resourceResolver.getResource("/content/nl/hello");
         assertNotNull(nlHelloResource);
 
         helloProperties = nlHelloResource.getValueMap();
-        message = helloProperties.get("sling:message", String.class);
+        message = helloProperties.get(SLING_MESSAGE, String.class);
         assertEquals("Hallo", message);
 
         Resource enDayResource = resourceResolver.getResource("/content/en/day");
         assertNotNull(enDayResource);
 
         ValueMap dayProperties = enDayResource.getValueMap();
-        String dayMessage = dayProperties.get("sling:message", String.class);
+        String dayMessage = dayProperties.get(SLING_MESSAGE, String.class);
         assertEquals("Day", dayMessage);
 
         Resource nlDayResource = resourceResolver.getResource("/content/nl/day");
         assertNotNull(nlDayResource);
 
         dayProperties = nlDayResource.getValueMap();
-        dayMessage = dayProperties.get("sling:message", String.class);
+        dayMessage = dayProperties.get(SLING_MESSAGE, String.class);
         assertEquals("Dag", dayMessage);
     }
 

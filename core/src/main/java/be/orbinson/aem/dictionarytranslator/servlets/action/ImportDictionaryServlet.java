@@ -28,18 +28,18 @@ import java.util.Map;
 
 import javax.servlet.Servlet;
 
-import static be.orbinson.aem.dictionarytranslator.servlets.action.ExportDictionaryServlet.JCR_BASENAME;
 import static be.orbinson.aem.dictionarytranslator.servlets.action.ExportDictionaryServlet.KEY_HEADER;
-import static be.orbinson.aem.dictionarytranslator.servlets.action.ExportDictionaryServlet.MIX_LANGUAGE;
-import static be.orbinson.aem.dictionarytranslator.servlets.action.ExportDictionaryServlet.SLING_FOLDER;
-import static be.orbinson.aem.dictionarytranslator.servlets.action.ExportDictionaryServlet.SLING_KEY;
-import static be.orbinson.aem.dictionarytranslator.servlets.action.ExportDictionaryServlet.SLING_MESSAGE;
-import static be.orbinson.aem.dictionarytranslator.servlets.action.ExportDictionaryServlet.SLING_MESSAGEENTRY;
-import static be.orbinson.aem.dictionarytranslator.servlets.action.ExportDictionaryServlet.SLING_RESOURCETYPE;
+import static be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants.JCR_BASENAME;
+import static be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants.MIX_LANGUAGE;
+import static be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants.SLING_MESSAGEENTRY;
+import static be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants.SLING_MESSAGE;
+import static be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants.SLING_KEY;
 import static com.day.cq.commons.jcr.JcrConstants.JCR_LANGUAGE;
 import static com.day.cq.commons.jcr.JcrConstants.JCR_MIXINTYPES;
 import static com.day.cq.commons.jcr.JcrConstants.JCR_PRIMARYTYPE;
 import static com.day.cq.commons.jcr.JcrConstants.NT_UNSTRUCTURED;
+import static org.apache.sling.jcr.resource.api.JcrResourceConstants.NT_SLING_FOLDER;
+import static org.apache.sling.jcr.resource.api.JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY;
 
 @Component(service = Servlet.class)
 @SlingServletResourceTypes(
@@ -146,7 +146,6 @@ public class ImportDictionaryServlet extends SlingAllMethodsServlet {
     private void createOrUpdateResource(String path, ResourceResolver resourceResolver, String language, String label, String translation) throws PersistenceException {
         Resource languageResource = resourceResolver.getResource(path + "/" + language);
         if (languageResource == null) {
-            // Create language resource if it doesn't exist
             languageResource = createLanguageResource(resourceResolver, path, language);
         }
 
@@ -158,10 +157,10 @@ public class ImportDictionaryServlet extends SlingAllMethodsServlet {
 
     private Resource createLanguageResource(ResourceResolver resourceResolver, String path, String language) throws PersistenceException {
         return resourceResolver.create(resourceResolver.getResource(path), language, Map.of(
-                JCR_PRIMARYTYPE, SLING_FOLDER,
+                JCR_PRIMARYTYPE, NT_SLING_FOLDER,
                 JCR_LANGUAGE, language,
                 JCR_BASENAME, language,
-                SLING_RESOURCETYPE, SLING_FOLDER,
+                SLING_RESOURCE_TYPE_PROPERTY, NT_SLING_FOLDER,
                 JCR_MIXINTYPES, new String[]{MIX_LANGUAGE}
         ));
     }

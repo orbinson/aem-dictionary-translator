@@ -17,6 +17,16 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
+import static be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants.JCR_BASENAME;
+import static be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants.MIX_LANGUAGE;
+import static be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants.SLING_KEY;
+import static be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants.SLING_MESSAGE;
+import static be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants.SLING_MESSAGEENTRY;
+import static org.apache.jackrabbit.JcrConstants.JCR_LANGUAGE;
+import static org.apache.jackrabbit.JcrConstants.JCR_MIXINTYPES;
+import static org.apache.jackrabbit.JcrConstants.JCR_PRIMARYTYPE;
+import static org.apache.sling.jcr.resource.api.JcrResourceConstants.NT_SLING_FOLDER;
+import static org.apache.sling.jcr.resource.api.JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @ExtendWith(AemContextExtension.class)
@@ -45,10 +55,10 @@ class ExportDictionaryServletTest {
         createLanguageResource("en", "champion", "champion");
         createLanguageResource("nl", "champion", "kampioen");
         createLanguageResource("it", "champion", "campione");
-        Map<String, Object> parameters = new HashMap<>();
-        parameters.put("dictionary", "/test/path");
-        parameters.put("delimiter", ";");
-        context.request().setParameterMap(parameters);
+        context.request().setParameterMap(Map.of(
+                "dictionary", "/test/path",
+                "delimiter", ";"
+        ));
         exportDictionaryServlet.doPost(context.request(), context.response());
 
         String csvContent = context.response().getOutputAsString();
@@ -65,10 +75,10 @@ class ExportDictionaryServletTest {
         createLanguageResource("en", "apple", "apple");
         createLanguageResource("nl", "apple", "appel");
         createLanguageResource("it", "apple", "pomme");
-        Map<String, Object> parameters = new HashMap<>();
-        parameters.put("dictionary", "/test/path");
-        parameters.put("delimiter", ";");
-        context.request().setParameterMap(parameters);
+        context.request().setParameterMap(Map.of(
+                "dictionary", "/test/path",
+                "delimiter", ";"
+        ));
         exportDictionaryServlet.doPost(context.request(), context.response());
 
         String csvContent = context.response().getOutputAsString();
@@ -99,10 +109,10 @@ class ExportDictionaryServletTest {
         createLanguageResource("en", "champion", "champion");
         createLanguageResource("nl", "champion", "kampioen");
         createLanguageResource("it", "champion", "campione");
-        Map<String, Object> parameters = new HashMap<>();
-        parameters.put("dictionary", "/no/such/resource");
-        parameters.put("delimiter", ";");
-        context.request().setParameterMap(parameters);
+        context.request().setParameterMap(Map.of(
+                "dictionary", "/no/such/resource",
+                "delimiter", ";"
+        ));
         exportDictionaryServlet.doPost(context.request(), context.response());
 
         assertEquals(HttpServletResponse.SC_NOT_FOUND, context.response().getStatus());
@@ -113,10 +123,10 @@ class ExportDictionaryServletTest {
         createLanguageResource("en", "champion", "champion");
         createLanguageResource("nl", "champion", "kampioen");
         createLanguageResource("it", "champion", "campione");
-        Map<String, Object> parameters = new HashMap<>();
-        parameters.put("dictionary", "/test/path");
-        parameters.put("delimiter", ",");
-        context.request().setParameterMap(parameters);
+        context.request().setParameterMap(Map.of(
+                "dictionary", "/test/path",
+                "delimiter", ","
+        ));
         exportDictionaryServlet.doPost(context.request(), context.response());
 
         String csvContent = context.response().getOutputAsString();
@@ -133,19 +143,19 @@ class ExportDictionaryServletTest {
             Resource languageResource;
             if (resourceResolver.getResource(path + "/" + language) == null){
                 languageResource = resourceResolver.create(resourceResolver.getResource(path), language, Map.of(
-                        JcrConstants.JCR_PRIMARYTYPE, "sling:Folder",
-                        "jcr:language", language,
-                        "jcr:basename", language,
-                        "sling:resourceType", "sling:Folder",
-                        JcrConstants.JCR_MIXINTYPES, new String[]{"mix:language"}
+                        JCR_PRIMARYTYPE, NT_SLING_FOLDER,
+                        JCR_LANGUAGE, language,
+                        JCR_BASENAME, language,
+                        SLING_RESOURCE_TYPE_PROPERTY, NT_SLING_FOLDER,
+                        JCR_MIXINTYPES, new String[]{MIX_LANGUAGE}
                 ));
             } else {
                 languageResource = resourceResolver.getResource(path + "/" + language);
             }
             resourceResolver.create(languageResource, label, Map.of(
-                    "jcr:primaryType", "sling:MessageEntry",
-                    "sling:key", label,
-                    "sling:message", translation
+                    JCR_PRIMARYTYPE, SLING_MESSAGEENTRY,
+                    SLING_KEY, label,
+                    SLING_MESSAGE, translation
             ));
         }
         context.resourceResolver().commit();

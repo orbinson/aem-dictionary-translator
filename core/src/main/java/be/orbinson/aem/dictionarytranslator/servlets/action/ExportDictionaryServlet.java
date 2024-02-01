@@ -19,6 +19,9 @@ import java.util.List;
 
 import javax.servlet.Servlet;
 
+import static be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants.SLING_KEY;
+import static be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants.SLING_MESSAGE;
+
 @Component(service = Servlet.class)
 @SlingServletResourceTypes(
         resourceSuperType = "granite/ui/components/coral/foundation/form",
@@ -27,13 +30,6 @@ import javax.servlet.Servlet;
 public class ExportDictionaryServlet extends SlingAllMethodsServlet {
 
     public static final String KEY_HEADER = "KEY";
-    public static final String SLING_KEY = "sling:key";
-    public static final String SLING_MESSAGE = "sling:message";
-    public static final String JCR_BASENAME = "jcr:basename";
-    public static final String SLING_MESSAGEENTRY = "sling:MessageEntry";
-    public static final String SLING_FOLDER = "sling:Folder";
-    public static final String SLING_RESOURCETYPE = "sling:resourceType";
-    public static final String MIX_LANGUAGE = "mix:language";
     private static final Logger LOG = LoggerFactory.getLogger(ExportDictionaryServlet.class);
     @Override
     public void doPost(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
@@ -106,7 +102,7 @@ public class ExportDictionaryServlet extends SlingAllMethodsServlet {
             csvRow.append(delimiter);
             String translation = correspondingLabelResource.getValueMap().get(SLING_MESSAGE, String.class);
             if (translation == null) {
-                translation = " ";
+                translation = " "; // This should be a space because appending an empty string will delete the whole string
             }
             csvRow.append(translation);
         }
