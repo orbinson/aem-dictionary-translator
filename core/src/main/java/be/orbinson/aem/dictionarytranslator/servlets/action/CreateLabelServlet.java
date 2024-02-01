@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory;
 import javax.servlet.Servlet;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 
 @Component(service = Servlet.class)
@@ -70,11 +71,13 @@ public class CreateLabelServlet extends SlingAllMethodsServlet {
 
         if (resource != null) {
             String path = resource.getPath();
-            resourceResolver.create(resource, JcrUtil.createValidName(key), Map.of(
-                    "jcr:primaryType", "sling:MessageEntry",
-                    "sling:key", key,
-                    "sling:message", message
-            ));
+            Map<String, Object> properties = new HashMap<>();
+            properties.put("jcr:primaryType", "sling:MessageEntry");
+            properties.put("sling:key", key);
+            if (!message.isBlank()){
+                properties.put("sling:message", message);
+            }
+            resourceResolver.create(resource, JcrUtil.createValidName(key), properties);
             LOG.trace("Create label with key '{}' and message '{}' on path '{}'", key, message, path);
             resourceResolver.commit();
         }

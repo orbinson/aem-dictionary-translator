@@ -88,8 +88,12 @@ public class UpdateLabelServlet extends SlingAllMethodsServlet {
                 if (labelResource != null) {
                     ValueMap valueMap = labelResource.adaptTo(ModifiableValueMap.class);
                     if (valueMap != null) {
-                        valueMap.put("sling:message", message);
-                        LOG.trace("Updated label with name '{}' and message '{}' on path '{}'", name, message, labelResource.getPath());
+                        if (message.isBlank()) {
+                            valueMap.remove("sling:message");
+                        } else {
+                            valueMap.put("sling:message", message);
+                            LOG.trace("Updated label with name '{}' and message '{}' on path '{}'", name, message, labelResource.getPath());
+                        }
                     }
                 }
                 resourceResolver.commit();
@@ -99,7 +103,7 @@ public class UpdateLabelServlet extends SlingAllMethodsServlet {
         }
     }
 
-    private Resource getLabelResource(ResourceResolver resourceResolver, Resource languageResource, String name) throws RepositoryException {
+    public Resource getLabelResource(ResourceResolver resourceResolver, Resource languageResource, String name) throws RepositoryException {
         if (languageResource.getChild(name) == null) {
             Session session = resourceResolver.adaptTo(Session.class);
             JcrUtil.createPath(languageResource.getPath() + "/" + name, "sling:MessageEntry", session);

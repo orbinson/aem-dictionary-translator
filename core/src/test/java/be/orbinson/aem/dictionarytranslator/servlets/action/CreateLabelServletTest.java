@@ -18,6 +18,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Map;
 
+import static junit.framework.Assert.assertNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -87,5 +88,31 @@ class CreateLabelServletTest {
         assertEquals("sling:MessageEntry", properties.get("jcr:primaryType"));
         assertEquals("greeting", properties.get("sling:key"));
         assertEquals("Hello", properties.get("sling:message"));
+    }
+
+    @Test
+    void doPostWithEmptyMessage() throws ServletException, IOException {
+        context.create().resource("/content/dictionaries/i18n/en", Map.of("jcr:language", "en"));
+        context.create().resource("/content/dictionaries/i18n/fr", Map.of("jcr:language", "fr"));
+
+        context.request().setMethod("POST");
+        context.request().setParameterMap(Map.of(
+                "dictionary", "/content/dictionaries/i18n",
+                "key", "greeting",
+                "en", "Hello",
+                "fr", ""
+        ));
+
+        servlet.service(context.request(), context.response());
+
+        assertEquals(HttpServletResponse.SC_OK, context.response().getStatus());
+
+        Resource resource = context.resourceResolver().getResource("/content/dictionaries/i18n/fr/greeting");
+        ValueMap properties = resource.getValueMap();
+        assertNotNull(resource);
+        assertEquals("sling:MessageEntry", properties.get("jcr:primaryType"));
+        assertEquals("greeting", properties.get("sling:key"));
+//        assertEquals("Hello", properties.get("sling:message"));
+        assertNull(properties.get("sling:message"));
     }
 }
