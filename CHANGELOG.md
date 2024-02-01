@@ -11,6 +11,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Dictionaries with .json files are no longer showed in dictionary
   list: [#8](https://github.com/orbinson/aem-dictionary-translator/pull/5)
+- Labels with no translation for a specific language no longer have a
+sling:message so the value won't be empty but will have a fallback
+from another language or the key itself: [#12](https://github.com/orbinson/aem-dictionary-translator/pull/12)
 
 ### Added
 

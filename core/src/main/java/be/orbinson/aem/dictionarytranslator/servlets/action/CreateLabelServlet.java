@@ -19,7 +19,13 @@ import org.slf4j.LoggerFactory;
 import javax.servlet.Servlet;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
+
+import static be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants.SLING_KEY;
+import static be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants.SLING_MESSAGE;
+import static be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants.SLING_MESSAGEENTRY;
+import static org.apache.jackrabbit.JcrConstants.JCR_PRIMARYTYPE;
 
 @Component(service = Servlet.class)
 @SlingServletResourceTypes(
@@ -70,11 +76,13 @@ public class CreateLabelServlet extends SlingAllMethodsServlet {
 
         if (resource != null) {
             String path = resource.getPath();
-            resourceResolver.create(resource, JcrUtil.createValidName(key), Map.of(
-                    "jcr:primaryType", "sling:MessageEntry",
-                    "sling:key", key,
-                    "sling:message", message
-            ));
+            Map<String, Object> properties = new HashMap<>();
+            properties.put(JCR_PRIMARYTYPE, SLING_MESSAGEENTRY);
+            properties.put(SLING_KEY, key);
+            if (!message.isBlank()){
+                properties.put(SLING_MESSAGE, message);
+            }
+            resourceResolver.create(resource, JcrUtil.createValidName(key), properties);
             LOG.trace("Create label with key '{}' and message '{}' on path '{}'", key, message, path);
             resourceResolver.commit();
         }
