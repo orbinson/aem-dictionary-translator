@@ -25,6 +25,9 @@ import javax.servlet.Servlet;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
+import static be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants.SLING_MESSAGE;
+import static be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants.SLING_MESSAGEENTRY;
+
 @Component(service = Servlet.class)
 @SlingServletResourceTypes(
         resourceSuperType = "granite/ui/components/coral/foundation/form",
@@ -89,9 +92,9 @@ public class UpdateLabelServlet extends SlingAllMethodsServlet {
                     ValueMap valueMap = labelResource.adaptTo(ModifiableValueMap.class);
                     if (valueMap != null) {
                         if (message.isBlank()) {
-                            valueMap.remove("sling:message");
+                            valueMap.remove(SLING_MESSAGE);
                         } else {
-                            valueMap.put("sling:message", message);
+                            valueMap.put(SLING_MESSAGE, message);
                             LOG.trace("Updated label with name '{}' and message '{}' on path '{}'", name, message, labelResource.getPath());
                         }
                     }
@@ -106,7 +109,7 @@ public class UpdateLabelServlet extends SlingAllMethodsServlet {
     public Resource getLabelResource(ResourceResolver resourceResolver, Resource languageResource, String name) throws RepositoryException {
         if (languageResource.getChild(name) == null) {
             Session session = resourceResolver.adaptTo(Session.class);
-            JcrUtil.createPath(languageResource.getPath() + "/" + name, "sling:MessageEntry", session);
+            JcrUtil.createPath(languageResource.getPath() + "/" + name, SLING_MESSAGEENTRY, session);
             session.save();
         }
         return languageResource.getChild(name);

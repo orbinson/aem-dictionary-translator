@@ -19,6 +19,10 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Map;
 
+import static be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants.SLING_KEY;
+import static be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants.SLING_MESSAGE;
+import static be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants.SLING_MESSAGEENTRY;
+import static org.apache.jackrabbit.JcrConstants.JCR_PRIMARYTYPE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -72,12 +76,12 @@ class UpdateLabelServletTest {
         context.create().resource("/content/dictionaries/i18n/en", Map.of("jcr:language", "en"));
         context.create().resource("/content/dictionaries/i18n/en/appel", Map.of(
                 "dictionary", "/content/dictionaries/i18n", "key", "appel",
-                "en", "apple", "sling:MessageEntry", "jcr:primaryType")
+                "en", "apple", SLING_MESSAGEENTRY, JCR_PRIMARYTYPE)
         );
         context.create().resource("/content/dictionaries/i18n/fr", Map.of("jcr:language", "fr"));
         context.create().resource("/content/dictionaries/i18n/en/appel", Map.of(
                 "dictionary", "/content/dictionaries/i18n", "key", "appel",
-                "fr", "pomme", "sling:MessageEntry", "jcr:primaryType")
+                "fr", "pomme", SLING_MESSAGEENTRY, JCR_PRIMARYTYPE)
         );
 
         context.request().setMethod("POST");
@@ -95,8 +99,8 @@ class UpdateLabelServletTest {
         Resource resource = context.resourceResolver().getResource("/content/dictionaries/i18n/en/appel");
         ValueMap properties = resource.getValueMap();
         assertNotNull(resource);
-        assertEquals("sling:MessageEntry", properties.get("jcr:primaryType"));
-        assertEquals("appel", properties.get("sling:key"));
-        assertEquals("Hello", properties.get("sling:message"));
+        assertEquals(SLING_MESSAGEENTRY, properties.get(JCR_PRIMARYTYPE));
+        assertEquals("appel", properties.get(SLING_KEY));
+        assertEquals("Hello", properties.get(SLING_MESSAGE));
     }
 }

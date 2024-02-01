@@ -22,6 +22,11 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import static be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants.SLING_KEY;
+import static be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants.SLING_MESSAGE;
+import static be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants.SLING_MESSAGEENTRY;
+import static org.apache.jackrabbit.JcrConstants.JCR_PRIMARYTYPE;
+
 @Component(service = Servlet.class)
 @SlingServletResourceTypes(
         resourceSuperType = "granite/ui/components/coral/foundation/form",
@@ -72,10 +77,10 @@ public class CreateLabelServlet extends SlingAllMethodsServlet {
         if (resource != null) {
             String path = resource.getPath();
             Map<String, Object> properties = new HashMap<>();
-            properties.put("jcr:primaryType", "sling:MessageEntry");
-            properties.put("sling:key", key);
+            properties.put(JCR_PRIMARYTYPE, SLING_MESSAGEENTRY);
+            properties.put(SLING_KEY, key);
             if (!message.isBlank()){
-                properties.put("sling:message", message);
+                properties.put(SLING_MESSAGE, message);
             }
             resourceResolver.create(resource, JcrUtil.createValidName(key), properties);
             LOG.trace("Create label with key '{}' and message '{}' on path '{}'", key, message, path);

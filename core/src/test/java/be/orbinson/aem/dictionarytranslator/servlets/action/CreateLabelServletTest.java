@@ -18,7 +18,11 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Map;
 
+import static be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants.SLING_KEY;
+import static be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants.SLING_MESSAGE;
+import static be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants.SLING_MESSAGEENTRY;
 import static junit.framework.Assert.assertNull;
+import static org.apache.jackrabbit.JcrConstants.JCR_PRIMARYTYPE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -85,9 +89,9 @@ class CreateLabelServletTest {
         Resource resource = context.resourceResolver().getResource("/content/dictionaries/i18n/en/greeting");
         ValueMap properties = resource.getValueMap();
         assertNotNull(resource);
-        assertEquals("sling:MessageEntry", properties.get("jcr:primaryType"));
-        assertEquals("greeting", properties.get("sling:key"));
-        assertEquals("Hello", properties.get("sling:message"));
+        assertEquals(SLING_MESSAGEENTRY, properties.get(JCR_PRIMARYTYPE));
+        assertEquals("greeting", properties.get(SLING_KEY));
+        assertEquals("Hello", properties.get(SLING_MESSAGE));
     }
 
     @Test
@@ -110,9 +114,8 @@ class CreateLabelServletTest {
         Resource resource = context.resourceResolver().getResource("/content/dictionaries/i18n/fr/greeting");
         ValueMap properties = resource.getValueMap();
         assertNotNull(resource);
-        assertEquals("sling:MessageEntry", properties.get("jcr:primaryType"));
-        assertEquals("greeting", properties.get("sling:key"));
-//        assertEquals("Hello", properties.get("sling:message"));
-        assertNull(properties.get("sling:message"));
+        assertEquals(SLING_MESSAGEENTRY, properties.get(JCR_PRIMARYTYPE));
+        assertEquals("greeting", properties.get(SLING_KEY));
+        assertNull(properties.get(SLING_MESSAGE));
     }
 }
