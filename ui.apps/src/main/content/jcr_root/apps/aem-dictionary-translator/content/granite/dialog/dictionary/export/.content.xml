@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jcr:root
+        xmlns:sling="http://sling.apache.org/jcr/sling/1.0"
+        xmlns:jcr="http://www.jcp.org/jcr/1.0" xmlns:nt="http://www.jcp.org/jcr/nt/1.0"
+        xmlns:granite="http://www.adobe.com/jcr/granite/1.0"
+        jcr:primaryType="nt:unstructured"
+        sling:resourceType="granite/ui/components/coral/foundation/dialog"
+        jcr:title="Export Dictionary">
+    <items jcr:primaryType="nt:unstructured">
+        <properties
+                jcr:primaryType="nt:unstructured"
+                sling:resourceType="granite/ui/components/coral/foundation/container">
+            <items jcr:primaryType="nt:unstructured">
+                <columns
+                        jcr:primaryType="nt:unstructured"
+                        sling:resourceType="granite/ui/components/coral/foundation/fixedcolumns">
+                    <items jcr:primaryType="nt:unstructured">
+                        <column
+                                jcr:primaryType="nt:unstructured"
+                                sling:resourceType="granite/ui/components/coral/foundation/container">
+                            <items jcr:primaryType="nt:unstructured">
+                                <form
+                                        jcr:primaryType="nt:unstructured"
+                                        sling:resourceType="aem-dictionary-translator/servlet/action/export-dictionary"
+                                        granite:id="export-dictionary-form"
+                                        action="${requestPathInfo.resourcePath}?dictionary=${param.dictionary}"
+                                        foundationForm="true"
+                                        method="post"
+                                        style="vertical"
+                                        async="false">
+                                    <successresponse
+                                            jcr:primaryType="nt:unstructured"
+                                            jcr:title="Exported selected dictionary"
+                                            sling:resourceType="granite/ui/components/coral/foundation/form/responses/reload"/>                                    <items jcr:primaryType="nt:unstructured">
+                                        <linkTarget
+                                                jcr:primaryType="nt:unstructured"
+                                                sling:resourceType="granite/ui/components/coral/foundation/form/select"
+                                                fieldLabel="Select the desired CSV delimiter:"
+                                                name="delimiter">
+                                            <items jcr:primaryType="nt:unstructured">
+                                                <semicolon
+                                                        jcr:primaryType="nt:unstructured"
+                                                        selected="{Boolean}true"
+                                                        text="semicolon [ ; ]"
+                                                        value=";"/>
+                                                <comma
+                                                        jcr:primaryType="nt:unstructured"
+                                                        text="comma [ , ]"
+                                                        value=","/>
+                                            </items>
+                                        </linkTarget>
+                                    </items>
+                                </form>
+                            </items>
+                        </column>
+                    </items>
+                </columns>
+            </items>
+        </properties>
+    </items>
+    <footer jcr:primaryType="nt:unstructured">
+        <close
+                jcr:primaryType="nt:unstructured"
+                sling:resourceType="granite/ui/components/coral/foundation/button"
+                text="Cancel">
+            <parentConfig
+                    jcr:primaryType="nt:unstructured"
+                    close="true"/>
+        </close>
+        <submit
+                jcr:primaryType="nt:unstructured"
+                sling:resourceType="granite/ui/components/coral/foundation/button"
+                granite:class="foundation-validation-bind"
+                text="Export"
+                type="submit"
+                variant="primary"
+                formId="export-dictionary-form">
+        <parentConfig
+                jcr:primaryType="nt:unstructured"
+                close="true"/>
+        </submit>
+    </footer>
+</jcr:root>

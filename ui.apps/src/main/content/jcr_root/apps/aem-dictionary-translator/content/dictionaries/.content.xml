@@ -84,6 +84,32 @@
                     <data jcr:primaryType="nt:unstructured"
                           src.uritemplate="/apps/aem-dictionary-translator/content/granite/dialog/dictionary/language/delete.html{+item}"/>
                 </delete-language>
+                <import
+                        jcr:primaryType="nt:unstructured"
+                        sling:resourceType="granite/ui/components/coral/foundation/collection/action"
+                        activeSelectionCount="single"
+                        action="foundation.dialog"
+                        actionConfigName="granite/ui/shell/actions/import"
+                        command="i"
+                        icon="import"
+                        variant="actionBar"
+                        text="Import">
+                    <data jcr:primaryType="nt:unstructured"
+                          src.uritemplate="/apps/aem-dictionary-translator/content/granite/dialog/dictionary/import.html?dictionary={+item}"/>
+                </import>
+                <export
+                        jcr:primaryType="nt:unstructured"
+                        sling:resourceType="granite/ui/components/coral/foundation/collection/action"
+                        activeSelectionCount="single"
+                        action="foundation.dialog"
+                        actionConfigName="granite/ui/shell/actions/export"
+                        command="x"
+                        icon="export"
+                        variant="actionBar"
+                        text="Export">
+                    <data jcr:primaryType="nt:unstructured"
+                          src.uritemplate="/apps/aem-dictionary-translator/content/granite/dialog/dictionary/export.html?dictionary={+item}"/>
+                </export>
                 <delete
                         jcr:primaryType="nt:unstructured"
                         sling:resourceType="granite/ui/components/coral/foundation/collection/action"

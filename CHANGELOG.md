@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Publish specific labels in a dictionary: [#8](https://github.com/orbinson/aem-dictionary-translator/pull/5)
+- Export/Import CSV files of/to dictionaries: [#10](https://github.com/orbinson/aem-dictionary-translator/issues/10)
 
 ## [1.0.6] - 2023-09-12
 
