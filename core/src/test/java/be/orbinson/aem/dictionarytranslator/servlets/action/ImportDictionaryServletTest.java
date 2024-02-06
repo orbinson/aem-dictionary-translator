@@ -15,6 +15,7 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
 import static be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants.SLING_MESSAGE;
+import static org.junit.Assert.assertNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -29,6 +30,8 @@ class ImportDictionaryServletTest {
     void setUp() {
         importTranslation = context.registerInjectActivateService(new ImportDictionaryServlet());
         context.create().resource("/content");
+        context.create().resource("/content/en");
+        context.create().resource("/content/nl");
     }
 
     @Test
@@ -59,6 +62,28 @@ class ImportDictionaryServletTest {
         properties = nlHelloResource.getValueMap();
         message = properties.get(SLING_MESSAGE, String.class);
         assertEquals("Hallo", message);
+    }
+
+    @Test
+    void doPostOneLabelWrongLanguage() throws Exception {
+        MockSlingHttpServletRequest request = context.request();
+        MockSlingHttpServletResponse response = context.response();
+
+        request.addRequestParameter("dictionary", "/content");
+        String csvData = "KEY,en,fr\nhello,Hello,Bonjour\n";
+        InputStream csvStream = new ByteArrayInputStream(csvData.getBytes());
+        request.addRequestParameter("csvfile", csvStream.readAllBytes(), "text/csv", "translations.csv");
+
+        importTranslation.doPost(request, response);
+
+        assertEquals(400, response.getStatus());
+
+        ResourceResolver resourceResolver = context.resourceResolver();
+        Resource enHelloResource = resourceResolver.getResource("/content/en/hello");
+        assertNull(enHelloResource);
+
+        Resource nlHelloResource = resourceResolver.getResource("/content/fr/hello");
+        assertNull(nlHelloResource);
     }
 
     @Test
