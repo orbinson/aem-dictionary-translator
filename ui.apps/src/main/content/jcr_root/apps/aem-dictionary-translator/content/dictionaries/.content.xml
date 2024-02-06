@@ -55,10 +55,6 @@
                         text="Publish">
                     <data jcr:primaryType="nt:unstructured"
                           src.uritemplate="/apps/aem-dictionary-translator/content/granite/dialog/dictionary/publish.html?dictionary={+item}"/>
-                    <granite:rendercondition
-                            jcr:primaryType="nt:unstructured"
-                            sling:resourceType="granite/ui/components/coral/foundation/renderconditions/simple"
-                            expression="${granite:contains(granite:relativeParent(requestPathInfo.suffix, 0), '/content')}"/>
                 </publish>
                 <create-language
                         jcr:primaryType="nt:unstructured"
