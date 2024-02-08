@@ -7,12 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Changed
+### Added
+
+- CSV files with other languages than the dictionary currently has will not be imported.
+
+### Fixed
 
 - Resolved errors occurring when publishing labels: [#13](https://github.com/orbinson/aem-dictionary-translator/issues/13)
 - Reactivated publish button for dictionaries: [#13](https://github.com/orbinson/aem-dictionary-translator/issues/13)
-
-### Added
 
 ## [1.1.0] - 2024-02-01
 
