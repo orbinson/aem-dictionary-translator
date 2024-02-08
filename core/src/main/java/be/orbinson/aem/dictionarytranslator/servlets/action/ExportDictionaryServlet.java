@@ -83,24 +83,40 @@ public class ExportDictionaryServlet extends SlingAllMethodsServlet {
     }
 
     private void writeCsvRows(PrintWriter writer, RequestParameter delimiter, List<Resource> languageResources) {
-        Resource firstLanguageResource = languageResources.get(0);
-
-        Iterator<Resource> labelChildren = firstLanguageResource.listChildren();
-        while (labelChildren.hasNext()) {
-            Resource labelResource = labelChildren.next();
-            StringBuilder csvRow = buildCsvRow(labelResource, delimiter, languageResources);
-            writer.println(csvRow);
-            LOG.debug("CSV row: " + csvRow);
+        List<String> labels = new ArrayList<>();
+        Resource currentLanguageResource = null;
+        if (!languageResources.isEmpty()) {
+            for (int i = 0; i < languageResources.size(); i++) {
+                currentLanguageResource = languageResources.get(i);
+                Iterator<Resource> labelChildren = currentLanguageResource.listChildren();
+                while (labelChildren.hasNext()) {
+                    Resource labelResource = labelChildren.next();
+                    if (!labels.contains(labelResource.getName())){
+                        StringBuilder csvRow = buildCsvRow(labelResource, delimiter, languageResources);
+                        writer.println(csvRow);
+                        labels.add(labelResource.getName());
+                        LOG.debug("CSV row: " + csvRow);
+                    }
+                }
+            }
         }
     }
 
     private StringBuilder buildCsvRow(Resource labelResource, RequestParameter delimiter, List<Resource> languageResources) {
-        StringBuilder csvRow = new StringBuilder(labelResource.getValueMap().get(SLING_KEY, String.class));
+        StringBuilder csvRow;
+        if (labelResource.getValueMap().containsKey(SLING_KEY)) {
+            csvRow = new StringBuilder(labelResource.getValueMap().get(SLING_KEY, String.class));
+        } else {
+            csvRow = new StringBuilder(labelResource.getName());
+        }
 
         for (Resource languageResource : languageResources) {
             Resource correspondingLabelResource = languageResource.getChild(labelResource.getName());
             csvRow.append(delimiter);
-            String translation = correspondingLabelResource.getValueMap().get(SLING_MESSAGE, String.class);
+            String translation = " ";
+            if (correspondingLabelResource != null) {
+                translation = correspondingLabelResource.getValueMap().get(SLING_MESSAGE, String.class);
+            }
             if (translation == null) {
                 translation = " "; // This should be a space because appending an empty string will delete the whole string
             }
