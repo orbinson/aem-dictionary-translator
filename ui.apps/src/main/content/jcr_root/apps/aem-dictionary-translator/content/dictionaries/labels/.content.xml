@@ -78,9 +78,9 @@
                         jcr:primaryType="nt:unstructured"
                         sling:resourceType="granite/ui/components/coral/foundation/collection/action"
                         action="foundation.dialog"
-                        actionConfigName="granite/ui/shell/actions/publish"
                         target="#translation-listview"
                         icon="publish"
+                        command="p"
                         variant="actionBar"
                         text="Publish">
                     <data jcr:primaryType="nt:unstructured"
