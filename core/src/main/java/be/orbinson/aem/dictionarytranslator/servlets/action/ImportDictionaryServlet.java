@@ -1,5 +1,6 @@
 package be.orbinson.aem.dictionarytranslator.servlets.action;
 
+import org.apache.commons.compress.utils.Lists;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
@@ -24,7 +25,6 @@ import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -87,7 +87,7 @@ public class ImportDictionaryServlet extends SlingAllMethodsServlet {
 
             headers.remove(KEY_HEADER);
             Resource dictionary = resourceResolver.getResource(path);
-            Iterator<Resource> knownLanguages = dictionary.listChildren();
+            List<Resource> knownLanguages = Lists.newArrayList(dictionary.listChildren());
             initializeLanguageData(headers, languages, translations, knownLanguages, response);
 
             for (CSVRecord record : csvParser) {
@@ -121,18 +121,22 @@ public class ImportDictionaryServlet extends SlingAllMethodsServlet {
         }
     }
 
-    private void initializeLanguageData(Map<String, Integer> headers, List<String> languages, List<List<String>> translations, Iterator<Resource> knownLanguages, SlingHttpServletResponse response) {
+    private void initializeLanguageData(Map<String, Integer> headers, List<String> languages, List<List<String>> translations, List<Resource> knownLanguages, SlingHttpServletResponse response) {
         for (String language : headers.keySet()) {
-            while (knownLanguages.hasNext()){
-                if (knownLanguages.next().getName().equals(language)){
+            boolean hasMatch = true;
+            for (Resource knownLanguage : knownLanguages){
+             hasMatch = false;
+                if (knownLanguage.getName().equals(language)){
                     languages.add(language);
                     translations.add(new ArrayList<>());
+                    hasMatch = true;
                     break;
-                } else {
-                    String error = "Incorrect CSV file, please only add languages that exist in the dictionary";
-                    LOG.warn(error);
-                    response.setStatus(400, error);
                 }
+            }
+            if (!hasMatch) {
+                String error = "Incorrect CSV file, please only add languages that exist in the dictionary";
+                LOG.warn(error);
+                response.setStatus(400, error);
             }
         }
     }
