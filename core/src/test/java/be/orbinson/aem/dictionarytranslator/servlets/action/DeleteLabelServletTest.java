@@ -3,14 +3,19 @@ package be.orbinson.aem.dictionarytranslator.servlets.action;
 import be.orbinson.aem.dictionarytranslator.services.DictionaryService;
 import be.orbinson.aem.dictionarytranslator.services.impl.DictionaryServiceImpl;
 import com.adobe.granite.translation.api.TranslationConfig;
+import com.day.cq.replication.ReplicationActionType;
+import com.day.cq.replication.ReplicationException;
+import com.day.cq.replication.Replicator;
 import io.wcm.testing.mock.aem.junit5.AemContext;
 import io.wcm.testing.mock.aem.junit5.AemContextExtension;
+import org.apache.sling.testing.mock.sling.ResourceResolverType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import javax.jcr.Session;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -19,11 +24,15 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 @ExtendWith({AemContextExtension.class, MockitoExtension.class})
 class DeleteLabelServletTest {
 
-    private final AemContext context = new AemContext();
+    private final AemContext context = new AemContext(ResourceResolverType.JCR_MOCK);
 
     DeleteLabelServlet servlet;
 
@@ -33,9 +42,14 @@ class DeleteLabelServletTest {
     @Mock
     TranslationConfig translationConfig;
 
+    @Mock
+    Replicator replicator;
+
     @BeforeEach
     void beforeEach() {
         translationConfig = context.registerService(TranslationConfig.class, translationConfig);
+        replicator = context.registerService(Replicator.class, replicator);
+
         dictionaryService = context.registerInjectActivateService(new DictionaryServiceImpl());
 
         servlet = context.registerInjectActivateService(new DeleteLabelServlet());
@@ -55,7 +69,7 @@ class DeleteLabelServletTest {
     void deleteLabelWithNonExistingKey() throws ServletException, IOException {
         context.request().setMethod("POST");
         context.request().setParameterMap(Map.of(
-                "labels", "/content/dictionaries/i18n/en/apple"
+                DeleteLabelServlet.LABELS_PARAM, "/content/dictionaries/i18n/en/apple"
         ));
 
         servlet.service(context.request(), context.response());
@@ -64,18 +78,22 @@ class DeleteLabelServletTest {
     }
 
     @Test
-    void deleteExistingLabel() throws ServletException, IOException {
+    void deleteExistingLabel() throws ServletException, IOException, ReplicationException {
         context.create().resource("/content/dictionaries/i18n/appel");
         context.create().resource("/content/dictionaries/i18n/peer");
         context.request().setMethod("POST");
         context.request().setParameterMap(Map.of(
-                "labels", new String[]{"/content/dictionaries/i18n/appel"}
+                DeleteLabelServlet.LABELS_PARAM, new String[]{"/content/dictionaries/i18n/appel"}
         ));
 
         servlet.service(context.request(), context.response());
 
         assertNull(context.resourceResolver().getResource("/content/dictionaries/i18n/appel"));
+        verify(replicator).replicate(any(Session.class), eq(ReplicationActionType.DEACTIVATE), eq("/content/dictionaries/i18n/appel"));
+
         assertNotNull(context.resourceResolver().getResource("/content/dictionaries/i18n/peer"));
+        verify(replicator,times(0)).replicate(any(Session.class), eq(ReplicationActionType.DEACTIVATE), eq("/content/dictionaries/i18n/peer"));
+
         assertEquals(HttpServletResponse.SC_OK, context.response().getStatus());
     }
 
@@ -86,7 +104,7 @@ class DeleteLabelServletTest {
         context.create().resource("/content/dictionaries/i18n/en/framboos");
         context.request().setMethod("POST");
         context.request().setParameterMap(Map.of(
-                "labels", new String[]{"/content/dictionaries/i18n/en/appel,/content/dictionaries/i18n/en/peer"}
+                DeleteLabelServlet.LABELS_PARAM, new String[]{"/content/dictionaries/i18n/en/appel,/content/dictionaries/i18n/en/peer"}
         ));
 
         servlet.service(context.request(), context.response());
@@ -102,7 +120,7 @@ class DeleteLabelServletTest {
         context.create().resource("/content/dictionaries/i18n/en/appel");
         context.request().setMethod("POST");
         context.request().setParameterMap(Map.of(
-                "labels", new String[]{"/content/dictionaries/i18n/fr/peer"}
+                DeleteLabelServlet.LABELS_PARAM, new String[]{"/content/dictionaries/i18n/fr/peer"}
         ));
 
         servlet.service(context.request(), context.response());

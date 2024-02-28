@@ -9,7 +9,6 @@ import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.servlets.SlingAllMethodsServlet;
-import org.apache.sling.distribution.Distributor;
 import org.apache.sling.servlets.annotations.SlingServletResourceTypes;
 import org.jetbrains.annotations.NotNull;
 import org.osgi.service.component.annotations.Component;
@@ -31,9 +30,6 @@ import java.io.IOException;
 public class ReplicateDictionaryServlet extends SlingAllMethodsServlet {
 
     private static final Logger LOG = LoggerFactory.getLogger(ReplicateDictionaryServlet.class);
-
-    @Reference
-    private transient Distributor distributor;
 
     @Reference
     private transient Replicator replicator;
