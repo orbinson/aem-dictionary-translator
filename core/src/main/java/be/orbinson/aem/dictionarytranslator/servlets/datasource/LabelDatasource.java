@@ -72,6 +72,15 @@ public class LabelDatasource extends SlingSafeMethodsServlet {
         resourceList.add(new ValueMapResource(resourceResolver, "", "granite/ui/components/coral/foundation/form/textfield", valueMap));
     }
 
+    private static void createHiddenFieldResource(ResourceResolver resourceResolver, List<Resource> resourceList, String key, String value) {
+        ValueMap valueMap = new ValueMapDecorator(Map.of(
+                "fieldLabel", key,
+                "name", key,
+                "value", value)
+        );
+        resourceList.add(new ValueMapResource(resourceResolver, "", "granite/ui/components/coral/foundation/form/hidden", valueMap));
+    }
+
     @Override
     protected void doGet(@NotNull SlingHttpServletRequest request, @NotNull SlingHttpServletResponse response) {
         List<Resource> resourceList = new ArrayList<>();
@@ -96,8 +105,10 @@ public class LabelDatasource extends SlingSafeMethodsServlet {
         if (resource != null) {
             ValueMap properties = resource.getValueMap();
             String[] languages = properties.get("languages", String[].class);
+            String key = properties.get("key", String.class);
 
-            createTextFieldResource(resourceResolver, resourceList, "Label", properties.get("key", String.class), false, true);
+            createTextFieldResource(resourceResolver, resourceList, "Label", key, false, true);
+            createHiddenFieldResource(resourceResolver, resourceList, "key", key);
             if (languages != null) {
                 for (String language : languages) {
                     String label = properties.get(language, StringUtils.EMPTY);

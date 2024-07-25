@@ -25,6 +25,7 @@ import javax.servlet.Servlet;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
+import static be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants.SLING_KEY;
 import static be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants.SLING_MESSAGE;
 import static be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants.SLING_MESSAGEENTRY;
 
@@ -69,6 +70,7 @@ public class UpdateLabelServlet extends SlingAllMethodsServlet {
     }
 
     private void updateLabel(SlingHttpServletRequest request, ResourceResolver resourceResolver, Resource resource) throws DictionaryTranslatorException {
+        String key = request.getParameter("key");
         String dictionaryPath = resource.getValueMap().get("dictionaryPath", String.class);
         if (StringUtils.isNotBlank(dictionaryPath)) {
             Resource dictionaryResource = resourceResolver.getResource(dictionaryPath);
@@ -76,14 +78,14 @@ public class UpdateLabelServlet extends SlingAllMethodsServlet {
             String[] languages = resource.getValueMap().get("languages", new String[0]);
             for (String language : languages) {
                 String message = request.getParameter(language);
-                addMessage(resourceResolver, dictionaryResource, language, name, message);
+                addMessage(resourceResolver, dictionaryResource, language, name, key, message);
             }
         } else {
             throw new DictionaryTranslatorException("Could not find dictionary path");
         }
     }
 
-    private void addMessage(ResourceResolver resourceResolver, Resource dictionary, String language, String name, String message) {
+    private void addMessage(ResourceResolver resourceResolver, Resource dictionary, String language, String name, String key, String message) {
         Resource languageResource = dictionary.getChild(language);
         if (languageResource != null) {
             try {
@@ -95,6 +97,7 @@ public class UpdateLabelServlet extends SlingAllMethodsServlet {
                             valueMap.remove(SLING_MESSAGE);
                         } else {
                             valueMap.put(SLING_MESSAGE, message);
+                            addKeyIfMissing(valueMap, key);
                             LOG.trace("Updated label with name '{}' and message '{}' on path '{}'", name, message, labelResource.getPath());
                         }
                     }
@@ -103,6 +106,12 @@ public class UpdateLabelServlet extends SlingAllMethodsServlet {
             } catch (PersistenceException | RepositoryException e) {
                 LOG.error("Unable to update label for name '{}'", name);
             }
+        }
+    }
+
+    private void addKeyIfMissing(ValueMap valueMap, String key) {
+        if (!valueMap.containsKey(SLING_KEY) && StringUtils.isNotBlank(key)) {
+            valueMap.put(SLING_KEY, key);
         }
     }
 
