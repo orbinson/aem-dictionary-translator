@@ -7,20 +7,16 @@ import org.apache.commons.csv.CSVRecord;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.request.RequestParameter;
-import org.apache.sling.api.resource.ModifiableValueMap;
-import org.apache.sling.api.resource.PersistenceException;
-import org.apache.sling.api.resource.Resource;
-import org.apache.sling.api.resource.ResourceResolver;
+import org.apache.sling.api.resource.*;
 import org.apache.sling.api.servlets.SlingAllMethodsServlet;
 import org.apache.sling.servlets.annotations.SlingServletResourceTypes;
 import org.apache.tika.io.IOUtils;
+import org.jetbrains.annotations.NotNull;
 import org.osgi.service.component.annotations.Component;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+import javax.servlet.Servlet;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -28,27 +24,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.servlet.Servlet;
-
 import static be.orbinson.aem.dictionarytranslator.servlets.action.ExportDictionaryServlet.KEY_HEADER;
-import static be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants.JCR_BASENAME;
-import static be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants.MIX_LANGUAGE;
-import static be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants.SLING_MESSAGEENTRY;
-import static be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants.SLING_MESSAGE;
-import static be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants.SLING_KEY;
-import static com.day.cq.commons.jcr.JcrConstants.JCR_LANGUAGE;
-import static com.day.cq.commons.jcr.JcrConstants.JCR_MIXINTYPES;
-import static com.day.cq.commons.jcr.JcrConstants.JCR_PRIMARYTYPE;
+import static be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants.*;
+import static com.day.cq.commons.jcr.JcrConstants.*;
 import static org.apache.sling.jcr.resource.api.JcrResourceConstants.NT_SLING_FOLDER;
 import static org.apache.sling.jcr.resource.api.JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY;
 
 @Component(service = Servlet.class)
-@SlingServletResourceTypes(
-        resourceSuperType = "granite/ui/components/coral/foundation/form",
-        resourceTypes = "aem-dictionary-translator/servlet/action/import-dictionary",
-        methods = "POST")
+@SlingServletResourceTypes(resourceSuperType = "granite/ui/components/coral/foundation/form", resourceTypes = "aem-dictionary-translator/servlet/action/import-dictionary", methods = "POST")
 public class ImportDictionaryServlet extends SlingAllMethodsServlet {
-    private static final Logger LOG = LoggerFactory.getLogger(ImportDictionaryServlet.class);
 
     @Override
     public void doPost(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
@@ -59,7 +43,7 @@ public class ImportDictionaryServlet extends SlingAllMethodsServlet {
             try {
                 processCsvFile(request, response, path, csvfile.getInputStream());
             } catch (IOException e) {
-                handleCsvProcessingError(response, e);
+                response.sendError(400, "Error while importing CSV file: " + e.getMessage());
             }
         }
     }
@@ -71,62 +55,55 @@ public class ImportDictionaryServlet extends SlingAllMethodsServlet {
 
         ResourceResolver resourceResolver = request.getResourceResolver();
 
-        try (InputStreamReader reader = new InputStreamReader(csvContent)) {
-            String result = IOUtils.toString(csvContent, String.valueOf(StandardCharsets.UTF_8));
-            csvContent.reset();
+        String result = IOUtils.toString(csvContent, String.valueOf(StandardCharsets.UTF_8));
 
-            CSVFormat format = determineCsvFormat(result, response);
-            if (format == null) {
-                return;
-            }
+        CSVFormat format = determineCsvFormat(result);
+        if (format == null) {
+            return;
+        }
 
-            CSVParser csvParser = new CSVParser(reader, format);
+        try (CSVParser csvParser = CSVParser.parse(result, format)) {
             Map<String, Integer> headers = csvParser.getHeaderMap();
 
             validateCsvHeaders(response, headers);
 
             headers.remove(KEY_HEADER);
             Resource dictionary = resourceResolver.getResource(path);
-            List<Resource> knownLanguages = Lists.newArrayList(dictionary.listChildren());
-            initializeLanguageData(headers, languages, translations, knownLanguages, response);
+            if (dictionary != null) {
+                List<Resource> knownLanguages = Lists.newArrayList(dictionary.listChildren());
+                initializeLanguageData(headers, languages, translations, knownLanguages, response);
 
-            for (CSVRecord record : csvParser) {
-                processCsvRecord(path, languages, resourceResolver, keys, translations, record);
+                for (CSVRecord record : csvParser) {
+                    processCsvRecord(path, languages, resourceResolver, keys, translations, record);
+                }
+
+                resourceResolver.commit();
             }
-
-            resourceResolver.commit();
-        } catch (IOException e) {
-            handleCsvProcessingError(response, e);
         }
     }
 
-    private CSVFormat determineCsvFormat(String csvContent, SlingHttpServletResponse response) {
+    private CSVFormat determineCsvFormat(String csvContent) throws IOException {
         if (csvContent.contains(";")) {
             return CSVFormat.newFormat(';').withFirstRecordAsHeader();
         } else if (csvContent.contains(",")) {
             return CSVFormat.DEFAULT.withFirstRecordAsHeader();
         } else {
-            String error = "Invalid CSV file. The Delimiter should be ',' or ';'.";
-            LOG.error(error);
-            response.setStatus(400, error);
-            return null;
+            throw new IOException("Invalid CSV file. The Delimiter should be ',' or ';'.");
         }
     }
 
-    private void validateCsvHeaders(SlingHttpServletResponse response, Map<String, Integer> headers) {
+    private void validateCsvHeaders(SlingHttpServletResponse response, Map<String, Integer> headers) throws IOException {
         if (!headers.containsKey(KEY_HEADER) || headers.get(KEY_HEADER) != 0) {
-            String error = MessageFormat.format("Invalid CSV file. The first column must be {0}. The Delimiter should be ',' or ';'.", KEY_HEADER);
-            LOG.error(error);
-            response.setStatus(400, error);
+            throw new IOException(MessageFormat.format("Invalid CSV file. The first column must be {0}. The Delimiter should be ',' or ';'.", KEY_HEADER));
         }
     }
 
-    private void initializeLanguageData(Map<String, Integer> headers, List<String> languages, List<List<String>> translations, List<Resource> knownLanguages, SlingHttpServletResponse response) {
+    private void initializeLanguageData(Map<String, Integer> headers, List<String> languages, List<List<String>> translations, List<Resource> knownLanguages, SlingHttpServletResponse response) throws IOException {
         for (String language : headers.keySet()) {
             boolean hasMatch = true;
-            for (Resource knownLanguage : knownLanguages){
-             hasMatch = false;
-                if (knownLanguage.getName().equals(language)){
+            for (Resource knownLanguage : knownLanguages) {
+                hasMatch = false;
+                if (knownLanguage.getName().equals(language)) {
                     languages.add(language);
                     translations.add(new ArrayList<>());
                     hasMatch = true;
@@ -134,17 +111,14 @@ public class ImportDictionaryServlet extends SlingAllMethodsServlet {
                 }
             }
             if (!hasMatch) {
-                String error = "Incorrect CSV file, please only add languages that exist in the dictionary";
-                LOG.warn(error);
-                response.setStatus(400, error);
+                throw new IOException("Incorrect CSV file, please only add languages that exist in the dictionary");
             }
         }
     }
 
-    private void processCsvRecord(String path, List<String> languages, ResourceResolver resourceResolver, List<String> keys, List<List<String>> translations, CSVRecord record) throws PersistenceException {
+    private void processCsvRecord(String path, List<String> languages, ResourceResolver resourceResolver, List<String> keys, List<List<String>> translations, CSVRecord record) throws IOException {
         if (record.size() != languages.size() + 1) {
-            LOG.warn("Ignoring row with incorrect number of translations: " + record);
-            return;
+            throw new IOException("Record has an incorrect number of translations: " + record);
         }
 
         String label = record.get(KEY_HEADER);
@@ -155,15 +129,13 @@ public class ImportDictionaryServlet extends SlingAllMethodsServlet {
             String translation = record.get(language);
             translations.get(index).add(translation);
 
-            createOrUpdateResource(path, resourceResolver, language, label, translation);
+            createOrUpdateLabelResource(path, resourceResolver, language, label, translation);
         }
     }
 
-    private void createOrUpdateResource(String path, ResourceResolver resourceResolver, String language, String label, String translation) throws PersistenceException {
-        Resource languageResource = resourceResolver.getResource(path + "/" + language);
-        if (languageResource == null) {
-            languageResource = createLanguageResource(resourceResolver, path, language);
-        }
+    private void createOrUpdateLabelResource(String path, ResourceResolver resourceResolver, String language, String label, String translation) throws PersistenceException {
+        Resource languageResource = getLanguageResource(path, resourceResolver, language);
+
         Resource labelResource = resourceResolver.getResource(path + "/" + language + "/" + label);
         if (labelResource == null) {
             createLabelResource(resourceResolver, languageResource, label, translation);
@@ -172,15 +144,10 @@ public class ImportDictionaryServlet extends SlingAllMethodsServlet {
         }
     }
 
-    private Resource createLanguageResource(ResourceResolver resourceResolver, String path, String language) throws PersistenceException {
-        return resourceResolver.create(resourceResolver.getResource(path), language, Map.of(
-                JCR_PRIMARYTYPE, NT_SLING_FOLDER,
-                JCR_LANGUAGE, language,
-                JCR_BASENAME, language,
-                SLING_RESOURCE_TYPE_PROPERTY, NT_SLING_FOLDER,
-                JCR_MIXINTYPES, new String[]{MIX_LANGUAGE}
-        ));
+    private static @NotNull Resource getLanguageResource(String path, ResourceResolver resourceResolver, String language) throws PersistenceException {
+        return ResourceUtil.getOrCreateResource(resourceResolver, path + "/" + language, Map.of(JCR_PRIMARYTYPE, NT_SLING_FOLDER, JCR_LANGUAGE, language, JCR_BASENAME, language, SLING_RESOURCE_TYPE_PROPERTY, NT_SLING_FOLDER, JCR_MIXINTYPES, new String[]{MIX_LANGUAGE}), null, false);
     }
+
 
     private Resource createLabelResource(ResourceResolver resourceResolver, Resource languageResource, String newNodeName, String translation) throws PersistenceException {
         Map<String, Object> properties = new HashMap<>();
@@ -203,9 +170,4 @@ public class ImportDictionaryServlet extends SlingAllMethodsServlet {
         }
     }
 
-    private void handleCsvProcessingError(SlingHttpServletResponse response, IOException e) {
-        String error = "Error while parsing CSV file or creating nodes";
-        LOG.error(error, e);
-        response.setStatus(500, error);
-    }
 }
