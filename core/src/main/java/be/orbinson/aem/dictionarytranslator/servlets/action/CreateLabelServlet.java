@@ -39,9 +39,6 @@ public class CreateLabelServlet extends SlingAllMethodsServlet {
     @Reference
     private transient DictionaryService dictionaryService;
 
-//    @Reference
-//    private XSSAPI xssapi;
-
     @Override
     protected void doPost(SlingHttpServletRequest request, @NotNull SlingHttpServletResponse response) throws IOException {
         String key = request.getParameter("key");
@@ -75,7 +72,7 @@ public class CreateLabelServlet extends SlingAllMethodsServlet {
                 }
             } catch (PersistenceException e) {
                 HtmlResponse htmlResponse = new HtmlResponse();
-                htmlResponse.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, String.format("Unable to create key '%s' on dictionary '%s'", key, dictionary));
+                htmlResponse.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, String.format("Unable to create key '%s' on dictionary '%s': %s", key, dictionary, e.getMessage()));
                 htmlResponse.send(response, true);
             }
         }

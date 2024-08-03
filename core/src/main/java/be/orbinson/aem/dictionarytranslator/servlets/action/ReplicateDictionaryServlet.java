@@ -48,26 +48,28 @@ public class ReplicateDictionaryServlet extends SlingAllMethodsServlet {
             resourceResolver = request.getResourceResolver();
             Resource resource = resourceResolver.getResource(path);
 
-            if (resource != null) {
-                deepReplicate(resource);
-                // javasecurity:S5145
-                LOG.debug("Replicated dictionary, 'path={}'", path);
-            } else {
-                // javasecurity:S5145
+            try {
+                if (resource != null) {
+                    deepReplicate(resource);
+                    // javasecurity:S5145
+                    LOG.debug("Replicated dictionary, 'path={}'", path);
+                } else {
+                    // javasecurity:S5145
+                    HtmlResponse htmlResponse = new HtmlResponse();
+                    htmlResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST, String.format("Unable to get resource for path '%s", path));
+                    htmlResponse.send(response, true);
+                }
+            } catch (ReplicationException e) {
                 HtmlResponse htmlResponse = new HtmlResponse();
-                htmlResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST, String.format("Unable to get resource for path '%s", path));
+                htmlResponse.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error while replicating dictionary: " + e);
                 htmlResponse.send(response, true);
             }
         }
     }
 
-    private void deepReplicate(Resource parentResource) {
+    private void deepReplicate(Resource parentResource) throws ReplicationException {
         String path = parentResource.getPath();
-        try {
-            replicator.replicate(resourceResolver.adaptTo(Session.class), ReplicationActionType.ACTIVATE, path);
-        } catch (ReplicationException e) {
-            LOG.error("ReplicationException occurred when trying to replicate dictionary in ReplicateDictionaryServlet");
-        }
+        replicator.replicate(resourceResolver.adaptTo(Session.class), ReplicationActionType.ACTIVATE, path);
 
         if (parentResource.hasChildren()) {
             for (Resource childResource : parentResource.getChildren()) {
