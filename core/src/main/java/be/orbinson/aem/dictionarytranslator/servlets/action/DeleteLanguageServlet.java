@@ -11,6 +11,7 @@ import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.servlets.SlingAllMethodsServlet;
 import org.apache.sling.servlets.annotations.SlingServletResourceTypes;
+import org.apache.sling.servlets.post.HtmlResponse;
 import org.jetbrains.annotations.NotNull;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -53,16 +54,19 @@ public class DeleteLanguageServlet extends SlingAllMethodsServlet {
                     deactivateAndDelete(resourceResolver, resource);
                     resourceResolver.commit();
                 } else {
-                    LOG.warn("Unable to find dictionary '{}'", path);
-                    response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                    HtmlResponse htmlResponse = new HtmlResponse();
+                    htmlResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST, String.format("Unable to get dictionary '%s'", dictionary));
+                    htmlResponse.send(response, true);
                 }
             } catch (PersistenceException | ReplicationException e) {
-                LOG.error("Unable to delete language '{}' from dictionary '{}'", language, dictionary);
-                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                HtmlResponse htmlResponse = new HtmlResponse();
+                htmlResponse.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, String.format("Unable to delete language '%s': %s", language, e.getMessage()));
+                htmlResponse.send(response, true);
             }
         } else {
-            LOG.warn("Language and dictionary parameter are required");
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+            HtmlResponse htmlResponse = new HtmlResponse();
+            htmlResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST, "Language and dictionary parameter can not be empty");
+            htmlResponse.send(response, true);
         }
     }
 

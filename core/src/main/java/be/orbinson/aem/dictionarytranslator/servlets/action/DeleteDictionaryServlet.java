@@ -11,6 +11,7 @@ import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.servlets.SlingAllMethodsServlet;
 import org.apache.sling.servlets.annotations.SlingServletResourceTypes;
+import org.apache.sling.servlets.post.HtmlResponse;
 import org.jetbrains.annotations.NotNull;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -50,17 +51,20 @@ public class DeleteDictionaryServlet extends SlingAllMethodsServlet {
                         deactivateAndDelete(resourceResolver, resource);
                         resourceResolver.commit();
                     } else {
-                        LOG.warn("Dictionary '{}' not found to delete", dictionary);
-                        response.sendError(HttpServletResponse.SC_NOT_FOUND);
+                        HtmlResponse htmlResponse = new HtmlResponse();
+                        htmlResponse.setStatus(HttpServletResponse.SC_NOT_FOUND, "Dictionary not found");
+                        htmlResponse.send(response, true);
                     }
                 } catch (PersistenceException | ReplicationException e) {
-                    LOG.error("Error deleting item: {}", dictionary, e);
-                    response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
+                    HtmlResponse htmlResponse = new HtmlResponse();
+                    htmlResponse.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, String.format("Unable to delete dictionary '%s': %s", dictionary, e.getMessage()));
+                    htmlResponse.send(response, true);
                 }
             }
         } else {
-            LOG.warn("Dictionary parameter can not be empty");
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+            HtmlResponse htmlResponse = new HtmlResponse();
+            htmlResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST, "Dictionary parameter can not be empty");
+            htmlResponse.send(response, true);
         }
     }
 

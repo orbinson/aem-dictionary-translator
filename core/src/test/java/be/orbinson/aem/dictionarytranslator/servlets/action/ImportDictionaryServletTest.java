@@ -11,6 +11,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
+import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
@@ -76,7 +77,7 @@ class ImportDictionaryServletTest {
 
         importTranslation.doPost(request, response);
 
-        assertEquals(400, response.getStatus());
+        assertEquals(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, response.getStatus());
 
         ResourceResolver resourceResolver = context.resourceResolver();
         Resource enHelloResource = resourceResolver.getResource("/content/en/hello");
@@ -142,7 +143,7 @@ class ImportDictionaryServletTest {
 
         importTranslation.doPost(request, response);
 
-        assertEquals(400, response.getStatus());
+        assertEquals(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, response.getStatus());
     }
 
     @Test
@@ -172,7 +173,7 @@ class ImportDictionaryServletTest {
 
         importTranslation.doPost(request, response);
 
-        assertEquals(400, response.getStatus());
+        assertEquals(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, response.getStatus());
     }
 }
 

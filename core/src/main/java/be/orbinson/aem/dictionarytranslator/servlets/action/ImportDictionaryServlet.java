@@ -10,11 +10,13 @@ import org.apache.sling.api.request.RequestParameter;
 import org.apache.sling.api.resource.*;
 import org.apache.sling.api.servlets.SlingAllMethodsServlet;
 import org.apache.sling.servlets.annotations.SlingServletResourceTypes;
+import org.apache.sling.servlets.post.HtmlResponse;
 import org.apache.tika.io.IOUtils;
 import org.jetbrains.annotations.NotNull;
 import org.osgi.service.component.annotations.Component;
 
 import javax.servlet.Servlet;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -43,7 +45,9 @@ public class ImportDictionaryServlet extends SlingAllMethodsServlet {
             try {
                 processCsvFile(request, response, path, csvfile.getInputStream());
             } catch (IOException e) {
-                response.sendError(400, "Error while importing CSV file: " + e.getMessage());
+                HtmlResponse htmlResponse = new HtmlResponse();
+                htmlResponse.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error while importing CSV file: " + e.getMessage());
+                htmlResponse.send(response, true);
             }
         }
     }

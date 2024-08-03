@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Update all responses to use HTML based error responses so that Granite UI shows them in the dialogs: [#24](https://github.com/orbinson/aem-dictionary-translator/issues/24)
+- Don't swallow the replication exceptions, but show the user that it does not have the rights: [#23](https://github.com/orbinson/aem-dictionary-translator/issues/23)
+
 ## [1.1.3] - 2024-08-03
 
 ### Fixed
