@@ -10,6 +10,7 @@ import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.servlets.SlingAllMethodsServlet;
 import org.apache.sling.servlets.annotations.SlingServletResourceTypes;
+import org.apache.sling.servlets.post.HtmlResponse;
 import org.jetbrains.annotations.NotNull;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -65,8 +66,9 @@ public class ReplicateLabelServlet extends SlingAllMethodsServlet {
                             }
                     );
                 } else {
-                    LOG.warn("Unable to get label '{}'", label);
-                    response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                    HtmlResponse htmlResponse = new HtmlResponse();
+                    htmlResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST, String.format("Unable to get label '%s", label));
+                    htmlResponse.send(response, true);
                 }
             }
         }

@@ -1,7 +1,6 @@
 package be.orbinson.aem.dictionarytranslator.servlets.action;
 
 import be.orbinson.aem.dictionarytranslator.exception.DictionaryTranslatorException;
-import be.orbinson.aem.dictionarytranslator.services.DictionaryService;
 import com.day.cq.commons.jcr.JcrUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.SlingHttpServletRequest;
@@ -9,9 +8,9 @@ import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.resource.*;
 import org.apache.sling.api.servlets.SlingAllMethodsServlet;
 import org.apache.sling.servlets.annotations.SlingServletResourceTypes;
+import org.apache.sling.servlets.post.HtmlResponse;
 import org.jetbrains.annotations.NotNull;
 import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,16 +32,15 @@ public class UpdateLabelServlet extends SlingAllMethodsServlet {
 
     private static final Logger LOG = LoggerFactory.getLogger(UpdateLabelServlet.class);
 
-    @Reference
-    private transient DictionaryService dictionaryService;
 
     @Override
     protected void doPost(SlingHttpServletRequest request, @NotNull SlingHttpServletResponse response) throws IOException {
         String label = request.getParameter("label");
 
         if (StringUtils.isEmpty(label)) {
-            LOG.warn("Label parameter is required");
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+            HtmlResponse htmlResponse = new HtmlResponse();
+            htmlResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST, "Label parameter is required");
+            htmlResponse.send(response, true);
         } else {
             ResourceResolver resourceResolver = request.getResourceResolver();
             Resource resource = resourceResolver.getResource(label);
@@ -53,17 +51,19 @@ public class UpdateLabelServlet extends SlingAllMethodsServlet {
                     updateLabel(request, resourceResolver, resource);
                 } else {
                     // javasecurity:S5145
-                    LOG.warn("Unable to get label '{}'", label);
-                    response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                    HtmlResponse htmlResponse = new HtmlResponse();
+                    htmlResponse.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, String.format("Label does not exist '%s'", label));
+                    htmlResponse.send(response, true);
                 }
             } catch (Exception e) {
-                LOG.error("Unable to update label '{}'", label);
-                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                HtmlResponse htmlResponse = new HtmlResponse();
+                htmlResponse.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, String.format("Unable to update label '%s': %s", label, e.getMessage()));
+                htmlResponse.send(response, true);
             }
         }
     }
 
-    private void updateLabel(SlingHttpServletRequest request, ResourceResolver resourceResolver, Resource resource) throws DictionaryTranslatorException {
+    private void updateLabel(SlingHttpServletRequest request, ResourceResolver resourceResolver, Resource resource) throws DictionaryTranslatorException, PersistenceException, RepositoryException {
         String key = request.getParameter("key");
         String dictionaryPath = resource.getValueMap().get("dictionaryPath", String.class);
         if (StringUtils.isNotBlank(dictionaryPath)) {
@@ -79,29 +79,25 @@ public class UpdateLabelServlet extends SlingAllMethodsServlet {
         }
     }
 
-    private void addMessage(ResourceResolver resourceResolver, Resource dictionary, String language, String name, String key, String message) {
+    private void addMessage(ResourceResolver resourceResolver, Resource dictionary, String language, String name, String key, String message) throws PersistenceException, RepositoryException {
         Resource languageResource = dictionary.getChild(language);
         if (languageResource != null) {
-            try {
-                Resource labelResource = getLabelResource(resourceResolver, languageResource, name);
-                if (labelResource != null) {
-                    ValueMap valueMap = labelResource.adaptTo(ModifiableValueMap.class);
-                    if (valueMap != null) {
-                        if (message.isBlank()) {
-                            valueMap.remove(SLING_MESSAGE);
-                        } else {
-                            valueMap.put(SLING_MESSAGE, message);
-                            if (StringUtils.isNotBlank(key)) {
-                                valueMap.putIfAbsent(SLING_KEY, key);
-                            }
-                            LOG.trace("Updated label with name '{}' and message '{}' on path '{}'", name, message, labelResource.getPath());
+            Resource labelResource = getLabelResource(resourceResolver, languageResource, name);
+            if (labelResource != null) {
+                ValueMap valueMap = labelResource.adaptTo(ModifiableValueMap.class);
+                if (valueMap != null) {
+                    if (message.isBlank()) {
+                        valueMap.remove(SLING_MESSAGE);
+                    } else {
+                        valueMap.put(SLING_MESSAGE, message);
+                        if (StringUtils.isNotBlank(key)) {
+                            valueMap.putIfAbsent(SLING_KEY, key);
                         }
+                        LOG.trace("Updated label with name '{}' and message '{}' on path '{}'", name, message, labelResource.getPath());
                     }
                 }
-                resourceResolver.commit();
-            } catch (PersistenceException | RepositoryException e) {
-                LOG.error("Unable to update label for name '{}'", name);
             }
+            resourceResolver.commit();
         }
     }
 

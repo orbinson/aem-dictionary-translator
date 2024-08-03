@@ -9,6 +9,7 @@ import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.servlets.SlingAllMethodsServlet;
 import org.apache.sling.servlets.annotations.SlingServletResourceTypes;
+import org.apache.sling.servlets.post.HtmlResponse;
 import org.jetbrains.annotations.NotNull;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -46,16 +47,19 @@ public class CreateLanguageServlet extends SlingAllMethodsServlet {
                     LOG.debug("Adding language '{}' to dictionary '{}'", language, dictionary);
                     dictionaryService.addLanguage(resource, language, basename);
                 } else {
-                    LOG.warn("Unable to get dictionary '{}'", dictionary);
-                    response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                    HtmlResponse htmlResponse = new HtmlResponse();
+                    htmlResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST, String.format("Unable to get dictionary for path '%s", dictionary));
+                    htmlResponse.send(response, true);
                 }
             } catch (PersistenceException e) {
-                LOG.error("Unable to add language '{}' to dictionary '{}'", language, dictionary);
-                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                HtmlResponse htmlResponse = new HtmlResponse();
+                htmlResponse.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, String.format("Unable to add language '%s' to dictionary '%s': %s", language, dictionary, e.getMessage()));
+                htmlResponse.send(response, true);
             }
         } else {
-            LOG.warn("Dictionary and language parameter are required to add a language to a dictionary");
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+            HtmlResponse htmlResponse = new HtmlResponse();
+            htmlResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST, "Dictionary and language parameter are required to add a language to a dictionary");
+            htmlResponse.send(response, true);
         }
     }
 }

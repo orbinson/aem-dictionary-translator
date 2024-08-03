@@ -115,7 +115,7 @@ class ExportDictionaryServletTest {
         ));
         exportDictionaryServlet.doPost(context.request(), context.response());
 
-        assertEquals(HttpServletResponse.SC_NOT_FOUND, context.response().getStatus());
+        assertEquals(HttpServletResponse.SC_BAD_REQUEST, context.response().getStatus());
     }
 
     @Test

@@ -10,6 +10,7 @@ import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.servlets.SlingAllMethodsServlet;
 import org.apache.sling.servlets.annotations.SlingServletResourceTypes;
+import org.apache.sling.servlets.post.HtmlResponse;
 import org.jetbrains.annotations.NotNull;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -22,9 +23,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import static be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants.SLING_KEY;
-import static be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants.SLING_MESSAGE;
-import static be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants.SLING_MESSAGEENTRY;
+import static be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants.*;
 import static org.apache.jackrabbit.JcrConstants.JCR_PRIMARYTYPE;
 
 @Component(service = Servlet.class)
@@ -40,35 +39,50 @@ public class CreateLabelServlet extends SlingAllMethodsServlet {
     @Reference
     private transient DictionaryService dictionaryService;
 
+//    @Reference
+//    private XSSAPI xssapi;
+
     @Override
     protected void doPost(SlingHttpServletRequest request, @NotNull SlingHttpServletResponse response) throws IOException {
         String key = request.getParameter("key");
         String dictionary = request.getParameter("dictionary");
 
         if (StringUtils.isEmpty(key) || StringUtils.isEmpty(dictionary)) {
-            LOG.warn("Key and dictionary parameters are required");
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+            HtmlResponse htmlResponse = new HtmlResponse();
+            htmlResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST, String.format("Invalid parameters to create language, 'key=%s', 'dictionary=%s', ", key, dictionary));
+            htmlResponse.send(response, true);
         } else {
             ResourceResolver resourceResolver = request.getResourceResolver();
-            Resource resource = resourceResolver.getResource(dictionary);
+            Resource dictionaryResource = resourceResolver.getResource(dictionary);
             try {
-                if (resource != null) {
-                    for (String language : dictionaryService.getLanguages(resource)) {
+                if (dictionaryResource != null) {
+                    for (String language : dictionaryService.getLanguages(dictionaryResource)) {
                         // javasecurity:S5145
                         LOG.debug("Create label on path '{}/{}'", dictionary, key);
                         String message = request.getParameter(language);
-                        addMessage(resourceResolver, resource, language, key, message);
+                        if (!labelExists(resourceResolver, dictionaryResource, language, key)) {
+                            addMessage(resourceResolver, dictionaryResource, language, key, message);
+                        } else {
+                            HtmlResponse htmlResponse = new HtmlResponse();
+                            htmlResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST, String.format("Can not create label %s, label already exists", key));
+                            htmlResponse.send(response, true);
+                        }
                     }
                 } else {
-                    // javasecurity:S5145
-                    LOG.warn("Unable to get dictionary '{}'", dictionary);
-                    response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                    HtmlResponse htmlResponse = new HtmlResponse();
+                    htmlResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST, String.format("Unable to get dictionary '%s'", dictionary));
+                    htmlResponse.send(response, true);
                 }
             } catch (PersistenceException e) {
-                LOG.error("Unable to create key '{}' on dictionary '{}'", key, dictionary);
-                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                HtmlResponse htmlResponse = new HtmlResponse();
+                htmlResponse.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, String.format("Unable to create key '%s' on dictionary '%s'", key, dictionary));
+                htmlResponse.send(response, true);
             }
         }
+    }
+
+    private boolean labelExists(ResourceResolver resourceResolver, Resource dictionaryResource, String language, String key) {
+        return resourceResolver.getResource(dictionaryResource.getPath() + "/" + language + "/" + JcrUtil.createValidName(key)) != null;
     }
 
     private void addMessage(ResourceResolver resourceResolver, Resource dictionary, String language, String key, String message) throws PersistenceException {
@@ -79,7 +93,7 @@ public class CreateLabelServlet extends SlingAllMethodsServlet {
             Map<String, Object> properties = new HashMap<>();
             properties.put(JCR_PRIMARYTYPE, SLING_MESSAGEENTRY);
             properties.put(SLING_KEY, key);
-            if (!message.isBlank()){
+            if (!message.isBlank()) {
                 properties.put(SLING_MESSAGE, message);
             }
             resourceResolver.create(resource, JcrUtil.createValidName(key), properties);
