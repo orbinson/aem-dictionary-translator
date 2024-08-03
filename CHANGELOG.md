@@ -7,9 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.3] - 2024-08-03
+
 ### Fixed
 
-- Add sling:key to labels for a newly created language: [#28](https://github.com/orbinson/aem-dictionary-translator/issues/28)
+-   Add sling:key to labels for a newly created language: [#28](https://github.com/orbinson/aem-dictionary-translator/issues/28)
 
 ## [1.1.2] - 2024-02-28
 
@@ -25,7 +27,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   Reactivated publish button for dictionaries: [#13](https://github.com/orbinson/aem-dictionary-translator/issues/13)
 -   Exporting a csv sometimes gives completely empty file: [#15](https://github.com/orbinson/aem-dictionary-translator/issues/15)
 -   Importing a csv with the correct languages sometimes still gives the error of wrong languages: [#19](https://github.com/orbinson/aem-dictionary-translator/issues/19)
-
 
 ## [1.1.0] - 2024-02-01
 
@@ -90,7 +91,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   Create, publish and edit dictionaries
 -   Create, delete and update labels in a dictionary
 
-[Unreleased]: https://github.com/orbinson/aem-dictionary-translator/compare/1.1.2...HEAD
+[Unreleased]: https://github.com/orbinson/aem-dictionary-translator/compare/1.1.3...HEAD
+
+[1.1.3]: https://github.com/orbinson/aem-dictionary-translator/compare/1.1.2...1.1.3
 
 [1.1.2]: https://github.com/orbinson/aem-dictionary-translator/compare/1.1.1...1.1.2
 
