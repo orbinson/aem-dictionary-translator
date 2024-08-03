@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Add sling:key to labels for a newly created language: [#28](https://github.com/orbinson/aem-dictionary-translator/issues/28)
+
 ## [1.1.2] - 2024-02-28
 
 ## [1.1.1] - 2024-02-08

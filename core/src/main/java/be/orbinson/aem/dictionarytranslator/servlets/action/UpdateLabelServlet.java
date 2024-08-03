@@ -6,11 +6,7 @@ import com.day.cq.commons.jcr.JcrUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
-import org.apache.sling.api.resource.ModifiableValueMap;
-import org.apache.sling.api.resource.PersistenceException;
-import org.apache.sling.api.resource.Resource;
-import org.apache.sling.api.resource.ResourceResolver;
-import org.apache.sling.api.resource.ValueMap;
+import org.apache.sling.api.resource.*;
 import org.apache.sling.api.servlets.SlingAllMethodsServlet;
 import org.apache.sling.servlets.annotations.SlingServletResourceTypes;
 import org.jetbrains.annotations.NotNull;
@@ -25,8 +21,7 @@ import javax.servlet.Servlet;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-import static be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants.SLING_MESSAGE;
-import static be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants.SLING_MESSAGEENTRY;
+import static be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants.*;
 
 @Component(service = Servlet.class)
 @SlingServletResourceTypes(
@@ -69,6 +64,7 @@ public class UpdateLabelServlet extends SlingAllMethodsServlet {
     }
 
     private void updateLabel(SlingHttpServletRequest request, ResourceResolver resourceResolver, Resource resource) throws DictionaryTranslatorException {
+        String key = request.getParameter("key");
         String dictionaryPath = resource.getValueMap().get("dictionaryPath", String.class);
         if (StringUtils.isNotBlank(dictionaryPath)) {
             Resource dictionaryResource = resourceResolver.getResource(dictionaryPath);
@@ -76,14 +72,14 @@ public class UpdateLabelServlet extends SlingAllMethodsServlet {
             String[] languages = resource.getValueMap().get("languages", new String[0]);
             for (String language : languages) {
                 String message = request.getParameter(language);
-                addMessage(resourceResolver, dictionaryResource, language, name, message);
+                addMessage(resourceResolver, dictionaryResource, language, name, key, message);
             }
         } else {
             throw new DictionaryTranslatorException("Could not find dictionary path");
         }
     }
 
-    private void addMessage(ResourceResolver resourceResolver, Resource dictionary, String language, String name, String message) {
+    private void addMessage(ResourceResolver resourceResolver, Resource dictionary, String language, String name, String key, String message) {
         Resource languageResource = dictionary.getChild(language);
         if (languageResource != null) {
             try {
@@ -95,6 +91,9 @@ public class UpdateLabelServlet extends SlingAllMethodsServlet {
                             valueMap.remove(SLING_MESSAGE);
                         } else {
                             valueMap.put(SLING_MESSAGE, message);
+                            if (StringUtils.isNotBlank(key)) {
+                                valueMap.putIfAbsent(SLING_KEY, key);
+                            }
                             LOG.trace("Updated label with name '{}' and message '{}' on path '{}'", name, message, labelResource.getPath());
                         }
                     }
