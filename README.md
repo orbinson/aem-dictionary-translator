@@ -40,6 +40,24 @@ To deploy the AEM Dictionary Translator as an embedded package you need to updat
       <target>/apps/vendor-packages/content/install</target>
    </embedded>
    ```
+   
+3. Currently, AEMaaCS doesn't allow loading of i18n dictionaries outside `/apps`,  `/libs`, `/content/forms/af` and `/content/dam/formsanddocuments`.
+
+To mitigate this, update the `org.apache.sling.i18n.impl.JcrResourceBundleProvider` OSGi config to allow dictionaries in other folders, for example by using `/content/dictionaries` for all your editable dictionaries.
+
+Example `org.apache.sling.i18n.impl.JcrResourceBundleProvider` OSGi config:
+```json
+{
+  "included.paths": [
+    "/libs",
+    "/apps",
+    "/content/forms/af",
+    "/content/dam/formsanddocuments",
+    "/content/dictionaries"
+  ]
+}
+
+```
 
 ## Development
 
