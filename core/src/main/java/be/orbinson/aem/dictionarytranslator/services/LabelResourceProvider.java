@@ -123,6 +123,12 @@ public class LabelResourceProvider extends ResourceProvider<Object> {
      */
     private String getKey(Resource dictionaryResource, String labelName) {
         List<String> languages = dictionaryService.getLanguages(dictionaryResource);
+        // in order to speed things up always start with language "en" (if existing)
+        String mostCompleteLanguage = Locale.ENGLISH.getLanguage();
+        if (languages.contains(mostCompleteLanguage)) {
+            languages.remove(mostCompleteLanguage);
+            languages.add(0, mostCompleteLanguage);
+        }
         return languages.stream()
             .map(dictionaryResource::getChild)
             .filter(Objects::nonNull)
