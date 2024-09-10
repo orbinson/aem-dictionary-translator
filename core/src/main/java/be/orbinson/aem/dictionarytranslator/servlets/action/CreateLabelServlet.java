@@ -1,8 +1,8 @@
 package be.orbinson.aem.dictionarytranslator.servlets.action;
 
 import be.orbinson.aem.dictionarytranslator.services.DictionaryService;
-import com.day.cq.commons.jcr.JcrUtil;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.jackrabbit.util.Text;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.resource.PersistenceException;
@@ -17,13 +17,20 @@ import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.servlet.Servlet;
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+<<<<<<< Upstream, based on origin/main
 import static be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants.*;
+=======
+import javax.servlet.Servlet;
+import javax.servlet.http.HttpServletResponse;
+
+import static be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants.SLING_KEY;
+import static be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants.SLING_MESSAGE;
+import static be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants.SLING_MESSAGEENTRY;
+>>>>>>> fb42b1c Support case sensitive keys
 import static org.apache.jackrabbit.JcrConstants.JCR_PRIMARYTYPE;
 
 @Component(service = Servlet.class)
@@ -93,7 +100,7 @@ public class CreateLabelServlet extends SlingAllMethodsServlet {
             if (!message.isBlank()) {
                 properties.put(SLING_MESSAGE, message);
             }
-            resourceResolver.create(resource, JcrUtil.createValidName(key), properties);
+            resourceResolver.create(resource, Text.escapeIllegalJcrChars(key), properties);
             LOG.trace("Create label with key '{}' and message '{}' on path '{}'", key, message, path);
             resourceResolver.commit();
         }
