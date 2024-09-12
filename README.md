@@ -25,7 +25,7 @@ To deploy the AEM Dictionary Translator as an embedded package you need to updat
    <dependency>
      <groupId>be.orbinson.aem</groupId>
      <artifactId>aem-dictionary-translator.all</artifactId>
-     <version>1.1.2</version>
+     <version><replace with last release version></version>
      <type>zip</type>
    </dependency>
    ```
