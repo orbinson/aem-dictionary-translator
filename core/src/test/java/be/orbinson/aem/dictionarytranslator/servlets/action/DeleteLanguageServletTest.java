@@ -18,6 +18,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Map;
 
+import static com.day.cq.commons.jcr.JcrConstants.JCR_LANGUAGE;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -51,8 +52,8 @@ class DeleteLanguageServletTest {
 
     @Test
     void deleteExistingLanguage() throws ServletException, IOException, ReplicationException {
-        context.create().resource("/content/dictionaries/i18n/en");
-        context.create().resource("/content/dictionaries/i18n/fr");
+        context.create().resource("/content/dictionaries/i18n/en", Map.of(JCR_LANGUAGE, "en"));
+        context.create().resource("/content/dictionaries/i18n/fr", Map.of(JCR_LANGUAGE, "fr"));
         context.request().setMethod("POST");
         context.request().setParameterMap(Map.of(
                 DeleteLanguageServlet.DICTIONARY_PARAM, new String[]{"/content/dictionaries/i18n"},
@@ -65,7 +66,7 @@ class DeleteLanguageServletTest {
         verify(replicator).replicate(any(Session.class), eq(ReplicationActionType.DEACTIVATE), eq("/content/dictionaries/i18n/fr"));
 
         assertNotNull(context.resourceResolver().getResource("/content/dictionaries/i18n/en"));
-        verify(replicator,times(0)).replicate(any(Session.class), eq(ReplicationActionType.DEACTIVATE), eq("/content/dictionaries/i18n/en"));
+        verify(replicator, times(0)).replicate(any(Session.class), eq(ReplicationActionType.DEACTIVATE), eq("/content/dictionaries/i18n/en"));
 
         assertEquals(HttpServletResponse.SC_OK, context.response().getStatus());
     }
@@ -76,7 +77,7 @@ class DeleteLanguageServletTest {
         context.request().setMethod("POST");
         context.request().setParameterMap(Map.of(
                 DeleteLanguageServlet.DICTIONARY_PARAM, new String[]{"/content/dictionaries/i18n"},
-                DeleteLanguageServlet.LANGUAGE_PARAM,"fr"
+                DeleteLanguageServlet.LANGUAGE_PARAM, "fr"
         ));
 
         servlet.service(context.request(), context.response());

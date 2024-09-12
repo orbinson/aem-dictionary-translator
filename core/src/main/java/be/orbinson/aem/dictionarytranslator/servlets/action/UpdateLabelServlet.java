@@ -1,6 +1,7 @@
 package be.orbinson.aem.dictionarytranslator.servlets.action;
 
 import be.orbinson.aem.dictionarytranslator.exception.DictionaryTranslatorException;
+import be.orbinson.aem.dictionarytranslator.utils.DictionaryUtil;
 import com.day.cq.commons.jcr.JcrUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.SlingHttpServletRequest;
@@ -79,8 +80,8 @@ public class UpdateLabelServlet extends SlingAllMethodsServlet {
         }
     }
 
-    private void addMessage(ResourceResolver resourceResolver, Resource dictionary, String language, String name, String key, String message) throws PersistenceException, RepositoryException {
-        Resource languageResource = dictionary.getChild(language);
+    private void addMessage(ResourceResolver resourceResolver, Resource dictionaryResource, String language, String name, String key, String message) throws PersistenceException, RepositoryException {
+        Resource languageResource = DictionaryUtil.getLanguageResource(dictionaryResource, language);
         if (languageResource != null) {
             Resource labelResource = getLabelResource(resourceResolver, languageResource, name);
             if (labelResource != null) {
@@ -100,6 +101,7 @@ public class UpdateLabelServlet extends SlingAllMethodsServlet {
             resourceResolver.commit();
         }
     }
+
 
     public Resource getLabelResource(ResourceResolver resourceResolver, Resource languageResource, String name) throws RepositoryException {
         if (languageResource.getChild(name) == null) {

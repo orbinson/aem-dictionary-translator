@@ -1,6 +1,7 @@
 package be.orbinson.aem.dictionarytranslator.services;
 
 import be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants;
+import be.orbinson.aem.dictionarytranslator.utils.DictionaryUtil;
 import com.adobe.granite.ui.components.ds.ValueMapResource;
 import com.day.text.Text;
 import org.apache.commons.lang3.StringUtils;
@@ -48,7 +49,7 @@ public class LabelResourceProvider extends ResourceProvider<Object> {
 
             if (StringUtils.isNotEmpty(name) && languages != null) {
                 for (String language : languages) {
-                    Resource labelResource = resourceResolver.getResource(dictionaryPath + "/" + language + "/" + name);
+                    Resource labelResource = getLabelResource(language, resourceResolver, dictionaryPath, name);
                     if (labelResource != null) {
                         resourceResolver.delete(labelResource);
                     }
@@ -58,11 +59,22 @@ public class LabelResourceProvider extends ResourceProvider<Object> {
         }
     }
 
+    private static @Nullable Resource getLabelResource(String language, ResourceResolver resourceResolver, String dictionaryPath, String name) {
+        Resource dictionaryResource = resourceResolver.getResource(dictionaryPath);
+        if (dictionaryResource != null) {
+            Resource languageResource = DictionaryUtil.getLanguageResource(dictionaryResource, language);
+            if (languageResource != null) {
+                return languageResource.getChild(name);
+            }
+        }
+        return null;
+    }
+
     private Map<String, Object> getValues(Resource dictionaryResource, String labelName) {
         Map<String, Object> keys = new HashMap<>();
 
         for (String language : dictionaryService.getLanguages(dictionaryResource)) {
-            Resource languageResource = dictionaryResource.getChild(language);
+            Resource languageResource = DictionaryUtil.getLanguageResource(dictionaryResource, language);
             if (languageResource != null) {
                 Resource labelResource = languageResource.getChild(labelName);
                 if (labelResource != null && (labelResource.getValueMap().containsKey(DictionaryConstants.SLING_MESSAGE))) {
@@ -102,7 +114,7 @@ public class LabelResourceProvider extends ResourceProvider<Object> {
         List<String> languages = dictionaryService.getLanguages(dictionaryResource);
         if (!languages.isEmpty()) {
             for (String language : languages) {
-                Resource languageResource = dictionaryResource.getChild(language);
+                Resource languageResource = DictionaryUtil.getLanguageResource(dictionaryResource, language);
                 if (languageResource != null) {
                     Resource labelResource = languageResource.getChild(labelName);
                     if (labelResource != null && labelResource.isResourceType(DictionaryConstants.SLING_MESSAGEENTRY)) {
@@ -117,6 +129,7 @@ public class LabelResourceProvider extends ResourceProvider<Object> {
     /**
      * Returns the first set {@code sling:key} of the {@code sling:MessageEntry} resource with the given labelName below any of the available languages.
      * Falls back to the {@code labelName} if no {@code sling:key} in any language's entry is found.
+     *
      * @param dictionaryResource the parent resource containing the languages of a dictionary
      * @param labelName
      * @return the key of a label/entry in the dictionary
@@ -130,14 +143,14 @@ public class LabelResourceProvider extends ResourceProvider<Object> {
             languages.add(0, mostCompleteLanguage);
         }
         return languages.stream()
-            .map(dictionaryResource::getChild)
-            .filter(Objects::nonNull)
-            .map(languageResource -> languageResource.getChild(labelName))
-            .filter(Objects::nonNull)
-            .map(labelResource -> labelResource.getValueMap().get(DictionaryConstants.SLING_KEY, String.class))
-            .filter(Objects::nonNull)
-            .findFirst()
-            .orElse(labelName);
+                .map(language -> DictionaryUtil.getLanguageResource(dictionaryResource, language))
+                .filter(Objects::nonNull)
+                .map(languageResource -> languageResource.getChild(labelName))
+                .filter(Objects::nonNull)
+                .map(labelResource -> labelResource.getValueMap().get(DictionaryConstants.SLING_KEY, String.class))
+                .filter(Objects::nonNull)
+                .findFirst()
+                .orElse(labelName);
     }
 
     @Override

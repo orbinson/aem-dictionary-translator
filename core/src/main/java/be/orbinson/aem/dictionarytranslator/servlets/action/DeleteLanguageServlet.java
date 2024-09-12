@@ -1,5 +1,6 @@
 package be.orbinson.aem.dictionarytranslator.servlets.action;
 
+import be.orbinson.aem.dictionarytranslator.utils.DictionaryUtil;
 import com.day.cq.replication.ReplicationActionType;
 import com.day.cq.replication.ReplicationException;
 import com.day.cq.replication.Replicator;
@@ -13,6 +14,7 @@ import org.apache.sling.api.servlets.SlingAllMethodsServlet;
 import org.apache.sling.servlets.annotations.SlingServletResourceTypes;
 import org.apache.sling.servlets.post.HtmlResponse;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
@@ -22,6 +24,8 @@ import javax.jcr.Session;
 import javax.servlet.Servlet;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+
+import static com.day.cq.commons.jcr.JcrConstants.JCR_LANGUAGE;
 
 @Component(service = Servlet.class)
 @SlingServletResourceTypes(
@@ -45,13 +49,13 @@ public class DeleteLanguageServlet extends SlingAllMethodsServlet {
 
         if (StringUtils.isNotEmpty(dictionary) && StringUtils.isNotEmpty(language)) {
             ResourceResolver resourceResolver = request.getResourceResolver();
-            String path = dictionary + "/" + language;
-            Resource resource = resourceResolver.getResource(path);
+            Resource dictionaryResource = resourceResolver.getResource(dictionary);
+            Resource languageResource = DictionaryUtil.getLanguageResource(dictionaryResource, language);
 
             try {
-                if (resource != null) {
+                if (languageResource != null) {
                     LOG.debug("Delete language '{}' from '{}'", language, dictionary);
-                    deactivateAndDelete(resourceResolver, resource);
+                    deactivateAndDelete(resourceResolver, languageResource);
                     resourceResolver.commit();
                 } else {
                     HtmlResponse htmlResponse = new HtmlResponse();
@@ -74,4 +78,5 @@ public class DeleteLanguageServlet extends SlingAllMethodsServlet {
         replicator.replicate(resourceResolver.adaptTo(Session.class), ReplicationActionType.DEACTIVATE, resource.getPath());
         resourceResolver.delete(resource);
     }
+
 }
