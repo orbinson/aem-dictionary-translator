@@ -118,4 +118,27 @@ class CreateLabelServletTest {
         assertEquals("greeting", properties.get(SLING_KEY));
         assertNull(properties.get(SLING_MESSAGE));
     }
+
+    @Test
+    void createLabelThatAlreadyExists() throws ServletException, IOException {
+        context.create().resource("/content/dictionaries/i18n/en", Map.of("jcr:language", "en"));
+        context.create().resource("/content/dictionaries/i18n/fr", Map.of("jcr:language", "fr"));
+
+        context.request().setMethod("POST");
+        context.request().setParameterMap(Map.of(
+                "dictionary", "/content/dictionaries/i18n",
+                "key", "greeting",
+                "en", "Hello",
+                "fr", "Bonjour"
+        ));
+
+        servlet.service(context.request(), context.response());
+
+        assertEquals(HttpServletResponse.SC_OK, context.response().getStatus());
+
+        servlet.service(context.request(), context.response());
+
+        assertEquals(HttpServletResponse.SC_BAD_REQUEST, context.response().getStatus());
+
+    }
 }

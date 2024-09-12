@@ -7,17 +7,18 @@ import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.servlets.SlingAllMethodsServlet;
 import org.apache.sling.servlets.annotations.SlingServletResourceTypes;
+import org.apache.sling.servlets.post.HtmlResponse;
 import org.osgi.service.component.annotations.Component;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.servlet.Servlet;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-
-import javax.servlet.Servlet;
 
 import static be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants.SLING_KEY;
 import static be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants.SLING_MESSAGE;
@@ -31,6 +32,7 @@ public class ExportDictionaryServlet extends SlingAllMethodsServlet {
 
     public static final String KEY_HEADER = "KEY";
     private static final Logger LOG = LoggerFactory.getLogger(ExportDictionaryServlet.class);
+
     @Override
     public void doPost(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
         String dictionary = request.getParameter("dictionary");
@@ -51,10 +53,14 @@ public class ExportDictionaryServlet extends SlingAllMethodsServlet {
                     writeCsvRows(writer, delimiter, languageResources);
                 }
             } else {
-                handleResourceNotFound(response);
+                HtmlResponse htmlResponse = new HtmlResponse();
+                htmlResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST, "Dictionary resource not found.");
+                htmlResponse.send(response, true);
             }
         } catch (IOException e) {
-            handleIOException(response, e);
+            HtmlResponse htmlResponse = new HtmlResponse();
+            htmlResponse.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error while writing CSV file: " + e.getMessage());
+            htmlResponse.send(response, true);
         }
     }
 
@@ -91,7 +97,7 @@ public class ExportDictionaryServlet extends SlingAllMethodsServlet {
                 Iterator<Resource> labelChildren = currentLanguageResource.listChildren();
                 while (labelChildren.hasNext()) {
                     Resource labelResource = labelChildren.next();
-                    if (!labels.contains(labelResource.getName())){
+                    if (!labels.contains(labelResource.getName())) {
                         StringBuilder csvRow = buildCsvRow(labelResource, delimiter, languageResources);
                         writer.println(csvRow);
                         labels.add(labelResource.getName());
@@ -126,17 +132,6 @@ public class ExportDictionaryServlet extends SlingAllMethodsServlet {
         return csvRow;
     }
 
-    private void handleResourceNotFound(SlingHttpServletResponse response) {
-        String error = "Dictionary resource not found.";
-        LOG.error(error);
-        response.setStatus(404, error);
-    }
-
-    private void handleIOException(SlingHttpServletResponse response, IOException e) {
-        String error = "Error while writing CSV file";
-        LOG.error(error, e);
-        response.setStatus(500, error);
-    }
 }
 
 
