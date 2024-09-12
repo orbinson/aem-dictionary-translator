@@ -22,7 +22,7 @@
                                 <form
                                         jcr:primaryType="nt:unstructured"
                                         sling:resourceType="aem-dictionary-translator/servlet/action/publish-label"
-                                        action="${requestPathInfo.resourcePath}?labels=${granite:encodeURIComponent(param.labels)}"
+                                        action="${requestPathInfo.resourcePath}?${querystring}"
                                         granite:id="publish-label-form"
                                         foundationForm="true"
                                         method="post">

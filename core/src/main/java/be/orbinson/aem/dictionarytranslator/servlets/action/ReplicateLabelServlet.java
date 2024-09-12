@@ -37,12 +37,13 @@ public class ReplicateLabelServlet extends SlingAllMethodsServlet {
 
     @Override
     protected void doPost(SlingHttpServletRequest request, @NotNull SlingHttpServletResponse response) throws IOException {
-        String labels = request.getParameter("labels");
+        String[] labels = request.getParameterValues("item");
 
-        if (StringUtils.isEmpty(labels)) {
-            LOG.warn("Labels parameters are required");
+        if (labels == null) {
+            LOG.warn("At least one item parameter is required");
             response.sendError(HttpServletResponse.SC_BAD_REQUEST);
         } else {
+<<<<<<< Upstream, based on origin/main
             try {
                 for (String label : labels.split(",")) {
                     //Splitting label into dictionary path and label key
@@ -67,6 +68,16 @@ public class ReplicateLabelServlet extends SlingAllMethodsServlet {
                         htmlResponse.send(response, true);
                     }
 
+=======
+            for (String label : labels) {
+                //Splitting label into dictionary path and label key
+                label = label.replace("/mnt/dictionary", "");
+                int lastIndexOfBackslash = label.lastIndexOf('/');
+                String parentPath = "";
+                if (lastIndexOfBackslash != -1) {
+                    parentPath = label.substring(0, lastIndexOfBackslash);
+                    label = label.substring(lastIndexOfBackslash + 1);
+>>>>>>> 8df1afd Pass multiple keys in multiple parameters
                 }
             } catch (ReplicationException e) {
                 HtmlResponse htmlResponse = new HtmlResponse();
