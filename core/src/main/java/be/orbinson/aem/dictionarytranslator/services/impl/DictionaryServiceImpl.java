@@ -83,7 +83,7 @@ public class DictionaryServiceImpl implements DictionaryService {
         Map<String, Resource> result = new TreeMap<>();
 
         resourceResolver
-                .findResources("//element(*, mix:language)[@jcr:language and @jcr:primaryType='sling:Folder']/..", "xpath")
+                .findResources("//element(*, mix:language)[@jcr:language and (@jcr:primaryType='sling:Folder' or @jcr:primaryType='nt:folder')]/..", "xpath")
                 .forEachRemaining(resource -> result.put(resource.getPath(), resource));
 
         return new ArrayList<>(result.values());
