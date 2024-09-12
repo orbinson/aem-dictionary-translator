@@ -17,20 +17,13 @@ import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.servlet.Servlet;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-<<<<<<< Upstream, based on origin/main
 import static be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants.*;
-=======
-import javax.servlet.Servlet;
-import javax.servlet.http.HttpServletResponse;
-
-import static be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants.SLING_KEY;
-import static be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants.SLING_MESSAGE;
-import static be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants.SLING_MESSAGEENTRY;
->>>>>>> fb42b1c Support case sensitive keys
 import static org.apache.jackrabbit.JcrConstants.JCR_PRIMARYTYPE;
 
 @Component(service = Servlet.class)
@@ -86,7 +79,7 @@ public class CreateLabelServlet extends SlingAllMethodsServlet {
     }
 
     private boolean labelExists(ResourceResolver resourceResolver, Resource dictionaryResource, String language, String key) {
-        return resourceResolver.getResource(dictionaryResource.getPath() + "/" + language + "/" + JcrUtil.createValidName(key)) != null;
+        return resourceResolver.getResource(dictionaryResource.getPath() + "/" + language + "/" + Text.escapeIllegalJcrChars(key)) != null;
     }
 
     private void addMessage(ResourceResolver resourceResolver, Resource dictionary, String language, String key, String message) throws PersistenceException {
