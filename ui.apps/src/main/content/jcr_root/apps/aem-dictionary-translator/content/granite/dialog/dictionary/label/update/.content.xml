@@ -23,7 +23,7 @@
                                         jcr:primaryType="nt:unstructured"
                                         sling:resourceType="aem-dictionary-translator/servlet/action/update-label"
                                         granite:id="update-label-form"
-                                        action="${requestPathInfo.resourcePath}?label=${granite:encodeURIComponent(param.label)}"
+                                        action="${requestPathInfo.resourcePath}?${querystring}"
                                         foundationForm="true"
                                         method="post"
                                         style="vertical">

@@ -69,7 +69,7 @@ class DeleteLabelServletTest {
     void deleteLabelWithNonExistingKey() throws ServletException, IOException {
         context.request().setMethod("POST");
         context.request().setParameterMap(Map.of(
-                DeleteLabelServlet.LABELS_PARAM, "/content/dictionaries/i18n/en/apple"
+                DeleteLabelServlet.LABEL_PARAM, "/content/dictionaries/i18n/en/apple"
         ));
 
         servlet.service(context.request(), context.response());
@@ -83,7 +83,7 @@ class DeleteLabelServletTest {
         context.create().resource("/content/dictionaries/i18n/peer");
         context.request().setMethod("POST");
         context.request().setParameterMap(Map.of(
-                DeleteLabelServlet.LABELS_PARAM, new String[]{"/content/dictionaries/i18n/appel"}
+                DeleteLabelServlet.LABEL_PARAM, new String[]{"/content/dictionaries/i18n/appel"}
         ));
 
         servlet.service(context.request(), context.response());
@@ -104,7 +104,7 @@ class DeleteLabelServletTest {
         context.create().resource("/content/dictionaries/i18n/en/framboos");
         context.request().setMethod("POST");
         context.request().setParameterMap(Map.of(
-                DeleteLabelServlet.LABELS_PARAM, new String[]{"/content/dictionaries/i18n/en/appel,/content/dictionaries/i18n/en/peer"}
+                DeleteLabelServlet.LABEL_PARAM, new String[]{"/content/dictionaries/i18n/en/appel","/content/dictionaries/i18n/en/peer"}
         ));
 
         servlet.service(context.request(), context.response());
@@ -120,7 +120,7 @@ class DeleteLabelServletTest {
         context.create().resource("/content/dictionaries/i18n/en/appel");
         context.request().setMethod("POST");
         context.request().setParameterMap(Map.of(
-                DeleteLabelServlet.LABELS_PARAM, new String[]{"/content/dictionaries/i18n/fr/peer"}
+                DeleteLabelServlet.LABEL_PARAM, new String[]{"/content/dictionaries/i18n/fr/peer"}
         ));
 
         servlet.service(context.request(), context.response());
