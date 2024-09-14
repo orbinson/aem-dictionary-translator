@@ -58,20 +58,24 @@ public class LabelResourceProvider extends ResourceProvider<Object> {
         }
     }
 
-    private Map<String, Object> getValues(Resource dictionaryResource, String labelName, List<String> languages) {
-        Map<String, Object> keys = new HashMap<>();
+    private Map<String, Object> getValuesAndLabelPaths(Resource dictionaryResource, String labelName, List<String> languages) {
+        Map<String, Object> properties = new HashMap<>();
+        List<String> labelPaths = new ArrayList<>();
 
         for (String language : languages) {
             Resource languageResource = dictionaryResource.getChild(language);
             if (languageResource != null) {
                 Resource labelResource = languageResource.getChild(labelName);
                 if (labelResource != null && (labelResource.getValueMap().containsKey(DictionaryConstants.SLING_MESSAGE))) {
-                    keys.put(language, labelResource.getValueMap().get(DictionaryConstants.SLING_MESSAGE, String.class));
+                    properties.put(language, labelResource.getValueMap().get(DictionaryConstants.SLING_MESSAGE, String.class));
+                    labelPaths.add(labelResource.getPath());
                 }
             }
         }
 
-        return keys;
+        properties.put("labelPaths", labelPaths);
+
+        return properties;
     }
 
     private List<String> getLabelPaths(String labelName, String dictionaryPath, List<String> languages, ResourceResolver resourceResolver) {
@@ -106,8 +110,7 @@ public class LabelResourceProvider extends ResourceProvider<Object> {
             properties.put("dictionaryPath", dictionaryPath);
             List<String> languages = dictionaryService.getLanguages(dictionaryResource);
             properties.put(LANGUAGES, languages);
-            properties.putAll(getValues(dictionaryResource, labelName, languages));
-            properties.put("labelPaths", getLabelPaths(labelName, dictionaryPath, languages, resourceResolver));
+            properties.putAll(getValuesAndLabelPaths(dictionaryResource, labelName, languages));
             return new ValueMapResource(resourceResolver, path, RESOURCE_TYPE, new ValueMapDecorator(properties));
         }
         return null;

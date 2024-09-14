@@ -79,13 +79,13 @@ class DeleteLabelServletTest {
 
     @Test
     void deleteExistingLabel() throws ServletException, IOException, ReplicationException {
-        context.create().resource("/content/dictionaries/i18n/appel",
+        context.create().resource("/mnt/dictionaries/i18n/appel",
                 "labelPaths", new String[] {"/content/dictionaries/i18n/appel/fr", "/content/dictionaries/i18n/appel/en"}
         );
         context.create().resource("/content/dictionaries/i18n/peer");
         context.request().setMethod("POST");
         context.request().setParameterMap(Map.of(
-                DeleteLabelServlet.LABELS_PARAM, new String[]{"/content/dictionaries/i18n/appel"}
+                DeleteLabelServlet.LABELS_PARAM, new String[]{"/mnt/dictionaries/i18n/appel"}
         ));
 
         servlet.service(context.request(), context.response());
