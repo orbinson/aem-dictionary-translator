@@ -91,7 +91,7 @@ public class LabelDatasource extends SlingSafeMethodsServlet {
             createDictionaryDataSource(request, resourceResolver, dictionaryPath, resourceList);
         }
 
-        String labelPath = request.getParameter("label");
+        String labelPath = request.getParameter("item");
         if (labelPath != null) {
             createLabelDataSource(resourceResolver, labelPath, resourceList);
         }

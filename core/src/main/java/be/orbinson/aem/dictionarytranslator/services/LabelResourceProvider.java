@@ -3,7 +3,6 @@ package be.orbinson.aem.dictionarytranslator.services;
 import be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants;
 import com.adobe.granite.ui.components.ds.ValueMapResource;
 import com.day.text.Text;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.resource.PersistenceException;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
@@ -30,7 +29,9 @@ public class LabelResourceProvider extends ResourceProvider<Object> {
     public static final String ROOT = "/mnt/dictionary";
 
     public static final String RESOURCE_TYPE = "aem-dictionary-translator/components/label";
+
     public static final String LANGUAGES = "languages";
+    public static final String LABEL_PATHS = "labelPaths";
 
     @Reference
     private DictionaryService dictionaryService;
@@ -39,45 +40,26 @@ public class LabelResourceProvider extends ResourceProvider<Object> {
     public void delete(@NotNull ResolveContext<Object> ctx, @NotNull Resource resource) throws PersistenceException {
         ValueMap properties = resource.getValueMap();
 
-        if (properties.containsKey(LANGUAGES) && properties.containsKey("name")) {
+        if (properties.containsKey(LABEL_PATHS)) {
             ResourceResolver resourceResolver = ctx.getResourceResolver();
-
-            String[] languages = properties.get(LANGUAGES, String[].class);
-            String dictionaryPath = properties.get("dictionaryPath", String.class);
-            String name = properties.get("name", String.class);
-
-            if (StringUtils.isNotEmpty(name) && languages != null) {
-                for (String language : languages) {
-                    Resource labelResource = getLabelResource(language, resourceResolver, dictionaryPath, name);
-                    if (labelResource != null) {
-                        resourceResolver.delete(labelResource);
-                    }
+            for (String labelPath : properties.get(LABEL_PATHS, new String[0])) {
+                Resource labelResource = resourceResolver.getResource(labelPath);
+                if (labelResource != null) {
+                    resourceResolver.delete(labelResource);
                 }
-                resourceResolver.commit();
             }
+             resourceResolver.commit();
         }
     }
 
-    private @Nullable Resource getLabelResource(String language, ResourceResolver resourceResolver, String dictionaryPath, String name) {
-        Resource dictionaryResource = resourceResolver.getResource(dictionaryPath);
-        if (dictionaryResource != null) {
-            Resource languageResource = dictionaryService.getLanguageResource(dictionaryResource, language);
-            if (languageResource != null) {
-                return languageResource.getChild(name);
-            }
-        }
-        return null;
-    }
-
-
-    private Map<String, Object> getValuesAndLabelPaths(Resource dictionaryResource, String labelName, List<String> languages) {
+    private Map<String, Object> getValuesAndLabelPaths(Resource dictionaryResource, String key, List<String> languages) {
         Map<String, Object> properties = new HashMap<>();
         List<String> labelPaths = new ArrayList<>();
 
         for (String language : languages) {
             Resource languageResource = dictionaryService.getLanguageResource(dictionaryResource, language);
             if (languageResource != null) {
-                Resource labelResource = languageResource.getChild(labelName);
+                Resource labelResource = dictionaryService.getLabelResource(languageResource, key);
                 if (labelResource != null && (labelResource.getValueMap().containsKey(DictionaryConstants.SLING_MESSAGE))) {
                     properties.put(language, labelResource.getValueMap().get(DictionaryConstants.SLING_MESSAGE, String.class));
                     labelPaths.add(labelResource.getPath());
@@ -98,31 +80,30 @@ public class LabelResourceProvider extends ResourceProvider<Object> {
             return null;
         }
 
-        String labelName = Text.getName(path);
+        String key = Text.getName(path);
         String dictionaryPath = Text.getRelativeParent(path, 1).replaceFirst(ROOT, "");
         Resource dictionaryResource = resourceResolver.getResource(dictionaryPath);
 
-        if (dictionaryResource != null && isLabel(dictionaryResource, labelName)) {
+        if (dictionaryResource != null && isLabel(dictionaryResource, key)) {
             Map<String, Object> properties = new HashMap<>();
-            properties.put("name", labelName);
-            properties.put("key", getKey(dictionaryResource, labelName));
+            properties.put("key", key);
             properties.put("path", path);
             properties.put("dictionaryPath", dictionaryPath);
             List<String> languages = dictionaryService.getLanguages(dictionaryResource);
             properties.put(LANGUAGES, languages);
-            properties.putAll(getValuesAndLabelPaths(dictionaryResource, labelName, languages));
+            properties.putAll(getValuesAndLabelPaths(dictionaryResource, key, languages));
             return new ValueMapResource(resourceResolver, path, RESOURCE_TYPE, new ValueMapDecorator(properties));
         }
         return null;
     }
 
-    private boolean isLabel(Resource dictionaryResource, String labelName) {
+    private boolean isLabel(Resource dictionaryResource, String key) {
         List<String> languages = dictionaryService.getLanguages(dictionaryResource);
         if (!languages.isEmpty()) {
             for (String language : languages) {
                 Resource languageResource = dictionaryService.getLanguageResource(dictionaryResource, language);
                 if (languageResource != null) {
-                    Resource labelResource = languageResource.getChild(labelName);
+                    Resource labelResource = dictionaryService.getLabelResource(languageResource, key);
                     if (labelResource != null && labelResource.isResourceType(DictionaryConstants.SLING_MESSAGEENTRY)) {
                         return true;
                     }
@@ -130,33 +111,6 @@ public class LabelResourceProvider extends ResourceProvider<Object> {
             }
         }
         return false;
-    }
-
-    /**
-     * Returns the first set {@code sling:key} of the {@code sling:MessageEntry} resource with the given labelName below any of the available languages.
-     * Falls back to the {@code labelName} if no {@code sling:key} in any language's entry is found.
-     *
-     * @param dictionaryResource the parent resource containing the languages of a dictionary
-     * @param labelName
-     * @return the key of a label/entry in the dictionary
-     */
-    private String getKey(Resource dictionaryResource, String labelName) {
-        List<String> languages = dictionaryService.getLanguages(dictionaryResource);
-        // in order to speed things up always start with language "en" (if existing)
-        String mostCompleteLanguage = Locale.ENGLISH.getLanguage();
-        if (languages.contains(mostCompleteLanguage)) {
-            languages.remove(mostCompleteLanguage);
-            languages.add(0, mostCompleteLanguage);
-        }
-        return languages.stream()
-                .map(language -> dictionaryService.getLanguageResource(dictionaryResource, language))
-                .filter(Objects::nonNull)
-                .map(languageResource -> languageResource.getChild(labelName))
-                .filter(Objects::nonNull)
-                .map(labelResource -> labelResource.getValueMap().get(DictionaryConstants.SLING_KEY, String.class))
-                .filter(Objects::nonNull)
-                .findFirst()
-                .orElse(labelName);
     }
 
     @Override

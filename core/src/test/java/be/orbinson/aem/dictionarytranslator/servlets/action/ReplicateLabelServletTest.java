@@ -104,9 +104,6 @@ class ReplicateLabelServletTest {
         Iterator<Resource> iterator = resources.iterator();
 
         SlingHttpServletRequest request = Mockito.spy(context.request());
-        when(servlet.getResourceResolver(request)).thenReturn(resourceResolver);
-
-        when(servlet.getResources(resourceResolver, anyString(), anyString())).thenReturn(iterator);
 
         servlet.service(context.request(), context.response());
 

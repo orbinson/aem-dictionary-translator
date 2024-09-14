@@ -32,8 +32,13 @@ import static com.day.cq.commons.jcr.JcrConstants.*;
 import static org.apache.sling.jcr.resource.api.JcrResourceConstants.NT_SLING_FOLDER;
 import static org.apache.sling.jcr.resource.api.JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY;
 
+// TODO: should be updated to use dictionaryService
 @Component(service = Servlet.class)
-@SlingServletResourceTypes(resourceSuperType = "granite/ui/components/coral/foundation/form", resourceTypes = "aem-dictionary-translator/servlet/action/import-dictionary", methods = "POST")
+@SlingServletResourceTypes(
+        resourceSuperType = "granite/ui/components/coral/foundation/form",
+        resourceTypes = "aem-dictionary-translator/servlet/action/import-dictionary",
+        methods = "POST"
+)
 public class ImportDictionaryServlet extends SlingAllMethodsServlet {
 
     @Override

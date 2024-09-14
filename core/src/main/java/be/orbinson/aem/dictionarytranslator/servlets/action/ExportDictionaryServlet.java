@@ -1,5 +1,6 @@
 package be.orbinson.aem.dictionarytranslator.servlets.action;
 
+import be.orbinson.aem.dictionarytranslator.services.DictionaryService;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.request.RequestParameter;
@@ -8,7 +9,9 @@ import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.servlets.SlingAllMethodsServlet;
 import org.apache.sling.servlets.annotations.SlingServletResourceTypes;
 import org.apache.sling.servlets.post.HtmlResponse;
+import org.jetbrains.annotations.NotNull;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,13 +19,13 @@ import javax.servlet.Servlet;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-import static be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants.SLING_KEY;
 import static be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants.SLING_MESSAGE;
 
+// TODO should add quoting / escaping for CSV's
 @Component(service = Servlet.class)
 @SlingServletResourceTypes(
         resourceSuperType = "granite/ui/components/coral/foundation/form",
@@ -31,27 +34,28 @@ import static be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants.SLI
 public class ExportDictionaryServlet extends SlingAllMethodsServlet {
 
     public static final String KEY_HEADER = "KEY";
+
     private static final Logger LOG = LoggerFactory.getLogger(ExportDictionaryServlet.class);
+
+    @Reference
+    private DictionaryService dictionaryService;
 
     @Override
     public void doPost(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
-        String dictionary = request.getParameter("dictionary");
+        String dictionaryPath = request.getParameter("dictionary");
         RequestParameter delimiter = request.getRequestParameter("delimiter");
 
         response.setContentType("text/csv");
-        response.setHeader("Content-Disposition", "attachment; filename=\"dictionary_" + dictionary + ".csv");
+        response.setHeader("Content-Disposition", "attachment; filename=\"dictionary_" + dictionaryPath + ".csv");
 
         try (PrintWriter writer = response.getWriter()) {
             ResourceResolver resolver = request.getResourceResolver();
-            Resource resource = resolver.getResource(dictionary);
+            Resource dictionaryResource = resolver.getResource(dictionaryPath);
 
-            if (resource != null) {
-                List<Resource> languageResources = collectLanguageResources(resource);
-                writeCsvHeader(writer, delimiter, languageResources);
-
-                if (!languageResources.isEmpty()) {
-                    writeCsvRows(writer, delimiter, languageResources);
-                }
+            if (dictionaryResource != null) {
+                List<String> languages = dictionaryService.getLanguages(dictionaryResource);
+                writeCsvHeader(writer, delimiter, languages);
+                writeCsvRows(writer, delimiter, dictionaryResource, languages);
             } else {
                 HtmlResponse htmlResponse = new HtmlResponse();
                 htmlResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST, "Dictionary resource not found.");
@@ -64,72 +68,49 @@ public class ExportDictionaryServlet extends SlingAllMethodsServlet {
         }
     }
 
-    private List<Resource> collectLanguageResources(Resource resource) {
-        Iterator<Resource> children = resource.listChildren();
-        List<Resource> languageResources = new ArrayList<>();
 
-        while (children.hasNext()) {
-            Resource child = children.next();
-            languageResources.add(child);
-        }
-
-        return languageResources;
-    }
-
-    private void writeCsvHeader(PrintWriter writer, RequestParameter delimiter, List<Resource> languageResources) {
+    private void writeCsvHeader(PrintWriter writer, RequestParameter delimiter, List<String> languages) {
         StringBuilder csvHeader = new StringBuilder(KEY_HEADER);
 
-        for (Resource languageResource : languageResources) {
+        for (String language : languages) {
             csvHeader.append(delimiter);
-            csvHeader.append(languageResource.getName());
+            csvHeader.append(language);
         }
 
         writer.println(csvHeader);
         LOG.debug("CSV header: " + csvHeader);
     }
 
-    private void writeCsvRows(PrintWriter writer, RequestParameter delimiter, List<Resource> languageResources) {
-        List<String> labels = new ArrayList<>();
-        Resource currentLanguageResource = null;
-        if (!languageResources.isEmpty()) {
-            for (int i = 0; i < languageResources.size(); i++) {
-                currentLanguageResource = languageResources.get(i);
-                Iterator<Resource> labelChildren = currentLanguageResource.listChildren();
-                while (labelChildren.hasNext()) {
-                    Resource labelResource = labelChildren.next();
-                    if (!labels.contains(labelResource.getName())) {
-                        StringBuilder csvRow = buildCsvRow(labelResource, delimiter, languageResources);
-                        writer.println(csvRow);
-                        labels.add(labelResource.getName());
-                        LOG.debug("CSV row: " + csvRow);
-                    }
+    private void writeCsvRows(PrintWriter writer, RequestParameter delimiter, Resource dictionaryResource, List<String> languages) {
+        List<String> keys = dictionaryService.getLabelKeys(dictionaryResource);
+        Map<String, Resource> languageResources = getLanguageResourceMap(dictionaryResource, languages);
+        for (String key : keys) {
+            StringBuilder csvRow = new StringBuilder();
+            csvRow.append(key);
+            csvRow.append(delimiter);
+            for (String language : languages) {
+                Resource labelResource = dictionaryService.getLabelResource(languageResources.get(language), key);
+                if (labelResource != null) {
+                    csvRow.append(labelResource.getValueMap().get(SLING_MESSAGE));
+                } else {
+                    csvRow.append(" ");
                 }
+                csvRow.append(delimiter);
             }
+            LOG.debug("CSV row: " + csvRow);
+            writer.println(csvRow);
         }
     }
 
-    private StringBuilder buildCsvRow(Resource labelResource, RequestParameter delimiter, List<Resource> languageResources) {
-        StringBuilder csvRow;
-        if (labelResource.getValueMap().containsKey(SLING_KEY)) {
-            csvRow = new StringBuilder(labelResource.getValueMap().get(SLING_KEY, String.class));
-        } else {
-            csvRow = new StringBuilder(labelResource.getName());
-        }
-
-        for (Resource languageResource : languageResources) {
-            Resource correspondingLabelResource = languageResource.getChild(labelResource.getName());
-            csvRow.append(delimiter);
-            String translation = " ";
-            if (correspondingLabelResource != null) {
-                translation = correspondingLabelResource.getValueMap().get(SLING_MESSAGE, String.class);
+    private @NotNull Map<String, Resource> getLanguageResourceMap(Resource dictionaryResource, List<String> languages) {
+        Map<String, Resource> languageResources = new HashMap<>();
+        for (String lang : languages) {
+            Resource languageResource = dictionaryService.getLanguageResource(dictionaryResource, lang);
+            if (languageResource != null) {
+                languageResources.put(lang, languageResource);
             }
-            if (translation == null) {
-                translation = " "; // This should be a space because appending an empty string will delete the whole string
-            }
-            csvRow.append(translation);
         }
-
-        return csvRow;
+        return languageResources;
     }
 
 }

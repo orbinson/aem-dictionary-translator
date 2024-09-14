@@ -47,12 +47,12 @@ public class UpdateLabelServlet extends SlingAllMethodsServlet {
             htmlResponse.send(response, true);
         } else {
             ResourceResolver resourceResolver = request.getResourceResolver();
-            Resource resource = resourceResolver.getResource(label);
+            Resource labelResource = resourceResolver.getResource(label);
             try {
-                if (resource != null) {
+                if (labelResource != null) {
                     // javasecurity:S5145
                     LOG.debug("Update label on path '{}'", label);
-                    updateLabel(request, resourceResolver, resource);
+                    updateLabel(request, resourceResolver, labelResource);
                 } else {
                     // javasecurity:S5145
                     HtmlResponse htmlResponse = new HtmlResponse();
@@ -67,51 +67,19 @@ public class UpdateLabelServlet extends SlingAllMethodsServlet {
         }
     }
 
-    private void updateLabel(SlingHttpServletRequest request, ResourceResolver resourceResolver, Resource resource) throws DictionaryException, PersistenceException, RepositoryException {
+    private void updateLabel(SlingHttpServletRequest request, ResourceResolver resourceResolver, Resource labelResource) throws DictionaryException, PersistenceException, RepositoryException {
         String key = request.getParameter("key");
-        String dictionaryPath = resource.getValueMap().get("dictionaryPath", String.class);
+        String dictionaryPath = labelResource.getValueMap().get("dictionaryPath", String.class);
         if (StringUtils.isNotBlank(dictionaryPath)) {
             Resource dictionaryResource = resourceResolver.getResource(dictionaryPath);
-            String name = resource.getName();
-            String[] languages = resource.getValueMap().get("languages", new String[0]);
+            String[] languages = labelResource.getValueMap().get("languages", new String[0]);
             for (String language : languages) {
                 String message = request.getParameter(language);
-                addMessage(resourceResolver, dictionaryResource, language, name, key, message);
+                dictionaryService.updateLabel(resourceResolver, dictionaryResource, language, key, message);
             }
         } else {
             throw new DictionaryException("Could not find dictionary path");
         }
     }
 
-    private void addMessage(ResourceResolver resourceResolver, Resource dictionaryResource, String language, String name, String key, String message) throws PersistenceException, RepositoryException {
-        Resource languageResource = dictionaryService.getLanguageResource(dictionaryResource, language);
-        if (languageResource != null) {
-            Resource labelResource = getLabelResource(resourceResolver, languageResource, name);
-            if (labelResource != null) {
-                ValueMap valueMap = labelResource.adaptTo(ModifiableValueMap.class);
-                if (valueMap != null) {
-                    if (message.isBlank()) {
-                        valueMap.remove(SLING_MESSAGE);
-                    } else {
-                        valueMap.put(SLING_MESSAGE, message);
-                        if (StringUtils.isNotBlank(key)) {
-                            valueMap.putIfAbsent(SLING_KEY, key);
-                        }
-                        LOG.trace("Updated label with name '{}' and message '{}' on path '{}'", name, message, labelResource.getPath());
-                    }
-                }
-            }
-            resourceResolver.commit();
-        }
-    }
-
-
-    public Resource getLabelResource(ResourceResolver resourceResolver, Resource languageResource, String name) throws RepositoryException {
-        if (languageResource.getChild(name) == null) {
-            Session session = resourceResolver.adaptTo(Session.class);
-            JcrUtil.createPath(languageResource.getPath() + "/" + name, SLING_MESSAGEENTRY, session);
-            session.save();
-        }
-        return languageResource.getChild(name);
-    }
 }

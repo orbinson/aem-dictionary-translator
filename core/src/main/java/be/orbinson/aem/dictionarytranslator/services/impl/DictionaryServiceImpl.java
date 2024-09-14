@@ -2,6 +2,7 @@ package be.orbinson.aem.dictionarytranslator.services.impl;
 
 import be.orbinson.aem.dictionarytranslator.exception.DictionaryException;
 import be.orbinson.aem.dictionarytranslator.services.DictionaryService;
+import be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants;
 import com.adobe.granite.translation.api.TranslationConfig;
 import com.day.cq.commons.jcr.JcrConstants;
 import com.day.cq.commons.jcr.JcrUtil;
@@ -9,6 +10,7 @@ import com.day.cq.replication.ReplicationActionType;
 import com.day.cq.replication.ReplicationException;
 import com.day.cq.replication.Replicator;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.jackrabbit.util.Text;
 import org.apache.sling.api.resource.*;
 import org.apache.sling.jcr.resource.api.JcrResourceConstants;
 import org.jetbrains.annotations.NotNull;
@@ -18,11 +20,14 @@ import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants.*;
 import static org.apache.jackrabbit.JcrConstants.JCR_LANGUAGE;
+import static org.apache.jackrabbit.JcrConstants.JCR_PRIMARYTYPE;
 
 @Component
 public class DictionaryServiceImpl implements DictionaryService {
@@ -188,6 +193,91 @@ public class DictionaryServiceImpl implements DictionaryService {
             }
         }
         return null;
+    }
+
+    @Override
+    public List<String> getLabelKeys(Resource dictionaryResource) {
+        Set<String> keys = new TreeSet<>();
+        for (String language : getLanguages(dictionaryResource)) {
+            Resource languageResource = getLanguageResource(dictionaryResource, language);
+            if (languageResource != null) {
+                for (Resource labelResource : languageResource.getChildren()) {
+                    if (labelResource.isResourceType(SLING_MESSAGEENTRY) && labelResource.getValueMap().containsKey(SLING_KEY)) {
+                        keys.add(labelResource.getValueMap().get(SLING_KEY, String.class));
+                    }
+                }
+            }
+        }
+        return List.copyOf(keys);
+    }
+
+
+    @Override
+    public boolean labelExists(Resource dictionaryResource, String language, String key) {
+        Resource languageResource = getLanguageResource(dictionaryResource, language);
+        return languageResource != null && languageResource.getChild(Text.escapeIllegalJcrChars(key)) != null;
+    }
+
+    @Override
+    public void createLabel(ResourceResolver resourceResolver, Resource dictionaryResource, String language, String key, String message) throws PersistenceException {
+        Resource languageResource = getLanguageResource(dictionaryResource, language);
+
+        if (languageResource != null) {
+            String path = languageResource.getPath();
+            Map<String, Object> properties = new HashMap<>();
+            properties.put(JCR_PRIMARYTYPE, SLING_MESSAGEENTRY);
+            properties.put(SLING_KEY, key);
+            if (!message.isBlank()) {
+                properties.put(SLING_MESSAGE, message);
+            }
+            resourceResolver.create(languageResource, Text.escapeIllegalJcrChars(key), properties);
+            resourceResolver.commit();
+            LOG.trace("Created label with key '{}' and message '{}' on path '{}'", key, message, path);
+        }
+    }
+
+    @Override
+    public void updateLabel(ResourceResolver resourceResolver, Resource dictionaryResource, String language, String key, String message) throws PersistenceException, RepositoryException {
+        Resource languageResource = getLanguageResource(dictionaryResource, language);
+        if (languageResource != null) {
+            Resource labelResource = getOrCreateLabelResource(resourceResolver, languageResource, key);
+            if (labelResource != null) {
+                ValueMap valueMap = labelResource.adaptTo(ModifiableValueMap.class);
+                if (valueMap != null) {
+                    if (message.isBlank()) {
+                        valueMap.remove(SLING_MESSAGE);
+                    } else {
+                        valueMap.put(SLING_MESSAGE, message);
+                        if (StringUtils.isNotBlank(key)) {
+                            valueMap.putIfAbsent(SLING_KEY, key);
+                        }
+                        LOG.trace("Updated label with name '{}' and message '{}' on path '{}'", labelResource.getName(), message, labelResource.getPath());
+                    }
+                }
+            }
+            resourceResolver.commit();
+        }
+    }
+
+    @Override
+    public Resource getLabelResource(Resource languageResource, String key) {
+        for (Resource labelResource : languageResource.getChildren()) {
+            if (key.equals(labelResource.getValueMap().get(DictionaryConstants.SLING_KEY))) {
+                return labelResource;
+            }
+        }
+        return null;
+    }
+
+    private Resource getOrCreateLabelResource(ResourceResolver resourceResolver, Resource languageResource, String key) throws RepositoryException {
+        Resource labelResource = getLabelResource(languageResource, key);
+        if (labelResource != null) {
+            return labelResource;
+        }
+        Session session = resourceResolver.adaptTo(Session.class);
+        JcrUtil.createPath(languageResource.getPath() + "/" + Text.escapeIllegalJcrChars(key), SLING_MESSAGEENTRY, session);
+        session.save();
+        return languageResource.getChild(Text.escapeIllegalJcrChars(key));
     }
 
 }

@@ -3,7 +3,6 @@ package be.orbinson.aem.dictionarytranslator.servlets.action;
 import com.day.cq.replication.ReplicationActionType;
 import com.day.cq.replication.ReplicationException;
 import com.day.cq.replication.Replicator;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.resource.Resource;
@@ -21,7 +20,6 @@ import javax.jcr.Session;
 import javax.servlet.Servlet;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Iterator;
 
 @Component(service = Servlet.class)
 @SlingServletResourceTypes(
@@ -45,21 +43,13 @@ public class ReplicateLabelServlet extends SlingAllMethodsServlet {
         } else {
             try {
                 for (String label : labels) {
-                    //Splitting label into dictionary path and label key
-                    label = label.replace("/mnt/dictionary", "");
-                    int lastIndexOfBackslash = label.lastIndexOf('/');
-                    String parentPath = "";
-                    if (lastIndexOfBackslash != -1) {
-                        parentPath = label.substring(0, lastIndexOfBackslash);
-                        label = label.substring(lastIndexOfBackslash + 1);
-                    }
-                    ResourceResolver resourceResolver = getResourceResolver(request);
-                    Iterator<Resource> iterator = getResources(resourceResolver, parentPath, label);
-                    if (iterator.hasNext()) {
-                        while (iterator.hasNext()) {
-                            Resource resource = iterator.next();
-                            replicator.replicate(resourceResolver.adaptTo(Session.class), ReplicationActionType.ACTIVATE, resource.getPath());
-                            LOG.debug("Published label on path '{}'", resource.getPath());
+                    ResourceResolver resourceResolver = request.getResourceResolver();
+                    Resource labelResource = resourceResolver.getResource(label);
+                    if (labelResource != null) {
+                        String[] labelPaths = labelResource.getValueMap().get("labelPaths", new String[0]);
+                        for (String labelPath : labelPaths) {
+                            replicator.replicate(resourceResolver.adaptTo(Session.class), ReplicationActionType.ACTIVATE, labelPath);
+                            LOG.debug("Published label on path '{}'", labelPath);
                         }
                     } else {
                         HtmlResponse htmlResponse = new HtmlResponse();
@@ -74,17 +64,6 @@ public class ReplicateLabelServlet extends SlingAllMethodsServlet {
                 htmlResponse.send(response, true);
             }
         }
-    }
-
-    @NotNull
-    ResourceResolver getResourceResolver(SlingHttpServletRequest request) {
-        return request.getResourceResolver();
-    }
-
-    @NotNull
-    Iterator<Resource> getResources(ResourceResolver resolver, String parentPath, String label) {
-        String query = "/jcr:root" + parentPath + "//element(*, mix:language)/" + label;
-        return resolver.findResources(query, "xpath");
     }
 
 }
