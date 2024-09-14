@@ -79,7 +79,9 @@ class DeleteLabelServletTest {
 
     @Test
     void deleteExistingLabel() throws ServletException, IOException, ReplicationException {
-        context.create().resource("/content/dictionaries/i18n/appel");
+        context.create().resource("/content/dictionaries/i18n/appel",
+                "labelPaths", new String[] {"/content/dictionaries/i18n/appel/fr", "/content/dictionaries/i18n/appel/en"}
+        );
         context.create().resource("/content/dictionaries/i18n/peer");
         context.request().setMethod("POST");
         context.request().setParameterMap(Map.of(
@@ -89,7 +91,8 @@ class DeleteLabelServletTest {
         servlet.service(context.request(), context.response());
 
         assertNull(context.resourceResolver().getResource("/content/dictionaries/i18n/appel"));
-        verify(replicator).replicate(any(Session.class), eq(ReplicationActionType.DEACTIVATE), eq("/content/dictionaries/i18n/appel"));
+        verify(replicator).replicate(any(Session.class), eq(ReplicationActionType.DEACTIVATE), eq("/content/dictionaries/i18n/appel/fr"));
+        verify(replicator).replicate(any(Session.class), eq(ReplicationActionType.DEACTIVATE), eq("/content/dictionaries/i18n/appel/en"));
 
         assertNotNull(context.resourceResolver().getResource("/content/dictionaries/i18n/peer"));
         verify(replicator,times(0)).replicate(any(Session.class), eq(ReplicationActionType.DEACTIVATE), eq("/content/dictionaries/i18n/peer"));
