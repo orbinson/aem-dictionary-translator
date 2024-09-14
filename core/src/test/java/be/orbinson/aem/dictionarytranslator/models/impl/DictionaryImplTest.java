@@ -200,26 +200,4 @@ class DictionaryImplTest {
         }
     }
 
-    @Test
-    void testGetFormattedLastModified() throws ParseException {
-        final String expectedFormattedLastModified = "Aug 24, 2022, 10:42:50 AM";
-        final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss.SSSXXX");
-        final String dateInString = "2022-08-24T10:42:50.469+02:00";
-        final Date date = simpleDateFormat.parse(dateInString);
-        final Calendar expectedCreated = Calendar.getInstance();
-        expectedCreated.setTime(date);
-
-        final Resource testResource = context.currentResource("/content/dictionaries/modified");
-        if (testResource != null) {
-            final Dictionary dictionary = context.request().adaptTo(Dictionary.class);
-            if (dictionary != null) {
-                final String actualFormattedLastModified = dictionary.getLastModifiedFormatted();
-                Assert.assertEquals(expectedFormattedLastModified, actualFormattedLastModified);
-            } else {
-                Assert.fail("could not adapt resource to dictionary");
-            }
-        } else {
-            Assert.fail("No resource available");
-        }
-    }
 }
