@@ -70,20 +70,25 @@ public class LabelResourceProvider extends ResourceProvider<Object> {
         return null;
     }
 
-    private Map<String, Object> getValues(Resource dictionaryResource, String labelName) {
-        Map<String, Object> keys = new HashMap<>();
 
-        for (String language : dictionaryService.getLanguages(dictionaryResource)) {
+    private Map<String, Object> getValuesAndLabelPaths(Resource dictionaryResource, String labelName, List<String> languages) {
+        Map<String, Object> properties = new HashMap<>();
+        List<String> labelPaths = new ArrayList<>();
+
+        for (String language : languages) {
             Resource languageResource = DictionaryUtil.getLanguageResource(dictionaryResource, language);
             if (languageResource != null) {
                 Resource labelResource = languageResource.getChild(labelName);
                 if (labelResource != null && (labelResource.getValueMap().containsKey(DictionaryConstants.SLING_MESSAGE))) {
-                    keys.put(language, labelResource.getValueMap().get(DictionaryConstants.SLING_MESSAGE, String.class));
+                    properties.put(language, labelResource.getValueMap().get(DictionaryConstants.SLING_MESSAGE, String.class));
+                    labelPaths.add(labelResource.getPath());
                 }
             }
         }
 
-        return keys;
+        properties.put("labelPaths", labelPaths);
+
+        return properties;
     }
 
     @Override
@@ -93,6 +98,7 @@ public class LabelResourceProvider extends ResourceProvider<Object> {
             // Not applying label resource provider
             return null;
         }
+
         String labelName = Text.getName(path);
         String dictionaryPath = Text.getRelativeParent(path, 1).replaceFirst(ROOT, "");
         Resource dictionaryResource = resourceResolver.getResource(dictionaryPath);
@@ -103,8 +109,9 @@ public class LabelResourceProvider extends ResourceProvider<Object> {
             properties.put("key", getKey(dictionaryResource, labelName));
             properties.put("path", path);
             properties.put("dictionaryPath", dictionaryPath);
-            properties.put(LANGUAGES, dictionaryService.getLanguages(dictionaryResource));
-            properties.putAll(getValues(dictionaryResource, labelName));
+            List<String> languages = dictionaryService.getLanguages(dictionaryResource);
+            properties.put(LANGUAGES, languages);
+            properties.putAll(getValuesAndLabelPaths(dictionaryResource, labelName, languages));
             return new ValueMapResource(resourceResolver, path, RESOURCE_TYPE, new ValueMapDecorator(properties));
         }
         return null;

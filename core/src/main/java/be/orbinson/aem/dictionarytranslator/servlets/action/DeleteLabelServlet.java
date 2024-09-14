@@ -69,7 +69,13 @@ public class DeleteLabelServlet extends SlingAllMethodsServlet {
     }
 
     private void deactivateAndDelete(ResourceResolver resourceResolver, Resource resource) throws ReplicationException, PersistenceException {
-        replicator.replicate(resourceResolver.adaptTo(Session.class), ReplicationActionType.DEACTIVATE, resource.getPath());
+        String[] labelPaths = resource.getValueMap().get("labelPaths", String[].class);
+        if (labelPaths != null) {
+            for (String labelPath : labelPaths) {
+                replicator.replicate(resourceResolver.adaptTo(Session.class), ReplicationActionType.DEACTIVATE, labelPath);
+            }
+        }
         resourceResolver.delete(resource);
     }
+
 }

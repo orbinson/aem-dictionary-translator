@@ -21,9 +21,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
@@ -79,20 +77,23 @@ class DeleteLabelServletTest {
 
     @Test
     void deleteExistingLabel() throws ServletException, IOException, ReplicationException {
-        context.create().resource("/content/dictionaries/i18n/appel");
+        context.create().resource("/mnt/dictionaries/i18n/appel",
+                "labelPaths", new String[]{"/content/dictionaries/i18n/appel/fr", "/content/dictionaries/i18n/appel/en"}
+        );
         context.create().resource("/content/dictionaries/i18n/peer");
         context.request().setMethod("POST");
         context.request().setParameterMap(Map.of(
-                DeleteLabelServlet.LABEL_PARAM, new String[]{"/content/dictionaries/i18n/appel"}
+                DeleteLabelServlet.LABEL_PARAM, new String[]{"/mnt/dictionaries/i18n/appel"}
         ));
 
         servlet.service(context.request(), context.response());
 
         assertNull(context.resourceResolver().getResource("/content/dictionaries/i18n/appel"));
-        verify(replicator).replicate(any(Session.class), eq(ReplicationActionType.DEACTIVATE), eq("/content/dictionaries/i18n/appel"));
+        verify(replicator).replicate(any(Session.class), eq(ReplicationActionType.DEACTIVATE), eq("/content/dictionaries/i18n/appel/fr"));
+        verify(replicator).replicate(any(Session.class), eq(ReplicationActionType.DEACTIVATE), eq("/content/dictionaries/i18n/appel/en"));
 
         assertNotNull(context.resourceResolver().getResource("/content/dictionaries/i18n/peer"));
-        verify(replicator,times(0)).replicate(any(Session.class), eq(ReplicationActionType.DEACTIVATE), eq("/content/dictionaries/i18n/peer"));
+        verify(replicator, times(0)).replicate(any(Session.class), eq(ReplicationActionType.DEACTIVATE), eq("/content/dictionaries/i18n/peer"));
 
         assertEquals(HttpServletResponse.SC_OK, context.response().getStatus());
     }
@@ -104,7 +105,7 @@ class DeleteLabelServletTest {
         context.create().resource("/content/dictionaries/i18n/en/framboos");
         context.request().setMethod("POST");
         context.request().setParameterMap(Map.of(
-                DeleteLabelServlet.LABEL_PARAM, new String[]{"/content/dictionaries/i18n/en/appel","/content/dictionaries/i18n/en/peer"}
+                DeleteLabelServlet.LABEL_PARAM, new String[]{"/content/dictionaries/i18n/en/appel", "/content/dictionaries/i18n/en/peer"}
         ));
 
         servlet.service(context.request(), context.response());
