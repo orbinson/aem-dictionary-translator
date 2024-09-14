@@ -1,20 +1,23 @@
 package be.orbinson.aem.dictionarytranslator.servlets.action;
 
-import org.apache.commons.compress.utils.Lists;
+import be.orbinson.aem.dictionarytranslator.services.DictionaryService;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.request.RequestParameter;
-import org.apache.sling.api.resource.*;
+import org.apache.sling.api.resource.PersistenceException;
+import org.apache.sling.api.resource.Resource;
+import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.servlets.SlingAllMethodsServlet;
 import org.apache.sling.servlets.annotations.SlingServletResourceTypes;
 import org.apache.sling.servlets.post.HtmlResponse;
 import org.apache.tika.io.IOUtils;
-import org.jetbrains.annotations.NotNull;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
+import javax.jcr.RepositoryException;
 import javax.servlet.Servlet;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -22,17 +25,11 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import static be.orbinson.aem.dictionarytranslator.servlets.action.ExportDictionaryServlet.KEY_HEADER;
-import static be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants.*;
-import static com.day.cq.commons.jcr.JcrConstants.*;
-import static org.apache.sling.jcr.resource.api.JcrResourceConstants.NT_SLING_FOLDER;
-import static org.apache.sling.jcr.resource.api.JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY;
 
-// TODO: should be updated to use dictionaryService
 @Component(service = Servlet.class)
 @SlingServletResourceTypes(
         resourceSuperType = "granite/ui/components/coral/foundation/form",
@@ -41,15 +38,18 @@ import static org.apache.sling.jcr.resource.api.JcrResourceConstants.SLING_RESOU
 )
 public class ImportDictionaryServlet extends SlingAllMethodsServlet {
 
+    @Reference
+    private DictionaryService dictionaryService;
+
     @Override
     public void doPost(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
-        String path = request.getParameter("dictionary");
+        String dictionaryPath = request.getParameter("dictionary");
         RequestParameter csvfile = request.getRequestParameter("csvfile");
 
         if (csvfile != null) {
             try {
-                processCsvFile(request, response, path, csvfile.getInputStream());
-            } catch (IOException e) {
+                processCsvFile(request, response, dictionaryPath, csvfile.getInputStream());
+            } catch (IOException | RepositoryException e) {
                 HtmlResponse htmlResponse = new HtmlResponse();
                 htmlResponse.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error while importing CSV file: " + e.getMessage());
                 htmlResponse.send(response, true);
@@ -57,7 +57,7 @@ public class ImportDictionaryServlet extends SlingAllMethodsServlet {
         }
     }
 
-    private void processCsvFile(SlingHttpServletRequest request, SlingHttpServletResponse response, String path, InputStream csvContent) throws IOException {
+    private void processCsvFile(SlingHttpServletRequest request, SlingHttpServletResponse response, String dictionaryPath, InputStream csvContent) throws IOException, RepositoryException {
         List<String> languages = new ArrayList<>();
         List<String> keys = new ArrayList<>();
         List<List<String>> translations = new ArrayList<>();
@@ -77,13 +77,13 @@ public class ImportDictionaryServlet extends SlingAllMethodsServlet {
             validateCsvHeaders(response, headers);
 
             headers.remove(KEY_HEADER);
-            Resource dictionary = resourceResolver.getResource(path);
-            if (dictionary != null) {
-                List<Resource> knownLanguages = Lists.newArrayList(dictionary.listChildren());
-                initializeLanguageData(headers, languages, translations, knownLanguages, response);
+            Resource dictionaryResource = resourceResolver.getResource(dictionaryPath);
+            if (dictionaryResource != null) {
+                List<String> knownLanguages = dictionaryService.getLanguages(dictionaryResource);
+                initializeLanguageData(headers, languages, translations, knownLanguages);
 
                 for (CSVRecord record : csvParser) {
-                    processCsvRecord(path, languages, resourceResolver, keys, translations, record);
+                    processCsvRecord(dictionaryResource, languages, resourceResolver, keys, translations, record);
                 }
 
                 resourceResolver.commit();
@@ -107,12 +107,12 @@ public class ImportDictionaryServlet extends SlingAllMethodsServlet {
         }
     }
 
-    private void initializeLanguageData(Map<String, Integer> headers, List<String> languages, List<List<String>> translations, List<Resource> knownLanguages, SlingHttpServletResponse response) throws IOException {
+    private void initializeLanguageData(Map<String, Integer> headers, List<String> languages, List<List<String>> translations, List<String> knownLanguages) throws IOException {
         for (String language : headers.keySet()) {
             boolean hasMatch = true;
-            for (Resource knownLanguage : knownLanguages) {
+            for (String knownLanguage : knownLanguages) {
                 hasMatch = false;
-                if (knownLanguage.getName().equals(language)) {
+                if (knownLanguage.equals(language)) {
                     languages.add(language);
                     translations.add(new ArrayList<>());
                     hasMatch = true;
@@ -125,57 +125,30 @@ public class ImportDictionaryServlet extends SlingAllMethodsServlet {
         }
     }
 
-    private void processCsvRecord(String path, List<String> languages, ResourceResolver resourceResolver, List<String> keys, List<List<String>> translations, CSVRecord record) throws IOException {
+    private void processCsvRecord(Resource dictionaryResource, List<String> languages, ResourceResolver resourceResolver, List<String> keys, List<List<String>> translations, CSVRecord record) throws IOException, RepositoryException {
         if (record.size() != languages.size() + 1) {
             throw new IOException("Record has an incorrect number of translations: " + record);
         }
 
-        String label = record.get(KEY_HEADER);
-        keys.add(label);
+        String key = record.get(KEY_HEADER);
+        keys.add(key);
 
         for (String language : languages) {
             int index = languages.indexOf(language);
             String translation = record.get(language);
             translations.get(index).add(translation);
 
-            createOrUpdateLabelResource(path, resourceResolver, language, label, translation);
+            createOrUpdateLabelResource(dictionaryResource, resourceResolver, language, key, translation);
         }
     }
 
-    private void createOrUpdateLabelResource(String path, ResourceResolver resourceResolver, String language, String label, String translation) throws PersistenceException {
-        Resource languageResource = getLanguageResource(path, resourceResolver, language);
-
-        Resource labelResource = resourceResolver.getResource(path + "/" + language + "/" + label);
-        if (labelResource == null) {
-            createLabelResource(resourceResolver, languageResource, label, translation);
+    private void createOrUpdateLabelResource(Resource dictionaryResource, ResourceResolver resourceResolver, String language, String key, String translation) throws PersistenceException, RepositoryException {
+        Resource languageResource = dictionaryService.getLanguageResource(dictionaryResource, language);
+        Resource messageEntryResource = dictionaryService.getMessageEntryResource(languageResource, key);
+        if (messageEntryResource == null) {
+            dictionaryService.createMessageEntry(resourceResolver, dictionaryResource, language, key, translation);
         } else {
-            updateLabelResourceProperties(labelResource, label, translation);
-        }
-    }
-
-    private static @NotNull Resource getLanguageResource(String path, ResourceResolver resourceResolver, String language) throws PersistenceException {
-        return ResourceUtil.getOrCreateResource(resourceResolver, path + "/" + language, Map.of(JCR_PRIMARYTYPE, NT_SLING_FOLDER, JCR_LANGUAGE, language, JCR_BASENAME, language, SLING_RESOURCE_TYPE_PROPERTY, NT_SLING_FOLDER, JCR_MIXINTYPES, new String[]{MIX_LANGUAGE}), null, false);
-    }
-
-
-    private Resource createLabelResource(ResourceResolver resourceResolver, Resource languageResource, String newNodeName, String translation) throws PersistenceException {
-        Map<String, Object> properties = new HashMap<>();
-        properties.put(JCR_PRIMARYTYPE, SLING_MESSAGEENTRY);
-        properties.put(SLING_KEY, newNodeName);
-        if (!translation.isBlank()) {
-            properties.put(SLING_MESSAGE, translation);
-        }
-        return resourceResolver.create(languageResource, newNodeName, properties);
-    }
-
-    private void updateLabelResourceProperties(Resource labelResource, String label, String translation) {
-        ModifiableValueMap modifiableValueMap = labelResource.adaptTo(ModifiableValueMap.class);
-        if (modifiableValueMap != null) {
-            modifiableValueMap.put(JCR_PRIMARYTYPE, SLING_MESSAGEENTRY);
-            modifiableValueMap.put(SLING_KEY, label);
-            if (!translation.isBlank()) {
-                modifiableValueMap.put(SLING_MESSAGE, translation);
-            }
+            dictionaryService.updateMessageEntry(resourceResolver, dictionaryResource, language, key, translation);
         }
     }
 

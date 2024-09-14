@@ -46,6 +46,7 @@ public class ExportDictionaryServlet extends SlingAllMethodsServlet {
         RequestParameter delimiter = request.getRequestParameter("delimiter");
 
         response.setContentType("text/csv");
+        response.setCharacterEncoding("UTF-8");
         response.setHeader("Content-Disposition", "attachment; filename=\"dictionary_" + dictionaryPath + ".csv");
 
         try (PrintWriter writer = response.getWriter()) {
@@ -88,14 +89,17 @@ public class ExportDictionaryServlet extends SlingAllMethodsServlet {
             StringBuilder csvRow = new StringBuilder();
             csvRow.append(key);
             csvRow.append(delimiter);
-            for (String language : languages) {
+            for (int i = 0; i < languages.size(); i++) {
+                String language = languages.get(i);
                 Resource messageEntryResource = dictionaryService.getMessageEntryResource(languageResources.get(language), key);
                 if (messageEntryResource != null) {
                     csvRow.append(messageEntryResource.getValueMap().get(SLING_MESSAGE));
                 } else {
                     csvRow.append(" ");
                 }
-                csvRow.append(delimiter);
+                if (i + 1 < languages.size()) {
+                    csvRow.append(delimiter);
+                }
             }
             LOG.debug("CSV row: " + csvRow);
             writer.println(csvRow);
