@@ -2,8 +2,8 @@ package be.orbinson.aem.dictionarytranslator.servlets.action;
 
 import be.orbinson.aem.dictionarytranslator.services.DictionaryService;
 import be.orbinson.aem.dictionarytranslator.utils.DictionaryUtil;
-import com.day.cq.commons.jcr.JcrUtil;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.jackrabbit.util.Text;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.resource.PersistenceException;
@@ -13,7 +13,6 @@ import org.apache.sling.api.servlets.SlingAllMethodsServlet;
 import org.apache.sling.servlets.annotations.SlingServletResourceTypes;
 import org.apache.sling.servlets.post.HtmlResponse;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
@@ -26,7 +25,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants.*;
-import static com.day.cq.commons.jcr.JcrConstants.JCR_LANGUAGE;
 import static org.apache.jackrabbit.JcrConstants.JCR_PRIMARYTYPE;
 
 @Component(service = Servlet.class)
@@ -83,7 +81,7 @@ public class CreateLabelServlet extends SlingAllMethodsServlet {
 
     private boolean labelExists(Resource dictionaryResource, String language, String key) {
         Resource languageResource = DictionaryUtil.getLanguageResource(dictionaryResource, language);
-        return languageResource != null && languageResource.getChild(JcrUtil.createValidName(key)) != null;
+        return languageResource != null && languageResource.getChild(Text.escapeIllegalJcrChars(key)) != null;
     }
 
     private void addMessage(ResourceResolver resourceResolver, Resource dictionaryResource, String language, String key, String message) throws PersistenceException {
@@ -97,12 +95,11 @@ public class CreateLabelServlet extends SlingAllMethodsServlet {
             if (!message.isBlank()) {
                 properties.put(SLING_MESSAGE, message);
             }
-            resourceResolver.create(resource, JcrUtil.createValidName(key), properties);
+            resourceResolver.create(resource, Text.escapeIllegalJcrChars(key), properties);
             LOG.trace("Create label with key '{}' and message '{}' on path '{}'", key, message, path);
             resourceResolver.commit();
         }
     }
-
 
 
 }
