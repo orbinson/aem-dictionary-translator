@@ -29,10 +29,10 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.mock;
 
 @ExtendWith({AemContextExtension.class, MockitoExtension.class})
-class CreateLabelServletTest {
+class CreateMessageEntryServletTest {
     private final AemContext context = new AemContext();
 
-    CreateLabelServlet servlet;
+    CreateMessageEntryServlet servlet;
 
     DictionaryService dictionaryService;
 
@@ -45,7 +45,7 @@ class CreateLabelServletTest {
         context.registerService(Replicator.class, mock(Replicator.class));
         dictionaryService = context.registerInjectActivateService(new DictionaryServiceImpl());
 
-        servlet = context.registerInjectActivateService(new CreateLabelServlet());
+        servlet = context.registerInjectActivateService(new CreateMessageEntryServlet());
     }
 
     @Test

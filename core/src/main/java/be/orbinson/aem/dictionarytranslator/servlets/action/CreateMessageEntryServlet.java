@@ -23,12 +23,12 @@ import java.io.IOException;
 @Component(service = Servlet.class)
 @SlingServletResourceTypes(
         resourceSuperType = "granite/ui/components/coral/foundation/form",
-        resourceTypes = "aem-dictionary-translator/servlet/action/create-label",
+        resourceTypes = "aem-dictionary-translator/servlet/action/create-message-entry",
         methods = "POST"
 )
-public class CreateLabelServlet extends SlingAllMethodsServlet {
+public class CreateMessageEntryServlet extends SlingAllMethodsServlet {
 
-    private static final Logger LOG = LoggerFactory.getLogger(CreateLabelServlet.class);
+    private static final Logger LOG = LoggerFactory.getLogger(CreateMessageEntryServlet.class);
 
     @Reference
     private transient DictionaryService dictionaryService;
@@ -49,13 +49,13 @@ public class CreateLabelServlet extends SlingAllMethodsServlet {
                 if (dictionaryResource != null) {
                     for (String language : dictionaryService.getLanguages(dictionaryResource)) {
                         // javasecurity:S5145
-                        LOG.debug("Create label on path '{}/{}'", dictionary, key);
+                        LOG.debug("Create message entry on path '{}/{}'", dictionary, key);
                         String message = request.getParameter(language);
-                        if (!dictionaryService.labelExists(dictionaryResource, language, key)) {
-                            dictionaryService.createLabel(resourceResolver, dictionaryResource, language, key, message);
+                        if (!dictionaryService.keyExists(dictionaryResource, language, key)) {
+                            dictionaryService.createMessageEntry(resourceResolver, dictionaryResource, language, key, message);
                         } else {
                             HtmlResponse htmlResponse = new HtmlResponse();
-                            htmlResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST, String.format("Can not create label %s, label already exists", key));
+                            htmlResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST, String.format("Can not create message entry %s, key already exists", key));
                             htmlResponse.send(response, true);
                         }
                     }

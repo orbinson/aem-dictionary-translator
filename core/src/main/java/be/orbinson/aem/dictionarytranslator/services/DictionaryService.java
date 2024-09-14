@@ -1,10 +1,10 @@
 package be.orbinson.aem.dictionarytranslator.services;
 
 import be.orbinson.aem.dictionarytranslator.exception.DictionaryException;
+import com.day.cq.replication.ReplicationException;
 import org.apache.sling.api.resource.PersistenceException;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
-import org.jetbrains.annotations.Nullable;
 
 import javax.jcr.RepositoryException;
 import java.util.List;
@@ -22,23 +22,23 @@ public interface DictionaryService {
 
     void deleteLanguage(ResourceResolver resourceResolver, Resource dictionaryResource, String language) throws DictionaryException;
 
-    void addLanguage(Resource dictionary, String language, String basename) throws PersistenceException;
+    void addLanguage(Resource dictionaryResource, String language, String basename) throws PersistenceException;
 
-    @Nullable
     Resource getLanguageResource(Resource dictionaryResource, String language);
 
     Map<String, String> getLanguagesForPath(ResourceResolver resourceResolver, String dictionaryPath);
 
     String getBasename(Resource dictionaryResource);
 
-    List<String> getLabelKeys(Resource dictionaryResource);
+    List<String> getKeys(Resource dictionaryResource);
 
-    boolean labelExists(Resource dictionaryResource, String language, String key);
+    boolean keyExists(Resource dictionaryResource, String language, String key);
 
-    Resource getLabelResource(Resource languageResource, String key);
+    Resource getMessageEntryResource(Resource languageResource, String key);
 
-    void createLabel(ResourceResolver resourceResolver, Resource dictionaryResource, String language, String key, String message) throws PersistenceException;
+    void createMessageEntry(ResourceResolver resourceResolver, Resource dictionaryResource, String language, String key, String message) throws PersistenceException;
 
-    void updateLabel(ResourceResolver resourceResolver, Resource dictionaryResource, String language, String key, String message) throws PersistenceException, RepositoryException;
+    void updateMessageEntry(ResourceResolver resourceResolver, Resource dictionaryResource, String language, String key, String message) throws PersistenceException, RepositoryException;
 
+    void deleteMessageEntry(ResourceResolver resourceResolver, Resource combiningMessageEntryResource) throws PersistenceException, ReplicationException;
 }

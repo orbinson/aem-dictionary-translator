@@ -1,6 +1,7 @@
 package be.orbinson.aem.dictionarytranslator.services.impl;
 
 import be.orbinson.aem.dictionarytranslator.exception.DictionaryException;
+import be.orbinson.aem.dictionarytranslator.services.CombiningMessageEntryResourceProvider;
 import be.orbinson.aem.dictionarytranslator.services.DictionaryService;
 import be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants;
 import com.adobe.granite.translation.api.TranslationConfig;
@@ -196,14 +197,14 @@ public class DictionaryServiceImpl implements DictionaryService {
     }
 
     @Override
-    public List<String> getLabelKeys(Resource dictionaryResource) {
+    public List<String> getKeys(Resource dictionaryResource) {
         Set<String> keys = new TreeSet<>();
         for (String language : getLanguages(dictionaryResource)) {
             Resource languageResource = getLanguageResource(dictionaryResource, language);
             if (languageResource != null) {
-                for (Resource labelResource : languageResource.getChildren()) {
-                    if (labelResource.isResourceType(SLING_MESSAGEENTRY) && labelResource.getValueMap().containsKey(SLING_KEY)) {
-                        keys.add(labelResource.getValueMap().get(SLING_KEY, String.class));
+                for (Resource messageEntryResource : languageResource.getChildren()) {
+                    if (messageEntryResource.isResourceType(SLING_MESSAGEENTRY) && messageEntryResource.getValueMap().containsKey(SLING_KEY)) {
+                        keys.add(messageEntryResource.getValueMap().get(SLING_KEY, String.class));
                     }
                 }
             }
@@ -213,13 +214,13 @@ public class DictionaryServiceImpl implements DictionaryService {
 
 
     @Override
-    public boolean labelExists(Resource dictionaryResource, String language, String key) {
+    public boolean keyExists(Resource dictionaryResource, String language, String key) {
         Resource languageResource = getLanguageResource(dictionaryResource, language);
-        return languageResource != null && languageResource.getChild(Text.escapeIllegalJcrChars(key)) != null;
+        return languageResource != null && getMessageEntryResource(languageResource, key) != null;
     }
 
     @Override
-    public void createLabel(ResourceResolver resourceResolver, Resource dictionaryResource, String language, String key, String message) throws PersistenceException {
+    public void createMessageEntry(ResourceResolver resourceResolver, Resource dictionaryResource, String language, String key, String message) throws PersistenceException {
         Resource languageResource = getLanguageResource(dictionaryResource, language);
 
         if (languageResource != null) {
@@ -232,17 +233,17 @@ public class DictionaryServiceImpl implements DictionaryService {
             }
             resourceResolver.create(languageResource, Text.escapeIllegalJcrChars(key), properties);
             resourceResolver.commit();
-            LOG.trace("Created label with key '{}' and message '{}' on path '{}'", key, message, path);
+            LOG.trace("Created message entry with key '{}' and message '{}' on path '{}'", key, message, path);
         }
     }
 
     @Override
-    public void updateLabel(ResourceResolver resourceResolver, Resource dictionaryResource, String language, String key, String message) throws PersistenceException, RepositoryException {
+    public void updateMessageEntry(ResourceResolver resourceResolver, Resource dictionaryResource, String language, String key, String message) throws PersistenceException, RepositoryException {
         Resource languageResource = getLanguageResource(dictionaryResource, language);
         if (languageResource != null) {
-            Resource labelResource = getOrCreateLabelResource(resourceResolver, languageResource, key);
-            if (labelResource != null) {
-                ValueMap valueMap = labelResource.adaptTo(ModifiableValueMap.class);
+            Resource messageEntryResource = getOrCreateMessageEntryResource(resourceResolver, languageResource, key);
+            if (messageEntryResource != null) {
+                ValueMap valueMap = messageEntryResource.adaptTo(ModifiableValueMap.class);
                 if (valueMap != null) {
                     if (message.isBlank()) {
                         valueMap.remove(SLING_MESSAGE);
@@ -251,7 +252,7 @@ public class DictionaryServiceImpl implements DictionaryService {
                         if (StringUtils.isNotBlank(key)) {
                             valueMap.putIfAbsent(SLING_KEY, key);
                         }
-                        LOG.trace("Updated label with name '{}' and message '{}' on path '{}'", labelResource.getName(), message, labelResource.getPath());
+                        LOG.trace("Updated message entry with name '{}' and message '{}' on path '{}'", messageEntryResource.getName(), message, messageEntryResource.getPath());
                     }
                 }
             }
@@ -260,19 +261,42 @@ public class DictionaryServiceImpl implements DictionaryService {
     }
 
     @Override
-    public Resource getLabelResource(Resource languageResource, String key) {
-        for (Resource labelResource : languageResource.getChildren()) {
-            if (key.equals(labelResource.getValueMap().get(DictionaryConstants.SLING_KEY))) {
-                return labelResource;
+    public Resource getMessageEntryResource(Resource languageResource, String key) {
+        // In order to speed up the search, we go for the default check where it is the escaped key as node name
+        Resource messageEntryResource = languageResource.getChild(Text.escapeIllegalJcrChars(key));
+        if (messageEntryResource != null) {
+            return messageEntryResource;
+        }
+
+        // Fall back to searching for the resource with sling:key as correct property
+        for (Resource resource : languageResource.getChildren()) {
+            if (key.equals(resource.getValueMap().get(DictionaryConstants.SLING_KEY))) {
+                return resource;
             }
         }
         return null;
     }
 
-    private Resource getOrCreateLabelResource(ResourceResolver resourceResolver, Resource languageResource, String key) throws RepositoryException {
-        Resource labelResource = getLabelResource(languageResource, key);
-        if (labelResource != null) {
-            return labelResource;
+    @Override
+    public void deleteMessageEntry(ResourceResolver resourceResolver, Resource combiningMessageEntryResource) throws PersistenceException, ReplicationException {
+        ValueMap properties = combiningMessageEntryResource.getValueMap();
+        if (properties.containsKey(CombiningMessageEntryResourceProvider.MESSAGE_ENTRY_PATHS)) {
+            for (String messageEntryPath : properties.get(CombiningMessageEntryResourceProvider.MESSAGE_ENTRY_PATHS, new String[0])) {
+                Resource messageEntryResource = resourceResolver.getResource(messageEntryPath);
+                if (messageEntryResource != null) {
+                    replicator.replicate(resourceResolver.adaptTo(Session.class), ReplicationActionType.DEACTIVATE, messageEntryPath);
+                    resourceResolver.delete(messageEntryResource);
+                }
+            }
+            resourceResolver.commit();
+        }
+
+    }
+
+    private Resource getOrCreateMessageEntryResource(ResourceResolver resourceResolver, Resource languageResource, String key) throws RepositoryException {
+        Resource messageEntryResource = getMessageEntryResource(languageResource, key);
+        if (messageEntryResource != null) {
+            return messageEntryResource;
         }
         Session session = resourceResolver.adaptTo(Session.class);
         JcrUtil.createPath(languageResource.getPath() + "/" + Text.escapeIllegalJcrChars(key), SLING_MESSAGEENTRY, session);

@@ -1,7 +1,7 @@
 package be.orbinson.aem.dictionarytranslator.servlets.datasource;
 
 import be.orbinson.aem.dictionarytranslator.models.Dictionary;
-import be.orbinson.aem.dictionarytranslator.services.LabelResourceProvider;
+import be.orbinson.aem.dictionarytranslator.services.CombiningMessageEntryResourceProvider;
 import com.adobe.granite.ui.components.ds.DataSource;
 import com.adobe.granite.ui.components.ds.SimpleDataSource;
 import com.adobe.granite.ui.components.ds.ValueMapResource;
@@ -26,10 +26,10 @@ import java.util.Map;
 
 @Component(service = Servlet.class)
 @SlingServletResourceTypes(
-        resourceTypes = "aem-dictionary-translator/datasource/label",
+        resourceTypes = "aem-dictionary-translator/datasource/combining-message-entry",
         methods = "GET"
 )
-public class LabelDatasource extends SlingSafeMethodsServlet {
+public class CombiningMessageEntryDatasource extends SlingSafeMethodsServlet {
     @Reference
     private transient ModelFactory modelFactory;
 
@@ -48,7 +48,7 @@ public class LabelDatasource extends SlingSafeMethodsServlet {
 
     private static void setDataSource(ResourceResolver resourceResolver, List<Resource> resourceList, Dictionary dictionary) {
         for (String key : dictionary.getKeys()) {
-            String path = LabelResourceProvider.ROOT + dictionary.getResource().getPath() + '/' + key;
+            String path = CombiningMessageEntryResourceProvider.ROOT + dictionary.getResource().getPath() + '/' + key;
             Resource keyResource = resourceResolver.getResource(path);
             if (keyResource != null) {
                 resourceList.add(keyResource);
@@ -91,23 +91,23 @@ public class LabelDatasource extends SlingSafeMethodsServlet {
             createDictionaryDataSource(request, resourceResolver, dictionaryPath, resourceList);
         }
 
-        String labelPath = request.getParameter("item");
-        if (labelPath != null) {
-            createLabelDataSource(resourceResolver, labelPath, resourceList);
+        String combiningMessageEntryPath = request.getParameter("item");
+        if (combiningMessageEntryPath != null) {
+            createCombiningMessageEntryDataSource(resourceResolver, combiningMessageEntryPath, resourceList);
         }
 
         DataSource dataSource = new SimpleDataSource(resourceList.iterator());
         request.setAttribute(DataSource.class.getName(), dataSource);
     }
 
-    private static void createLabelDataSource(ResourceResolver resourceResolver, String labelPath, List<Resource> resourceList) {
-        Resource resource = resourceResolver.getResource(labelPath);
-        if (resource != null) {
-            ValueMap properties = resource.getValueMap();
-            String[] languages = properties.get("languages", String[].class);
-            String key = properties.get("key", String.class);
+    private static void createCombiningMessageEntryDataSource(ResourceResolver resourceResolver, String combiningMessageEntryPath, List<Resource> resourceList) {
+        Resource combiningMessageEntryResource = resourceResolver.getResource(combiningMessageEntryPath);
+        if (combiningMessageEntryResource != null) {
+            ValueMap properties = combiningMessageEntryResource.getValueMap();
+            String[] languages = properties.get(CombiningMessageEntryResourceProvider.LANGUAGES, String[].class);
+            String key = properties.get(CombiningMessageEntryResourceProvider.KEY, String.class);
 
-            createTextFieldResource(resourceResolver, resourceList, "Label", key, false, true);
+            createTextFieldResource(resourceResolver, resourceList, "Key", key, false, true);
             createHiddenFieldResource(resourceResolver, resourceList, "key", key);
             if (languages != null) {
                 for (String language : languages) {

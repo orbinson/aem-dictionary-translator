@@ -17,7 +17,6 @@ import java.text.DateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-import java.util.Set;
 
 @Model(
         adaptables = SlingHttpServletRequest.class,
@@ -88,12 +87,12 @@ public class DictionaryImpl implements Dictionary {
     }
 
     @Override
-    public int getLabelCount() {
+    public int getKeyCount() {
         return getKeys().size();
     }
 
     @Override
     public List<String> getKeys() {
-        return dictionaryService.getLabelKeys(resource);
+        return dictionaryService.getKeys(resource);
     }
 }

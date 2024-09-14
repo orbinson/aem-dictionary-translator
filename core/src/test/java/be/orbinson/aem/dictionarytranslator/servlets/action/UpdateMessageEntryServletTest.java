@@ -29,11 +29,11 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.mock;
 
 @ExtendWith({AemContextExtension.class, MockitoExtension.class})
-class UpdateLabelServletTest {
+class UpdateMessageEntryServletTest {
 
     private final AemContext context = new AemContext();
 
-    UpdateLabelServlet servlet;
+    UpdateMessageEntryServlet servlet;
 
     DictionaryService dictionaryService;
 
@@ -46,7 +46,7 @@ class UpdateLabelServletTest {
         context.registerService(Replicator.class, mock(Replicator.class));
         dictionaryService = context.registerInjectActivateService(new DictionaryServiceImpl());
 
-        servlet = context.registerInjectActivateService(new UpdateLabelServlet());
+        servlet = context.registerInjectActivateService(new UpdateMessageEntryServlet());
     }
 
     @Test
@@ -60,7 +60,7 @@ class UpdateLabelServletTest {
     }
 
     @Test
-    void updateLabelInNonExistingDictionary() throws ServletException, IOException {
+    void updateCombiningMessageEntryInNonExistingDictionary() throws ServletException, IOException {
         context.request().setMethod("POST");
         context.request().setParameterMap(Map.of(
                 "dictionary", "/content/dictionaries/i18n",

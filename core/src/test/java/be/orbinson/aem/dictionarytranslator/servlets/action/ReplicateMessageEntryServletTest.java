@@ -35,16 +35,17 @@ import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @ExtendWith({AemContextExtension.class, MockitoExtension.class})
-class ReplicateLabelServletTest {
+class ReplicateMessageEntryServletTest {
 
     private final AemContext context = new AemContext(ResourceResolverType.JCR_MOCK);
 
-    @NotNull ReplicateLabelServlet servlet;
+    @NotNull
+    ReplicateMessageEntryServlet servlet;
 
-    @NotNull CreateLabelServlet create;
+    @NotNull
+    CreateMessageEntryServlet create;
 
     DictionaryService dictionaryService;
 
@@ -64,8 +65,8 @@ class ReplicateLabelServletTest {
         replicator = context.registerService(Replicator.class, replicator);
         dictionaryService = context.registerInjectActivateService(new DictionaryServiceImpl());
         resourceResolver = context.registerService(ResourceResolver.class, resourceResolver);
-        servlet = context.registerInjectActivateService(new ReplicateLabelServlet());
-        create = context.registerInjectActivateService(new CreateLabelServlet());
+        servlet = context.registerInjectActivateService(new ReplicateMessageEntryServlet());
+        create = context.registerInjectActivateService(new CreateMessageEntryServlet());
     }
 
     @Test

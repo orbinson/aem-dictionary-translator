@@ -82,16 +82,16 @@ public class ExportDictionaryServlet extends SlingAllMethodsServlet {
     }
 
     private void writeCsvRows(PrintWriter writer, RequestParameter delimiter, Resource dictionaryResource, List<String> languages) {
-        List<String> keys = dictionaryService.getLabelKeys(dictionaryResource);
+        List<String> keys = dictionaryService.getKeys(dictionaryResource);
         Map<String, Resource> languageResources = getLanguageResourceMap(dictionaryResource, languages);
         for (String key : keys) {
             StringBuilder csvRow = new StringBuilder();
             csvRow.append(key);
             csvRow.append(delimiter);
             for (String language : languages) {
-                Resource labelResource = dictionaryService.getLabelResource(languageResources.get(language), key);
-                if (labelResource != null) {
-                    csvRow.append(labelResource.getValueMap().get(SLING_MESSAGE));
+                Resource messageEntryResource = dictionaryService.getMessageEntryResource(languageResources.get(language), key);
+                if (messageEntryResource != null) {
+                    csvRow.append(messageEntryResource.getValueMap().get(SLING_MESSAGE));
                 } else {
                     csvRow.append(" ");
                 }

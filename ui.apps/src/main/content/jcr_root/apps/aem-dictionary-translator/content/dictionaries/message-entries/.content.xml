@@ -7,7 +7,7 @@
             jcr:mixinTypes="[sling:VanityPath]"
             jcr:primaryType="nt:unstructured"
             sling:resourceType="granite/ui/components/shell/collectionpage"
-            sling:vanityPath="/tools/translation/dictionaries/labels.html"
+            sling:vanityPath="/tools/translation/dictionaries/message-entries.html"
             jcr:title="Translate Dictionary"
             backHref="/tools/translation/dictionaries.html"
             modeGroup="language-list"
@@ -24,21 +24,21 @@
                 sling:resourceType="aem-dictionary-translator/datasource/breadcrumbs"/>
         <actions jcr:primaryType="nt:unstructured">
             <primary jcr:primaryType="nt:unstructured">
-                <create-label
+                <create-key
                         jcr:primaryType="nt:unstructured"
                         sling:resourceType="granite/ui/components/coral/foundation/collection/action"
                         action="foundation.dialog"
                         target="#translation-listview"
                         icon="add"
                         variant="primary"
-                        text="Create Label">
+                        text="Create Key">
                     <data jcr:primaryType="nt:unstructured"
-                          src.uritemplate="/apps/aem-dictionary-translator/content/granite/dialog/dictionary/label/create.html${requestPathInfo.suffix}"/>
+                          src.uritemplate="/apps/aem-dictionary-translator/content/granite/dialog/dictionary/key/create.html${requestPathInfo.suffix}"/>
                     <granite:rendercondition
                             jcr:primaryType="nt:unstructured"
                             sling:resourceType="granite/ui/components/coral/foundation/renderconditions/simple"
                             expression="${granite:contains(granite:relativeParent(requestPathInfo.suffix, 0), '/content')}"/>
-                </create-label>
+                </create-key>
             </primary>
             <selection jcr:primaryType="nt:unstructured">
                 <edit
@@ -52,7 +52,7 @@
                         variant="actionBar"
                         text="Edit">
                     <data jcr:primaryType="nt:unstructured"
-                          src.uritemplate="/apps/aem-dictionary-translator/content/granite/dialog/dictionary/label/update.html{?item*}"/>
+                          src.uritemplate="/apps/aem-dictionary-translator/content/granite/dialog/dictionary/key/update.html{?item*}"/>
                     <granite:rendercondition
                             jcr:primaryType="nt:unstructured"
                             sling:resourceType="granite/ui/components/coral/foundation/renderconditions/simple"
@@ -68,7 +68,7 @@
                         variant="actionBar"
                         text="Delete">
                     <data jcr:primaryType="nt:unstructured"
-                          src.uritemplate="/apps/aem-dictionary-translator/content/granite/dialog/dictionary/label/delete.html{?item*}"/>
+                          src.uritemplate="/apps/aem-dictionary-translator/content/granite/dialog/dictionary/message-entry/delete.html{?item*}"/>
                     <granite:rendercondition
                             jcr:primaryType="nt:unstructured"
                             sling:resourceType="granite/ui/components/coral/foundation/renderconditions/simple"
@@ -84,7 +84,7 @@
                         variant="actionBar"
                         text="Publish">
                     <data jcr:primaryType="nt:unstructured"
-                          src.uritemplate="/apps/aem-dictionary-translator/content/granite/dialog/dictionary/label/publish.html{?item*}"/>
+                          src.uritemplate="/apps/aem-dictionary-translator/content/granite/dialog/dictionary/key/publish.html{?item*}"/>
                     <granite:rendercondition
                             jcr:primaryType="nt:unstructured"
                             sling:resourceType="granite/ui/components/coral/foundation/renderconditions/simple"
@@ -105,13 +105,13 @@
                     selectionMode="${granite:contains(granite:relativeParent(requestPathInfo.suffix, 0), '/content') ? 'row' : 'none'}">
                 <datasource
                         jcr:primaryType="nt:unstructured"
-                        sling:resourceType="aem-dictionary-translator/datasource/label"
-                        itemResourceType="aem-dictionary-translator/components/label"
+                        sling:resourceType="aem-dictionary-translator/datasource/combining-message-entry"
+                        itemResourceType="aem-dictionary-translator/components/combining-message-entry"
                         limit="${empty requestPathInfo.selectors[1] ? 50 : requestPathInfo.selectors[1]}"
                         offset="${requestPathInfo.selectors[0]}"/>
                 <columnsdatasource
                         jcr:primaryType="nt:unstructured"
-                        sling:resourceType="aem-dictionary-translator/datasource/label"/>
+                        sling:resourceType="aem-dictionary-translator/datasource/combining-message-entry"/>
             </table>
         </views>
     </jcr:content>
