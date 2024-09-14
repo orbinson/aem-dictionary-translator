@@ -1,8 +1,8 @@
 package be.orbinson.aem.dictionarytranslator.servlets.action;
 
 import be.orbinson.aem.dictionarytranslator.services.DictionaryService;
-import com.day.cq.commons.jcr.JcrUtil;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.jackrabbit.util.Text;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.resource.PersistenceException;
@@ -79,7 +79,7 @@ public class CreateLabelServlet extends SlingAllMethodsServlet {
     }
 
     private boolean labelExists(ResourceResolver resourceResolver, Resource dictionaryResource, String language, String key) {
-        return resourceResolver.getResource(dictionaryResource.getPath() + "/" + language + "/" + JcrUtil.createValidName(key)) != null;
+        return resourceResolver.getResource(dictionaryResource.getPath() + "/" + language + "/" + Text.escapeIllegalJcrChars(key)) != null;
     }
 
     private void addMessage(ResourceResolver resourceResolver, Resource dictionary, String language, String key, String message) throws PersistenceException {
@@ -93,7 +93,7 @@ public class CreateLabelServlet extends SlingAllMethodsServlet {
             if (!message.isBlank()) {
                 properties.put(SLING_MESSAGE, message);
             }
-            resourceResolver.create(resource, JcrUtil.createValidName(key), properties);
+            resourceResolver.create(resource, Text.escapeIllegalJcrChars(key), properties);
             LOG.trace("Create label with key '{}' and message '{}' on path '{}'", key, message, path);
             resourceResolver.commit();
         }

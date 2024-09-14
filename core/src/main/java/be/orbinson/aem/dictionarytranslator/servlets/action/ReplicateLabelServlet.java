@@ -37,14 +37,14 @@ public class ReplicateLabelServlet extends SlingAllMethodsServlet {
 
     @Override
     protected void doPost(SlingHttpServletRequest request, @NotNull SlingHttpServletResponse response) throws IOException {
-        String labels = request.getParameter("labels");
+        String[] labels = request.getParameterValues("item");
 
-        if (StringUtils.isEmpty(labels)) {
-            LOG.warn("Labels parameters are required");
+        if (labels == null) {
+            LOG.warn("At least one item parameter is required");
             response.sendError(HttpServletResponse.SC_BAD_REQUEST);
         } else {
             try {
-                for (String label : labels.split(",")) {
+                for (String label : labels) {
                     //Splitting label into dictionary path and label key
                     label = label.replace("/mnt/dictionary", "");
                     int lastIndexOfBackslash = label.lastIndexOf('/');

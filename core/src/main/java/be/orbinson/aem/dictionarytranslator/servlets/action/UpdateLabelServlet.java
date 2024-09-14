@@ -35,7 +35,7 @@ public class UpdateLabelServlet extends SlingAllMethodsServlet {
 
     @Override
     protected void doPost(SlingHttpServletRequest request, @NotNull SlingHttpServletResponse response) throws IOException {
-        String label = request.getParameter("label");
+        String label = request.getParameter("item"); // only single items are supported
 
         if (StringUtils.isEmpty(label)) {
             HtmlResponse htmlResponse = new HtmlResponse();

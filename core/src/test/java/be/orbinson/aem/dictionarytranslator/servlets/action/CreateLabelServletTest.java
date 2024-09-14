@@ -120,6 +120,46 @@ class CreateLabelServletTest {
     }
 
     @Test
+    void doPostCaseSensitiveKeys() throws ServletException, IOException {
+        context.create().resource("/content/dictionaries/i18n/en", Map.of("jcr:language", "en"));
+        context.create().resource("/content/dictionaries/i18n/fr", Map.of("jcr:language", "fr"));
+
+        context.request().setMethod("POST");
+        context.request().setParameterMap(Map.of(
+                "dictionary", "/content/dictionaries/i18n",
+                "key", "greeting",
+                "en", "Hello",
+                "fr", ""
+        ));
+        servlet.service(context.request(), context.response());
+        assertEquals(HttpServletResponse.SC_OK, context.response().getStatus());
+
+        context.request().setParameterMap(Map.of(
+                "dictionary", "/content/dictionaries/i18n",
+                "key", "Greeting",
+                "en", "Hello2",
+                "fr", ""
+        ));
+        servlet.service(context.request(), context.response());
+
+        assertEquals(HttpServletResponse.SC_OK, context.response().getStatus());
+
+        Resource resource = context.resourceResolver().getResource("/content/dictionaries/i18n/en/greeting");
+        ValueMap properties = resource.getValueMap();
+        assertNotNull(resource);
+        assertEquals(SLING_MESSAGEENTRY, properties.get(JCR_PRIMARYTYPE));
+        assertEquals("greeting", properties.get(SLING_KEY));
+        assertEquals("Hello", properties.get(SLING_MESSAGE));
+
+        resource = context.resourceResolver().getResource("/content/dictionaries/i18n/en/Greeting");
+        properties = resource.getValueMap();
+        assertNotNull(resource);
+        assertEquals(SLING_MESSAGEENTRY, properties.get(JCR_PRIMARYTYPE));
+        assertEquals("Greeting", properties.get(SLING_KEY));
+        assertEquals("Hello2", properties.get(SLING_MESSAGE));
+    }
+
+    @Test
     void createLabelThatAlreadyExists() throws ServletException, IOException {
         context.create().resource("/content/dictionaries/i18n/en", Map.of("jcr:language", "en"));
         context.create().resource("/content/dictionaries/i18n/fr", Map.of("jcr:language", "fr"));

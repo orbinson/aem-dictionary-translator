@@ -31,37 +31,37 @@ import java.io.IOException;
 )
 public class DeleteLabelServlet extends SlingAllMethodsServlet {
     private static final Logger LOG = LoggerFactory.getLogger(DeleteLabelServlet.class);
-    public static final String LABELS_PARAM = "labels";
+    public static final String LABEL_PARAM = "item";
 
     @Reference
     private transient Replicator replicator;
 
     @Override
     protected void doPost(SlingHttpServletRequest request, @NotNull SlingHttpServletResponse response) throws IOException {
-        String labels = request.getParameter(LABELS_PARAM);
+        String[] labels = request.getParameterValues(LABEL_PARAM);
 
-        if (StringUtils.isEmpty(labels)) {
+        if (labels == null) {
             HtmlResponse htmlResponse = new HtmlResponse();
             htmlResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST, "Labels parameters are required");
             htmlResponse.send(response, true);
         } else {
-            for (String label : labels.split(",")) {
+            for (String label : labels) {
                 ResourceResolver resourceResolver = request.getResourceResolver();
                 Resource resource = resourceResolver.getResource(label);
                 try {
                     if (resource != null) {
                         // javasecurity:S5145
-                        LOG.debug("Delete label on path '{}'", labels);
+                        LOG.debug("Delete label on path '{}'", resource.getPath());
                         deactivateAndDelete(resourceResolver, resource);
                     } else {
                         // javasecurity:S5145
                         HtmlResponse htmlResponse = new HtmlResponse();
-                        htmlResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST, String.format("Unable to get label '%s'", labels));
+                        htmlResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST, String.format("Unable to get label '%s'", label));
                         htmlResponse.send(response, true);
                     }
                 } catch (PersistenceException | ReplicationException e) {
                     HtmlResponse htmlResponse = new HtmlResponse();
-                    htmlResponse.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, String.format("Unable to delete labels '%s': %s", labels, e.getMessage()));
+                    htmlResponse.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, String.format("Unable to delete label '%s': %s", label, e.getMessage()));
                     htmlResponse.send(response, true);
                 }
             }

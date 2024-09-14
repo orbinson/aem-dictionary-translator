@@ -52,7 +52,7 @@
                         variant="actionBar"
                         text="Edit">
                     <data jcr:primaryType="nt:unstructured"
-                          src.uritemplate="/apps/aem-dictionary-translator/content/granite/dialog/dictionary/label/update.html?label={+item}"/>
+                          src.uritemplate="/apps/aem-dictionary-translator/content/granite/dialog/dictionary/label/update.html{?item*}"/>
                     <granite:rendercondition
                             jcr:primaryType="nt:unstructured"
                             sling:resourceType="granite/ui/components/coral/foundation/renderconditions/simple"
@@ -68,7 +68,7 @@
                         variant="actionBar"
                         text="Delete">
                     <data jcr:primaryType="nt:unstructured"
-                          src.uritemplate="/apps/aem-dictionary-translator/content/granite/dialog/dictionary/label/delete.html?labels={+item}"/>
+                          src.uritemplate="/apps/aem-dictionary-translator/content/granite/dialog/dictionary/label/delete.html{?item*}"/>
                     <granite:rendercondition
                             jcr:primaryType="nt:unstructured"
                             sling:resourceType="granite/ui/components/coral/foundation/renderconditions/simple"
@@ -84,7 +84,7 @@
                         variant="actionBar"
                         text="Publish">
                     <data jcr:primaryType="nt:unstructured"
-                          src.uritemplate="/apps/aem-dictionary-translator/content/granite/dialog/dictionary/label/publish.html?labels={+item}"/>
+                          src.uritemplate="/apps/aem-dictionary-translator/content/granite/dialog/dictionary/label/publish.html{?item*}"/>
                     <granite:rendercondition
                             jcr:primaryType="nt:unstructured"
                             sling:resourceType="granite/ui/components/coral/foundation/renderconditions/simple"
