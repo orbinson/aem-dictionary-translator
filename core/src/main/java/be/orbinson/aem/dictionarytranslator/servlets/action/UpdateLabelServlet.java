@@ -1,7 +1,7 @@
 package be.orbinson.aem.dictionarytranslator.servlets.action;
 
-import be.orbinson.aem.dictionarytranslator.exception.DictionaryTranslatorException;
-import be.orbinson.aem.dictionarytranslator.utils.DictionaryUtil;
+import be.orbinson.aem.dictionarytranslator.exception.DictionaryException;
+import be.orbinson.aem.dictionarytranslator.services.DictionaryService;
 import com.day.cq.commons.jcr.JcrUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.SlingHttpServletRequest;
@@ -12,6 +12,7 @@ import org.apache.sling.servlets.annotations.SlingServletResourceTypes;
 import org.apache.sling.servlets.post.HtmlResponse;
 import org.jetbrains.annotations.NotNull;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,6 +34,8 @@ public class UpdateLabelServlet extends SlingAllMethodsServlet {
 
     private static final Logger LOG = LoggerFactory.getLogger(UpdateLabelServlet.class);
 
+    @Reference
+    private transient DictionaryService dictionaryService;
 
     @Override
     protected void doPost(SlingHttpServletRequest request, @NotNull SlingHttpServletResponse response) throws IOException {
@@ -64,7 +67,7 @@ public class UpdateLabelServlet extends SlingAllMethodsServlet {
         }
     }
 
-    private void updateLabel(SlingHttpServletRequest request, ResourceResolver resourceResolver, Resource resource) throws DictionaryTranslatorException, PersistenceException, RepositoryException {
+    private void updateLabel(SlingHttpServletRequest request, ResourceResolver resourceResolver, Resource resource) throws DictionaryException, PersistenceException, RepositoryException {
         String key = request.getParameter("key");
         String dictionaryPath = resource.getValueMap().get("dictionaryPath", String.class);
         if (StringUtils.isNotBlank(dictionaryPath)) {
@@ -76,12 +79,12 @@ public class UpdateLabelServlet extends SlingAllMethodsServlet {
                 addMessage(resourceResolver, dictionaryResource, language, name, key, message);
             }
         } else {
-            throw new DictionaryTranslatorException("Could not find dictionary path");
+            throw new DictionaryException("Could not find dictionary path");
         }
     }
 
     private void addMessage(ResourceResolver resourceResolver, Resource dictionaryResource, String language, String name, String key, String message) throws PersistenceException, RepositoryException {
-        Resource languageResource = DictionaryUtil.getLanguageResource(dictionaryResource, language);
+        Resource languageResource = dictionaryService.getLanguageResource(dictionaryResource, language);
         if (languageResource != null) {
             Resource labelResource = getLabelResource(resourceResolver, languageResource, name);
             if (labelResource != null) {

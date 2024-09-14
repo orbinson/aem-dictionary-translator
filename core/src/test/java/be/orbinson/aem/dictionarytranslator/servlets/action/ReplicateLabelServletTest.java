@@ -61,8 +61,8 @@ class ReplicateLabelServletTest {
     @BeforeEach
     void beforeEach() {
         translationConfig = context.registerService(TranslationConfig.class, translationConfig);
-        dictionaryService = context.registerInjectActivateService(new DictionaryServiceImpl());
         replicator = context.registerService(Replicator.class, replicator);
+        dictionaryService = context.registerInjectActivateService(new DictionaryServiceImpl());
         resourceResolver = context.registerService(ResourceResolver.class, resourceResolver);
         servlet = context.registerInjectActivateService(new ReplicateLabelServlet());
         create = context.registerInjectActivateService(new CreateLabelServlet());

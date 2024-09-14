@@ -1,5 +1,7 @@
 package be.orbinson.aem.dictionarytranslator.servlets.action;
 
+import be.orbinson.aem.dictionarytranslator.services.impl.DictionaryServiceImpl;
+import com.adobe.granite.translation.api.TranslationConfig;
 import com.day.cq.replication.ReplicationActionType;
 import com.day.cq.replication.ReplicationException;
 import com.day.cq.replication.Replicator;
@@ -21,8 +23,7 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 @ExtendWith({AemContextExtension.class, MockitoExtension.class})
 class DeleteDictionaryServletTest {
@@ -36,6 +37,8 @@ class DeleteDictionaryServletTest {
     @BeforeEach
     void beforeEach() {
         replicator = context.registerService(Replicator.class, replicator);
+        context.registerService(TranslationConfig.class, mock(TranslationConfig.class));
+        context.registerInjectActivateService(new DictionaryServiceImpl());
         servlet = context.registerInjectActivateService(new DeleteDictionaryServlet());
     }
 
@@ -78,7 +81,7 @@ class DeleteDictionaryServletTest {
         context.create().resource("/content/dictionaries/site-c/i18n");
         context.request().setMethod("POST");
         context.request().setParameterMap(Map.of(
-                DeleteDictionaryServlet.DICTIONARIES_PARAM, new String[]{"/content/dictionaries/site-a/i18n,/content/dictionaries/site-b/i18n"}
+                DeleteDictionaryServlet.DICTIONARIES_PARAM, new String[]{"/content/dictionaries/site-a/i18n", "/content/dictionaries/site-b/i18n"}
         ));
 
         servlet.service(context.request(), context.response());
@@ -100,6 +103,6 @@ class DeleteDictionaryServletTest {
         servlet.service(context.request(), context.response());
 
         assertNotNull(context.resourceResolver().getResource("/content/dictionaries/site-a/i18n"));
-        assertEquals(HttpServletResponse.SC_NOT_FOUND, context.response().getStatus());
+        assertEquals(HttpServletResponse.SC_BAD_REQUEST, context.response().getStatus());
     }
 }

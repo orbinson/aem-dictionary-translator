@@ -1,5 +1,7 @@
 package be.orbinson.aem.dictionarytranslator.servlets.action;
 
+import be.orbinson.aem.dictionarytranslator.services.impl.DictionaryServiceImpl;
+import com.adobe.granite.translation.api.TranslationConfig;
 import com.day.cq.replication.ReplicationActionType;
 import com.day.cq.replication.ReplicationException;
 import com.day.cq.replication.Replicator;
@@ -22,8 +24,7 @@ import static com.day.cq.commons.jcr.JcrConstants.JCR_LANGUAGE;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 @ExtendWith({AemContextExtension.class, MockitoExtension.class})
 class DeleteLanguageServletTest {
@@ -37,6 +38,8 @@ class DeleteLanguageServletTest {
     @BeforeEach
     void beforeEach() {
         replicator = context.registerService(Replicator.class, replicator);
+        context.registerService(TranslationConfig.class, mock(TranslationConfig.class));
+        context.registerInjectActivateService(new DictionaryServiceImpl());
         servlet = context.registerInjectActivateService(new DeleteLanguageServlet());
     }
 

@@ -1,7 +1,6 @@
 package be.orbinson.aem.dictionarytranslator.services;
 
 import be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants;
-import be.orbinson.aem.dictionarytranslator.utils.DictionaryUtil;
 import com.adobe.granite.ui.components.ds.ValueMapResource;
 import com.day.text.Text;
 import org.apache.commons.lang3.StringUtils;
@@ -59,10 +58,10 @@ public class LabelResourceProvider extends ResourceProvider<Object> {
         }
     }
 
-    private static @Nullable Resource getLabelResource(String language, ResourceResolver resourceResolver, String dictionaryPath, String name) {
+    private @Nullable Resource getLabelResource(String language, ResourceResolver resourceResolver, String dictionaryPath, String name) {
         Resource dictionaryResource = resourceResolver.getResource(dictionaryPath);
         if (dictionaryResource != null) {
-            Resource languageResource = DictionaryUtil.getLanguageResource(dictionaryResource, language);
+            Resource languageResource = dictionaryService.getLanguageResource(dictionaryResource, language);
             if (languageResource != null) {
                 return languageResource.getChild(name);
             }
@@ -76,7 +75,7 @@ public class LabelResourceProvider extends ResourceProvider<Object> {
         List<String> labelPaths = new ArrayList<>();
 
         for (String language : languages) {
-            Resource languageResource = DictionaryUtil.getLanguageResource(dictionaryResource, language);
+            Resource languageResource = dictionaryService.getLanguageResource(dictionaryResource, language);
             if (languageResource != null) {
                 Resource labelResource = languageResource.getChild(labelName);
                 if (labelResource != null && (labelResource.getValueMap().containsKey(DictionaryConstants.SLING_MESSAGE))) {
@@ -121,7 +120,7 @@ public class LabelResourceProvider extends ResourceProvider<Object> {
         List<String> languages = dictionaryService.getLanguages(dictionaryResource);
         if (!languages.isEmpty()) {
             for (String language : languages) {
-                Resource languageResource = DictionaryUtil.getLanguageResource(dictionaryResource, language);
+                Resource languageResource = dictionaryService.getLanguageResource(dictionaryResource, language);
                 if (languageResource != null) {
                     Resource labelResource = languageResource.getChild(labelName);
                     if (labelResource != null && labelResource.isResourceType(DictionaryConstants.SLING_MESSAGEENTRY)) {
@@ -150,7 +149,7 @@ public class LabelResourceProvider extends ResourceProvider<Object> {
             languages.add(0, mostCompleteLanguage);
         }
         return languages.stream()
-                .map(language -> DictionaryUtil.getLanguageResource(dictionaryResource, language))
+                .map(language -> dictionaryService.getLanguageResource(dictionaryResource, language))
                 .filter(Objects::nonNull)
                 .map(languageResource -> languageResource.getChild(labelName))
                 .filter(Objects::nonNull)

@@ -1,7 +1,6 @@
 package be.orbinson.aem.dictionarytranslator.servlets.action;
 
 import be.orbinson.aem.dictionarytranslator.services.DictionaryService;
-import be.orbinson.aem.dictionarytranslator.utils.DictionaryUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jackrabbit.util.Text;
 import org.apache.sling.api.SlingHttpServletRequest;
@@ -80,12 +79,12 @@ public class CreateLabelServlet extends SlingAllMethodsServlet {
     }
 
     private boolean labelExists(Resource dictionaryResource, String language, String key) {
-        Resource languageResource = DictionaryUtil.getLanguageResource(dictionaryResource, language);
+        Resource languageResource = dictionaryService.getLanguageResource(dictionaryResource, language);
         return languageResource != null && languageResource.getChild(Text.escapeIllegalJcrChars(key)) != null;
     }
 
     private void addMessage(ResourceResolver resourceResolver, Resource dictionaryResource, String language, String key, String message) throws PersistenceException {
-        Resource resource = DictionaryUtil.getLanguageResource(dictionaryResource, language);
+        Resource resource = dictionaryService.getLanguageResource(dictionaryResource, language);
 
         if (resource != null) {
             String path = resource.getPath();

@@ -1,31 +1,24 @@
 package be.orbinson.aem.dictionarytranslator.servlets.action;
 
-import be.orbinson.aem.dictionarytranslator.utils.DictionaryUtil;
-import com.day.cq.replication.ReplicationActionType;
-import com.day.cq.replication.ReplicationException;
-import com.day.cq.replication.Replicator;
+import be.orbinson.aem.dictionarytranslator.exception.DictionaryException;
+import be.orbinson.aem.dictionarytranslator.services.DictionaryService;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
-import org.apache.sling.api.resource.PersistenceException;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.servlets.SlingAllMethodsServlet;
 import org.apache.sling.servlets.annotations.SlingServletResourceTypes;
 import org.apache.sling.servlets.post.HtmlResponse;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.jcr.Session;
 import javax.servlet.Servlet;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-
-import static com.day.cq.commons.jcr.JcrConstants.JCR_LANGUAGE;
 
 @Component(service = Servlet.class)
 @SlingServletResourceTypes(
@@ -34,12 +27,12 @@ import static com.day.cq.commons.jcr.JcrConstants.JCR_LANGUAGE;
         methods = "POST"
 )
 public class DeleteLanguageServlet extends SlingAllMethodsServlet {
-    private static final Logger LOG = LoggerFactory.getLogger(DeleteLanguageServlet.class);
+
     public static final String LANGUAGE_PARAM = "language";
     public static final String DICTIONARY_PARAM = "dictionary";
 
     @Reference
-    private transient Replicator replicator;
+    private transient DictionaryService dictionaryService;
 
     @Override
     @SuppressWarnings("java:S1075")
@@ -50,21 +43,17 @@ public class DeleteLanguageServlet extends SlingAllMethodsServlet {
         if (StringUtils.isNotEmpty(dictionary) && StringUtils.isNotEmpty(language)) {
             ResourceResolver resourceResolver = request.getResourceResolver();
             Resource dictionaryResource = resourceResolver.getResource(dictionary);
-            Resource languageResource = DictionaryUtil.getLanguageResource(dictionaryResource, language);
-
             try {
-                if (languageResource != null) {
-                    LOG.debug("Delete language '{}' from '{}'", language, dictionary);
-                    deactivateAndDelete(resourceResolver, languageResource);
-                    resourceResolver.commit();
+                if (dictionaryResource != null) {
+                    dictionaryService.deleteLanguage(resourceResolver, dictionaryResource, language);
                 } else {
                     HtmlResponse htmlResponse = new HtmlResponse();
                     htmlResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST, String.format("Unable to get dictionary '%s'", dictionary));
                     htmlResponse.send(response, true);
                 }
-            } catch (PersistenceException | ReplicationException e) {
+            } catch (DictionaryException e) {
                 HtmlResponse htmlResponse = new HtmlResponse();
-                htmlResponse.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, String.format("Unable to delete language '%s': %s", language, e.getMessage()));
+                htmlResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST, String.format("Unable to delete language '%s': %s", language, e.getMessage()));
                 htmlResponse.send(response, true);
             }
         } else {
@@ -72,11 +61,6 @@ public class DeleteLanguageServlet extends SlingAllMethodsServlet {
             htmlResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST, "Language and dictionary parameter can not be empty");
             htmlResponse.send(response, true);
         }
-    }
-
-    private void deactivateAndDelete(ResourceResolver resourceResolver, Resource resource) throws ReplicationException, PersistenceException {
-        replicator.replicate(resourceResolver.adaptTo(Session.class), ReplicationActionType.DEACTIVATE, resource.getPath());
-        resourceResolver.delete(resource);
     }
 
 }

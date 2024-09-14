@@ -3,6 +3,7 @@ package be.orbinson.aem.dictionarytranslator.models.impl;
 import be.orbinson.aem.dictionarytranslator.models.Dictionary;
 import be.orbinson.aem.dictionarytranslator.services.impl.DictionaryServiceImpl;
 import com.adobe.granite.translation.api.TranslationConfig;
+import com.day.cq.replication.Replicator;
 import io.wcm.testing.mock.aem.junit5.AemContext;
 import io.wcm.testing.mock.aem.junit5.AemContextExtension;
 import junit.framework.Assert;
@@ -24,6 +25,7 @@ import java.util.*;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 
 @ExtendWith({AemContextExtension.class, MockitoExtension.class})
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -34,12 +36,12 @@ class DictionaryImplTest {
 
     @Mock
     private TranslationConfig translationConfig;
-
     @BeforeEach
     public void setUp() {
         context.addModelsForClasses(DictionaryImpl.class);
         context.registerService(TranslationConfig.class, translationConfig);
         doReturn(Map.of("en", "English", "fr", "French", "de", "German")).when(translationConfig).getLanguages(any(ResourceResolver.class));
+        context.registerService(Replicator.class, mock(Replicator.class));
         context.registerInjectActivateService(new DictionaryServiceImpl());
         context.load().json("/i18nTestDictionaries.json", "/content/dictionaries");
     }
