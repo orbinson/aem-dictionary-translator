@@ -1,6 +1,6 @@
 package be.orbinson.aem.dictionarytranslator.servlets.action;
 
-import be.orbinson.aem.dictionarytranslator.services.CombiningMessageEntryResourceProvider;
+import be.orbinson.aem.dictionarytranslator.services.impl.CombiningMessageEntryResourceProvider;
 import com.day.cq.replication.ReplicationActionType;
 import com.day.cq.replication.ReplicationException;
 import com.day.cq.replication.Replicator;

@@ -1,7 +1,6 @@
 package be.orbinson.aem.dictionarytranslator.services.impl;
 
 import be.orbinson.aem.dictionarytranslator.exception.DictionaryException;
-import be.orbinson.aem.dictionarytranslator.services.CombiningMessageEntryResourceProvider;
 import be.orbinson.aem.dictionarytranslator.services.DictionaryService;
 import be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants;
 import com.adobe.granite.translation.api.TranslationConfig;

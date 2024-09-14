@@ -1,7 +1,7 @@
 package be.orbinson.aem.dictionarytranslator.servlets.datasource;
 
 import be.orbinson.aem.dictionarytranslator.models.Dictionary;
-import be.orbinson.aem.dictionarytranslator.services.CombiningMessageEntryResourceProvider;
+import be.orbinson.aem.dictionarytranslator.services.impl.CombiningMessageEntryResourceProvider;
 import com.adobe.granite.ui.components.ds.DataSource;
 import com.adobe.granite.ui.components.ds.SimpleDataSource;
 import com.adobe.granite.ui.components.ds.ValueMapResource;

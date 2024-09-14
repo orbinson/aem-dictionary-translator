@@ -1,5 +1,6 @@
-package be.orbinson.aem.dictionarytranslator.services;
+package be.orbinson.aem.dictionarytranslator.services.impl;
 
+import be.orbinson.aem.dictionarytranslator.services.DictionaryService;
 import be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants;
 import com.adobe.granite.ui.components.ds.ValueMapResource;
 import com.day.text.Text;

@@ -1,6 +1,6 @@
 package be.orbinson.aem.dictionarytranslator.servlets.action;
 
-import be.orbinson.aem.dictionarytranslator.services.CombiningMessageEntryResourceProvider;
+import be.orbinson.aem.dictionarytranslator.services.impl.CombiningMessageEntryResourceProvider;
 import be.orbinson.aem.dictionarytranslator.services.DictionaryService;
 import be.orbinson.aem.dictionarytranslator.services.impl.DictionaryServiceImpl;
 import com.adobe.granite.translation.api.TranslationConfig;
