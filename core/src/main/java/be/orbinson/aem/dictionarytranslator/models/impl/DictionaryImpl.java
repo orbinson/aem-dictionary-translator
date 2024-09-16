@@ -14,7 +14,9 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.inject.Named;
 import java.text.DateFormat;
-import java.util.*;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
 
 @Model(
         adaptables = SlingHttpServletRequest.class,
@@ -85,25 +87,12 @@ public class DictionaryImpl implements Dictionary {
     }
 
     @Override
-    public int getLabelCount() {
+    public int getKeyCount() {
         return getKeys().size();
     }
 
     @Override
     public List<String> getKeys() {
-        Set<String> keys = new TreeSet<>();
-        for (String language : dictionaryService.getLanguages(resource)) {
-            Resource child = resource.getChild(language);
-            if (child != null) {
-                child.listChildren().forEachRemaining(item -> addKey(keys, item));
-            }
-        }
-        return List.copyOf(keys);
-    }
-
-    private static void addKey(Set<String> keys, Resource item) {
-        if (item.isResourceType("sling:MessageEntry")) {
-            keys.add(item.getName());
-        }
+        return dictionaryService.getKeys(resource);
     }
 }

@@ -1,22 +1,44 @@
 package be.orbinson.aem.dictionarytranslator.services;
 
+import be.orbinson.aem.dictionarytranslator.exception.DictionaryException;
+import com.day.cq.replication.ReplicationException;
 import org.apache.sling.api.resource.PersistenceException;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 
+import javax.jcr.RepositoryException;
 import java.util.List;
 import java.util.Map;
 
 public interface DictionaryService {
-    Map<String, String> getLanguagesForPath(ResourceResolver resourceResolver, String path);
 
     List<Resource> getDictionaries(ResourceResolver resourceResolver);
 
-    List<String> getLanguages(Resource resource);
+    void createDictionary(Resource parent, String name, String[] languages, String basename) throws PersistenceException;
+
+    void deleteDictionary(ResourceResolver resourceResolver, String dictionaryPath) throws DictionaryException;
+
+    List<String> getLanguages(Resource dictionaryResource);
+
+    void deleteLanguage(ResourceResolver resourceResolver, Resource dictionaryResource, String language) throws DictionaryException;
+
+    void addLanguage(Resource dictionaryResource, String language, String basename) throws PersistenceException;
+
+    Resource getLanguageResource(Resource dictionaryResource, String language);
+
+    Map<String, String> getLanguagesForPath(ResourceResolver resourceResolver, String dictionaryPath);
 
     String getBasename(Resource dictionaryResource);
 
-    void createDictionary(Resource parent, String name, String[] languages, String basename) throws PersistenceException;
+    List<String> getKeys(Resource dictionaryResource);
 
-    void addLanguage(Resource dictionary, String language, String basename) throws PersistenceException;
+    boolean keyExists(Resource dictionaryResource, String language, String key);
+
+    Resource getMessageEntryResource(Resource languageResource, String key);
+
+    void createMessageEntry(ResourceResolver resourceResolver, Resource dictionaryResource, String language, String key, String message) throws PersistenceException;
+
+    void updateMessageEntry(ResourceResolver resourceResolver, Resource dictionaryResource, String language, String key, String message) throws PersistenceException, RepositoryException;
+
+    void deleteMessageEntry(ResourceResolver resourceResolver, Resource combiningMessageEntryResource) throws PersistenceException, ReplicationException;
 }

@@ -1,9 +1,7 @@
 package be.orbinson.aem.dictionarytranslator.servlets.action;
 
-import com.day.cq.replication.ReplicationActionType;
+import be.orbinson.aem.dictionarytranslator.services.DictionaryService;
 import com.day.cq.replication.ReplicationException;
-import com.day.cq.replication.Replicator;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.resource.PersistenceException;
@@ -18,7 +16,6 @@ import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.jcr.Session;
 import javax.servlet.Servlet;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -26,56 +23,47 @@ import java.io.IOException;
 @Component(service = Servlet.class)
 @SlingServletResourceTypes(
         resourceSuperType = "granite/ui/components/coral/foundation/form",
-        resourceTypes = "aem-dictionary-translator/servlet/action/delete-label",
+        resourceTypes = "aem-dictionary-translator/servlet/action/delete-message-entry",
         methods = "POST"
 )
-public class DeleteLabelServlet extends SlingAllMethodsServlet {
-    private static final Logger LOG = LoggerFactory.getLogger(DeleteLabelServlet.class);
-    public static final String LABEL_PARAM = "item";
+public class DeleteMessageEntryServlet extends SlingAllMethodsServlet {
+    private static final Logger LOG = LoggerFactory.getLogger(DeleteMessageEntryServlet.class);
+    public static final String ITEM_PARAM = "item";
 
     @Reference
-    private transient Replicator replicator;
+    private transient DictionaryService dictionaryService;
 
     @Override
     protected void doPost(SlingHttpServletRequest request, @NotNull SlingHttpServletResponse response) throws IOException {
-        String[] labels = request.getParameterValues(LABEL_PARAM);
+        String[] combiningMessageEntryPaths = request.getParameterValues(ITEM_PARAM);
 
-        if (labels == null) {
+        if (combiningMessageEntryPaths == null) {
             HtmlResponse htmlResponse = new HtmlResponse();
-            htmlResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST, "Labels parameters are required");
+            htmlResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST, "item parameter is required");
             htmlResponse.send(response, true);
         } else {
-            for (String label : labels) {
+            for (String combiningMessageEntryPath : combiningMessageEntryPaths) {
                 ResourceResolver resourceResolver = request.getResourceResolver();
-                Resource resource = resourceResolver.getResource(label);
+                Resource combiningMessageEntryResource = resourceResolver.getResource(combiningMessageEntryPath);
                 try {
-                    if (resource != null) {
+                    if (combiningMessageEntryResource != null) {
                         // javasecurity:S5145
-                        LOG.debug("Delete label on path '{}'", resource.getPath());
-                        deactivateAndDelete(resourceResolver, resource);
+                        LOG.debug("Delete message entry for path '{}'", combiningMessageEntryResource.getPath());
+                        dictionaryService.deleteMessageEntry(resourceResolver, combiningMessageEntryResource);
                     } else {
                         // javasecurity:S5145
                         HtmlResponse htmlResponse = new HtmlResponse();
-                        htmlResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST, String.format("Unable to get label '%s'", label));
+                        htmlResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST, String.format("Unable to get message entry '%s'", combiningMessageEntryPath));
                         htmlResponse.send(response, true);
                     }
                 } catch (PersistenceException | ReplicationException e) {
                     HtmlResponse htmlResponse = new HtmlResponse();
-                    htmlResponse.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, String.format("Unable to delete label '%s': %s", label, e.getMessage()));
+                    htmlResponse.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, String.format("Unable to delete message entry '%s': %s", combiningMessageEntryPath, e.getMessage()));
                     htmlResponse.send(response, true);
                 }
             }
         }
     }
 
-    private void deactivateAndDelete(ResourceResolver resourceResolver, Resource resource) throws ReplicationException, PersistenceException {
-        String[] labelPaths = resource.getValueMap().get("labelPaths", String[].class);
-        if (labelPaths != null) {
-            for (String labelPath : labelPaths) {
-                replicator.replicate(resourceResolver.adaptTo(Session.class), ReplicationActionType.DEACTIVATE, labelPath);
-            }
-        }
-        resourceResolver.delete(resource);
-    }
 
 }

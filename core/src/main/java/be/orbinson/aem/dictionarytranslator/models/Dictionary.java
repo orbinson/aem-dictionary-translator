@@ -24,5 +24,5 @@ public interface Dictionary {
 
     boolean isEditable();
 
-    int getLabelCount();
+    int getKeyCount();
 }

@@ -1,7 +1,7 @@
 <tr data-sly-use.model="be.orbinson.aem.dictionarytranslator.models.Dictionary"
     is="coral-table-row"
     data-foundation-collection-item-id="${resource.path}"
-    data-foundation-collection-navigator-href="/tools/translation/dictionaries/labels.html${resource.path}"
+    data-foundation-collection-navigator-href="/tools/translation/dictionaries/message-entries.html${resource.path}"
     class="foundation-collection-item foundation-collection-navigator">
     <td is="coral-table-cell" coral-table-rowselect></td>
     <td is="coral-table-cell">${resource.path}</td>
@@ -15,5 +15,5 @@
                 size="M">
         </coral-icon>
     </td>
-    <td is="coral-table-cell">${model.labelCount}</td>
+    <td is="coral-table-cell">${model.keyCount}</td>
 </tr>

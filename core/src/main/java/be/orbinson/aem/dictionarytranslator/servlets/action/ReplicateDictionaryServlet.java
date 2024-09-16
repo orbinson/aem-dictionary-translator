@@ -35,8 +35,6 @@ public class ReplicateDictionaryServlet extends SlingAllMethodsServlet {
     @Reference
     private transient Replicator replicator;
 
-    private transient ResourceResolver resourceResolver;
-
     @Override
     protected void doPost(SlingHttpServletRequest request, @NotNull SlingHttpServletResponse response) throws IOException {
         String path = request.getParameter("path");
@@ -45,12 +43,12 @@ public class ReplicateDictionaryServlet extends SlingAllMethodsServlet {
             LOG.warn("Invalid parameters to replicate dictionary");
             response.sendError(HttpServletResponse.SC_BAD_REQUEST);
         } else {
-            resourceResolver = request.getResourceResolver();
+            ResourceResolver resourceResolver = request.getResourceResolver();
             Resource resource = resourceResolver.getResource(path);
 
             try {
                 if (resource != null) {
-                    deepReplicate(resource);
+                    deepReplicate(resourceResolver, resource);
                     // javasecurity:S5145
                     LOG.debug("Replicated dictionary, 'path={}'", path);
                 } else {
@@ -67,13 +65,13 @@ public class ReplicateDictionaryServlet extends SlingAllMethodsServlet {
         }
     }
 
-    private void deepReplicate(Resource parentResource) throws ReplicationException {
+    private void deepReplicate(ResourceResolver resourceResolver, Resource parentResource) throws ReplicationException {
         String path = parentResource.getPath();
         replicator.replicate(resourceResolver.adaptTo(Session.class), ReplicationActionType.ACTIVATE, path);
 
         if (parentResource.hasChildren()) {
             for (Resource childResource : parentResource.getChildren()) {
-                deepReplicate(childResource);
+                deepReplicate(resourceResolver, childResource);
             }
         }
     }

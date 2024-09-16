@@ -23,7 +23,7 @@
                                         jcr:primaryType="nt:unstructured"
                                         sling:resourceType="aem-dictionary-translator/servlet/action/delete-dictionary"
                                         granite:id="delete-dictionary-form"
-                                        action="${requestPathInfo.resourcePath}?dictionaries=${param.dictionaries}"
+                                        action="${requestPathInfo.resourcePath}?${querystring}"
                                         foundationForm="true"
                                         method="post"
                                         style="vertical">

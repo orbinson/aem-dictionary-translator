@@ -2,7 +2,6 @@ package be.orbinson.aem.dictionarytranslator.servlets.action;
 
 import be.orbinson.aem.dictionarytranslator.services.DictionaryService;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.jackrabbit.util.Text;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.resource.PersistenceException;
@@ -20,21 +19,16 @@ import org.slf4j.LoggerFactory;
 import javax.servlet.Servlet;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-
-import static be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants.*;
-import static org.apache.jackrabbit.JcrConstants.JCR_PRIMARYTYPE;
 
 @Component(service = Servlet.class)
 @SlingServletResourceTypes(
         resourceSuperType = "granite/ui/components/coral/foundation/form",
-        resourceTypes = "aem-dictionary-translator/servlet/action/create-label",
+        resourceTypes = "aem-dictionary-translator/servlet/action/create-message-entry",
         methods = "POST"
 )
-public class CreateLabelServlet extends SlingAllMethodsServlet {
+public class CreateMessageEntryServlet extends SlingAllMethodsServlet {
 
-    private static final Logger LOG = LoggerFactory.getLogger(CreateLabelServlet.class);
+    private static final Logger LOG = LoggerFactory.getLogger(CreateMessageEntryServlet.class);
 
     @Reference
     private transient DictionaryService dictionaryService;
@@ -55,13 +49,13 @@ public class CreateLabelServlet extends SlingAllMethodsServlet {
                 if (dictionaryResource != null) {
                     for (String language : dictionaryService.getLanguages(dictionaryResource)) {
                         // javasecurity:S5145
-                        LOG.debug("Create label on path '{}/{}'", dictionary, key);
+                        LOG.debug("Create message entry on path '{}/{}'", dictionary, key);
                         String message = request.getParameter(language);
-                        if (!labelExists(resourceResolver, dictionaryResource, language, key)) {
-                            addMessage(resourceResolver, dictionaryResource, language, key, message);
+                        if (!dictionaryService.keyExists(dictionaryResource, language, key)) {
+                            dictionaryService.createMessageEntry(resourceResolver, dictionaryResource, language, key, message);
                         } else {
                             HtmlResponse htmlResponse = new HtmlResponse();
-                            htmlResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST, String.format("Can not create label %s, label already exists", key));
+                            htmlResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST, String.format("Can not create message entry %s, key already exists", key));
                             htmlResponse.send(response, true);
                         }
                     }
@@ -78,24 +72,4 @@ public class CreateLabelServlet extends SlingAllMethodsServlet {
         }
     }
 
-    private boolean labelExists(ResourceResolver resourceResolver, Resource dictionaryResource, String language, String key) {
-        return resourceResolver.getResource(dictionaryResource.getPath() + "/" + language + "/" + Text.escapeIllegalJcrChars(key)) != null;
-    }
-
-    private void addMessage(ResourceResolver resourceResolver, Resource dictionary, String language, String key, String message) throws PersistenceException {
-        Resource resource = dictionary.getChild(language);
-
-        if (resource != null) {
-            String path = resource.getPath();
-            Map<String, Object> properties = new HashMap<>();
-            properties.put(JCR_PRIMARYTYPE, SLING_MESSAGEENTRY);
-            properties.put(SLING_KEY, key);
-            if (!message.isBlank()) {
-                properties.put(SLING_MESSAGE, message);
-            }
-            resourceResolver.create(resource, Text.escapeIllegalJcrChars(key), properties);
-            LOG.trace("Create label with key '{}' and message '{}' on path '{}'", key, message, path);
-            resourceResolver.commit();
-        }
-    }
 }

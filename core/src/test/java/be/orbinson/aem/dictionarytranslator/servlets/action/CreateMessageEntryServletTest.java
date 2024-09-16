@@ -3,6 +3,7 @@ package be.orbinson.aem.dictionarytranslator.servlets.action;
 import be.orbinson.aem.dictionarytranslator.services.DictionaryService;
 import be.orbinson.aem.dictionarytranslator.services.impl.DictionaryServiceImpl;
 import com.adobe.granite.translation.api.TranslationConfig;
+import com.day.cq.replication.Replicator;
 import io.wcm.testing.mock.aem.junit5.AemContext;
 import io.wcm.testing.mock.aem.junit5.AemContextExtension;
 import org.apache.sling.api.resource.Resource;
@@ -25,12 +26,13 @@ import static junit.framework.Assert.assertNull;
 import static org.apache.jackrabbit.JcrConstants.JCR_PRIMARYTYPE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.Mockito.mock;
 
 @ExtendWith({AemContextExtension.class, MockitoExtension.class})
-class CreateLabelServletTest {
+class CreateMessageEntryServletTest {
     private final AemContext context = new AemContext();
 
-    CreateLabelServlet servlet;
+    CreateMessageEntryServlet servlet;
 
     DictionaryService dictionaryService;
 
@@ -40,9 +42,10 @@ class CreateLabelServletTest {
     @BeforeEach
     void beforeEach() {
         translationConfig = context.registerService(TranslationConfig.class, translationConfig);
+        context.registerService(Replicator.class, mock(Replicator.class));
         dictionaryService = context.registerInjectActivateService(new DictionaryServiceImpl());
 
-        servlet = context.registerInjectActivateService(new CreateLabelServlet());
+        servlet = context.registerInjectActivateService(new CreateMessageEntryServlet());
     }
 
     @Test

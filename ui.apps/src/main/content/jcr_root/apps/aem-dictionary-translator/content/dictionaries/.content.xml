@@ -8,7 +8,7 @@
             jcr:title="Dictionaries"
             sling:resourceType="granite/ui/components/shell/collectionpage"
             sling:vanityPath="/tools/translation/dictionaries"
-            pageURITemplate="/tools/translation/dictionaries/labels.html{+id}"
+            pageURITemplate="/tools/translation/dictionaries/message-entries.html{+id}"
             modeGroup="dictionary-list"
             targetCollection=".dictionary-list"
             consoleId="translation">
@@ -42,7 +42,7 @@
                         variant="actionBar"
                         text="Edit">
                     <data jcr:primaryType="nt:unstructured"
-                          href.uritemplate="/tools/translation/dictionaries/labels.html{+item}"/>
+                          href.uritemplate="/tools/translation/dictionaries/message-entries.html{+item}"/>
                 </edit>
                 <publish
                         jcr:primaryType="nt:unstructured"
@@ -116,7 +116,7 @@
                         variant="actionBar"
                         text="Delete">
                     <data jcr:primaryType="nt:unstructured"
-                          src.uritemplate="/apps/aem-dictionary-translator/content/granite/dialog/dictionary/delete.html?dictionaries={+item}"/>
+                          src.uritemplate="/apps/aem-dictionary-translator/content/granite/dialog/dictionary/delete.html{?item*}"/>
                 </delete>
             </selection>
         </actions>
@@ -159,9 +159,9 @@
                             jcr:primaryType="nt:unstructured"
                             jcr:title="Editable"
                             sortable="true"/>
-                    <labels
+                    <message-entries
                             jcr:primaryType="nt:unstructured"
-                            jcr:title="Labels"
+                            jcr:title="Message Entries"
                             sortable="true"/>
                 </columns>
             </table>

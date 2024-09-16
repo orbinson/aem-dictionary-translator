@@ -23,10 +23,10 @@
         "sling:message": "two"
       }
     },
-    "fr": {
+    "French": {
       "jcr:language": "fr",
       "jcr:mixinTypes": "mix:language",
-      "jcr:primaryType": "sling:Folder",
+      "jcr:primaryType": "nt:folder",
       "hello": {
         "jcr:primaryType": "sling:MessageEntry",
         "sling:key": "hello",
