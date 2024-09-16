@@ -7,10 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.4] - 2024-09-16
+
 ### Fixed
 
-- Update all responses to use HTML based error responses so that Granite UI shows them in the dialogs: [#24](https://github.com/orbinson/aem-dictionary-translator/issues/24)
-- Don't swallow the replication exceptions, but show the user that it does not have the rights: [#23](https://github.com/orbinson/aem-dictionary-translator/issues/23)
+-   Update all responses to use HTML based error responses so that Granite UI shows them in the dialogs: [#24](https://github.com/orbinson/aem-dictionary-translator/issues/24)
+-   Don't swallow the replication exceptions, but show the user that it does not have the rights: [#23](https://github.com/orbinson/aem-dictionary-translator/issues/23)
 
 ## [1.1.3] - 2024-08-03
 
@@ -96,7 +98,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   Create, publish and edit dictionaries
 -   Create, delete and update labels in a dictionary
 
-[Unreleased]: https://github.com/orbinson/aem-dictionary-translator/compare/1.1.3...HEAD
+[Unreleased]: https://github.com/orbinson/aem-dictionary-translator/compare/1.1.4...HEAD
+
+[1.1.4]: https://github.com/orbinson/aem-dictionary-translator/compare/1.1.3...1.1.4
 
 [1.1.3]: https://github.com/orbinson/aem-dictionary-translator/compare/1.1.2...1.1.3
 
