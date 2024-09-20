@@ -138,11 +138,11 @@ public class ImportDictionaryServlet extends SlingAllMethodsServlet {
             String translation = record.get(language);
             translations.get(index).add(translation);
 
-            createOrUpdateLabelResource(dictionaryResource, resourceResolver, language, key, translation);
+            createOrUpdateMessageEntryResource(dictionaryResource, resourceResolver, language, key, translation);
         }
     }
 
-    private void createOrUpdateLabelResource(Resource dictionaryResource, ResourceResolver resourceResolver, String language, String key, String translation) throws PersistenceException, RepositoryException {
+    private void createOrUpdateMessageEntryResource(Resource dictionaryResource, ResourceResolver resourceResolver, String language, String key, String translation) throws PersistenceException, RepositoryException {
         Resource languageResource = dictionaryService.getLanguageResource(dictionaryResource, language);
         Resource messageEntryResource = dictionaryService.getMessageEntryResource(languageResource, key);
         if (messageEntryResource == null) {

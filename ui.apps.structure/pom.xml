@@ -74,7 +74,7 @@
                             <root>/apps/cq/core/content/nav/tools</root>
                         </filter>
                         <filter>
-                            <root>/apps/cq/core/content/nav/tools/label-translator</root>
+                            <root>/apps/cq/core/content/nav/tools/dictionary-translator</root>
                         </filter>
                     </filters>
                 </configuration>

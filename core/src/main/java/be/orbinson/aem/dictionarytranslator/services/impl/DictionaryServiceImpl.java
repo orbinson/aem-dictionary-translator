@@ -79,9 +79,9 @@ public class DictionaryServiceImpl implements DictionaryService {
                     if (child.getValueMap().containsKey(JcrConstants.JCR_LANGUAGE)) {
                         String language = child.getValueMap().get(JcrConstants.JCR_LANGUAGE, String.class);
                         if (language != null) {
-                            String label = languages.get(language);
-                            LOG.trace("Add language '{}' with label '{}'", language, label);
-                            result.put(language, label);
+                            String name = languages.get(language);
+                            LOG.trace("Add language '{}' with name '{}'", language, name);
+                            result.put(language, name);
                         }
                     }
                 });

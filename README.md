@@ -5,7 +5,7 @@
 
 # AEM Dictionary Translator
 
-AEM TouchUI tool to translate labels for i18n internationalisation in AEM as a Cloud Service. The AEM
+AEM TouchUI tool to translate dictionaries for i18n internationalisation in AEM as a Cloud Service. The AEM
 Dictionary Translator is a replacement for the
 ClassicUI [translator](http://localhost:4502/libs/cq/i18n/translator.html) which is not available on AEMaaCS.
 
@@ -13,7 +13,7 @@ The [AEM Dictionary Translator](http://localhost:4502/tools/translation/dictiona
 
 ![Dictionaries](docs/assets/dictionaries.png)
 
-![Labels](docs/assets/labels.png)
+![Key](docs/assets/key.png)
 
 ## Installation
 

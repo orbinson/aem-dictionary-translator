@@ -80,10 +80,10 @@ class ReplicateMessageEntryServletTest {
     }
 
     @Test
-    void publishLabelWithNonExistingKey() throws ServletException, IOException {
+    void publishMessageEntryWithNonExistingKey() throws ServletException, IOException {
         context.request().setMethod("POST");
         context.request().setParameterMap(Map.of(
-                "labels", "/content/dictionaries/i18n/appel"
+                "item", "/content/dictionaries/i18n/appel"
         ));
 
         servlet.service(context.request(), context.response());
@@ -93,11 +93,11 @@ class ReplicateMessageEntryServletTest {
 
     @Test
     @Disabled("Testing CI")
-    void publishExistingLabel() throws ServletException, IOException, ReplicationException {
+    void publishExistingMessageEntry() throws ServletException, IOException, ReplicationException {
         Resource test = context.create().resource("/content/dictionaries/i18n/en/appel");
         context.request().setMethod("POST");
         context.request().setParameterMap(Map.of(
-                "labels", new String[]{"/content/dictionaries/i18n/en/appel"}
+                "item", new String[]{"/content/dictionaries/i18n/en/appel"}
         ));
 
         List<Resource> resources = new ArrayList<>();
@@ -114,14 +114,14 @@ class ReplicateMessageEntryServletTest {
 
     @Test
     @Disabled("Testing CI")
-    void publishMultipleLabels() throws ServletException, IOException, ReplicationException {
+    void publishMultipleMessageEntries() throws ServletException, IOException, ReplicationException {
         context.create().resource("/content/dictionaries/i18n/en/appel");
         context.create().resource("/content/dictionaries/i18n/en/peer");
         context.create().resource("/content/dictionaries/i18n/en/framboos");
 
         context.request().setMethod("POST");
         context.request().setParameterMap(Map.of(
-                "labels", new String[]{"/content/dictionaries/i18n/appel,/content/dictionaries/i18n/peer"}
+                "item", new String[]{"/content/dictionaries/i18n/appel,/content/dictionaries/i18n/peer"}
         ));
 
         servlet.service(context.request(), context.response());
@@ -131,11 +131,11 @@ class ReplicateMessageEntryServletTest {
     }
 
     @Test
-    void publishNonExistingLabel() throws ServletException, IOException, ReplicationException {
+    void publishNonExistingMessageEntry() throws ServletException, IOException, ReplicationException {
         context.create().resource("/content/dictionaries/i18n/en/appel");
         context.request().setMethod("POST");
         context.request().setParameterMap(Map.of(
-                "labels", new String[]{"/content/dictionaries/i18n/peer"}
+                "item", new String[]{"/content/dictionaries/i18n/peer"}
         ));
 
         servlet.service(context.request(), context.response());

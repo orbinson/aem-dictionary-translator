@@ -7,10 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Updated terminology to message entry and key instead of label [#33] [#33](https://github.com/orbinson/aem-dictionary-translator/issues/24)
+
 ## [1.1.4] - 2024-09-16
 
 ### Fixed
 
+-   Language nodes can be different than the jcr:language property value [#37](https://github.com/orbinson/aem-dictionary-translator/issues/37)
+-   Allow nt:folder as language node [#38](https://github.com/orbinson/aem-dictionary-translator/issues/38)
+-   Language nodes can be names different between the languages [#39](https://github.com/orbinson/aem-dictionary-translator/issues/39)
 -   Update all responses to use HTML based error responses so that Granite UI shows them in the dialogs: [#24](https://github.com/orbinson/aem-dictionary-translator/issues/24)
 -   Don't swallow the replication exceptions, but show the user that it does not have the rights: [#23](https://github.com/orbinson/aem-dictionary-translator/issues/23)
 
@@ -18,7 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
--   Add sling:key to labels for a newly created language: [#28](https://github.com/orbinson/aem-dictionary-translator/issues/28)
+-   Add sling:key to message entries for a newly created language: [#28](https://github.com/orbinson/aem-dictionary-translator/issues/28)
 
 ## [1.1.2] - 2024-02-28
 
@@ -30,7 +37,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
--   Resolved errors occurring when publishing labels: [#13](https://github.com/orbinson/aem-dictionary-translator/issues/13)
+-   Resolved errors occurring when publishing message entries: [#13](https://github.com/orbinson/aem-dictionary-translator/issues/13)
 -   Reactivated publish button for dictionaries: [#13](https://github.com/orbinson/aem-dictionary-translator/issues/13)
 -   Exporting a csv sometimes gives completely empty file: [#15](https://github.com/orbinson/aem-dictionary-translator/issues/15)
 -   Importing a csv with the correct languages sometimes still gives the error of wrong languages: [#19](https://github.com/orbinson/aem-dictionary-translator/issues/19)
@@ -41,26 +48,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 -   Dictionaries with .json files are no longer showed in dictionary
     list: [#8](https://github.com/orbinson/aem-dictionary-translator/pull/5)
--   Labels with no translation for a specific language no longer have a
+-   Message entries with no translation for a specific language no longer have a
     sling:message so the value won't be empty but will have a fallback
     from another language or the key itself: [#12](https://github.com/orbinson/aem-dictionary-translator/pull/12)
 
 ### Added
 
--   Publish specific labels in a dictionary: [#8](https://github.com/orbinson/aem-dictionary-translator/pull/5)
+-   Publish specific message entries in a dictionary: [#8](https://github.com/orbinson/aem-dictionary-translator/pull/5)
 -   Export/Import CSV files of/to dictionaries: [#10](https://github.com/orbinson/aem-dictionary-translator/issues/10)
 
 ## [1.0.6] - 2023-09-12
 
 ### Changed
 
--   Add breadcrumbs to the dictionary labels page: [#3](https://github.com/orbinson/aem-dictionary-translator/issues/3)
+-   Add breadcrumbs to the dictionary page: [#3](https://github.com/orbinson/aem-dictionary-translator/issues/3)
 
 ## [1.0.5] - 2023-08-30
 
 ### Fixed
 
--   Fix labels not working anymore when a new language is added
+-   Fix message entries not working anymore when a new language is added
 
 ## [1.0.4] - 2023-08-16
 
@@ -79,7 +86,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
--   When adding new languages existing labels could not be updated
+-   When adding new languages existing message entries could not be updated
 
 ### Changed
 
@@ -96,7 +103,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 -   Create, publish and edit dictionaries
--   Create, delete and update labels in a dictionary
+-   Create, delete and update message entries in a dictionary
 
 [Unreleased]: https://github.com/orbinson/aem-dictionary-translator/compare/1.1.4...HEAD
 

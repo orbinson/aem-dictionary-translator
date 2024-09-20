@@ -39,7 +39,7 @@ class ImportDictionaryServletTest {
     }
 
     @Test
-    void doPostOneLabel() throws Exception {
+    void doPostOneMessageEntry() throws Exception {
         MockSlingHttpServletRequest request = context.request();
         MockSlingHttpServletResponse response = context.response();
 
@@ -69,7 +69,7 @@ class ImportDictionaryServletTest {
     }
 
     @Test
-    void doPostOneLabelWrongLanguage() throws Exception {
+    void doPostOneMessageEntryWrongLanguage() throws Exception {
         MockSlingHttpServletRequest request = context.request();
         MockSlingHttpServletResponse response = context.response();
 
@@ -91,7 +91,7 @@ class ImportDictionaryServletTest {
     }
 
     @Test
-    void doPostMultipleLabels() throws Exception {
+    void doPostMultipleMessageEntries() throws Exception {
         MockSlingHttpServletRequest request = context.request();
         MockSlingHttpServletResponse response = context.response();
 
@@ -150,7 +150,7 @@ class ImportDictionaryServletTest {
     }
 
     @Test
-    void doPostNoLabels() throws Exception {
+    void doPostNoMessageEntries() throws Exception {
         MockSlingHttpServletRequest request = context.request();
         MockSlingHttpServletResponse response = context.response();
 

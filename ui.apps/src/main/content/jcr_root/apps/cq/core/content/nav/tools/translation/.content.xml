@@ -7,7 +7,7 @@
     <dictionary-translator
             jcr:primaryType="nt:unstructured"
             jcr:title="Dictionaries"
-            jcr:description="Translate labels for i18n internationalisation"
+            jcr:description="Translate dictionaries for i18n internationalisation"
             icon="book"
             href="/tools/translation/dictionaries.html"
             id="translation"/>

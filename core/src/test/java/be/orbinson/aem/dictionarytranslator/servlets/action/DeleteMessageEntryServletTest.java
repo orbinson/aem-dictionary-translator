@@ -65,7 +65,7 @@ class DeleteMessageEntryServletTest {
     }
 
     @Test
-    void deleteLabelWithNonExistingKey() throws ServletException, IOException {
+    void deleteMessageEntryWithNonExistingKey() throws ServletException, IOException {
         context.request().setMethod("POST");
         context.request().setParameterMap(Map.of(
                 DeleteMessageEntryServlet.ITEM_PARAM, "/content/dictionaries/i18n/en/apple"
@@ -77,7 +77,7 @@ class DeleteMessageEntryServletTest {
     }
 
     @Test
-    void deleteExistingLabel() throws ServletException, IOException, ReplicationException {
+    void deleteExistingMessageEntry() throws ServletException, IOException, ReplicationException {
         context.create().resource("/content/dictionaries/i18n/en/appel");
         context.create().resource("/content/dictionaries/i18n/fr/appel");
         context.create().resource("/mnt/dictionaries/content/dictionaries/i18n/appel",
@@ -111,7 +111,7 @@ class DeleteMessageEntryServletTest {
     }
 
     @Test
-    void deleteMultipleLabels() throws ServletException, IOException {
+    void deleteMultipleMessageEntries() throws ServletException, IOException {
         context.create().resource("/content/dictionaries/i18n/en/appel");
         context.create().resource("/content/dictionaries/i18n/fr/appel");
         context.create().resource("/mnt/dictionaries/content/dictionaries/i18n/appel",
@@ -141,7 +141,7 @@ class DeleteMessageEntryServletTest {
     }
 
     @Test
-    void deleteNonExistingLabel() throws ServletException, IOException {
+    void deleteNonExistingMessageEntry() throws ServletException, IOException {
         context.create().resource("/content/dictionaries/i18n/en/appel");
         context.request().setMethod("POST");
         context.request().setParameterMap(Map.of(

@@ -63,7 +63,7 @@ class ExportDictionaryServletTest {
     }
 
     @Test
-    void doPostWithMultipleLabels() throws Exception {
+    void doPostWithMultipleMessageEntries() throws Exception {
         createLanguageResource("en", "champion", "champion");
         createLanguageResource("nl", "champion", "kampioen");
         createLanguageResource("it", "champion", "campione");
@@ -84,7 +84,7 @@ class ExportDictionaryServletTest {
     }
 
     @Test
-    void doPostNoLabels() throws Exception {
+    void doPostNoMessageEntries() throws Exception {
         createLanguageResource("en", "", "");
         createLanguageResource("nl", "", "");
         createLanguageResource("it", "", "");
@@ -130,7 +130,7 @@ class ExportDictionaryServletTest {
         assertEquals(expectedContent, csvContent);
     }
 
-    private void createLanguageResource(String language, String label, String translation) throws Exception {
+    private void createLanguageResource(String language, String key, String translation) throws Exception {
         ResourceResolver resourceResolver = context.resourceResolver();
         Session session = resourceResolver.adaptTo(Session.class);
         if (session != null) {
@@ -147,9 +147,9 @@ class ExportDictionaryServletTest {
             } else {
                 languageResource = resourceResolver.getResource(path + "/" + language);
             }
-            resourceResolver.create(languageResource, label, Map.of(
+            resourceResolver.create(languageResource, key, Map.of(
                     JCR_PRIMARYTYPE, SLING_MESSAGEENTRY,
-                    SLING_KEY, label,
+                    SLING_KEY, key,
                     SLING_MESSAGE, translation
             ));
         }

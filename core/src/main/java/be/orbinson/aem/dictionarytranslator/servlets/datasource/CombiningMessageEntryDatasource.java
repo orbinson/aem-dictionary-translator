@@ -111,8 +111,8 @@ public class CombiningMessageEntryDatasource extends SlingSafeMethodsServlet {
             createHiddenFieldResource(resourceResolver, resourceList, "key", key);
             if (languages != null) {
                 for (String language : languages) {
-                    String label = properties.get(language, StringUtils.EMPTY);
-                    createTextFieldResource(resourceResolver, resourceList, language, label);
+                    String message = properties.get(language, StringUtils.EMPTY);
+                    createTextFieldResource(resourceResolver, resourceList, language, message);
                 }
             }
         }

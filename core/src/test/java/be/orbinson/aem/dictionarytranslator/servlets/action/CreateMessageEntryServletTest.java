@@ -59,7 +59,7 @@ class CreateMessageEntryServletTest {
     }
 
     @Test
-    void createLabelInNonExistingDictionary() throws ServletException, IOException {
+    void createMessageEntryInNonExistingDictionary() throws ServletException, IOException {
         context.request().setMethod("POST");
         context.request().setParameterMap(Map.of(
                 "dictionary", "/content/dictionaries/i18n",
@@ -163,7 +163,7 @@ class CreateMessageEntryServletTest {
     }
 
     @Test
-    void createLabelThatAlreadyExists() throws ServletException, IOException {
+    void createMessageEntryThatAlreadyExists() throws ServletException, IOException {
         context.create().resource("/content/dictionaries/i18n/en", Map.of("jcr:language", "en"));
         context.create().resource("/content/dictionaries/i18n/fr", Map.of("jcr:language", "fr"));
 
