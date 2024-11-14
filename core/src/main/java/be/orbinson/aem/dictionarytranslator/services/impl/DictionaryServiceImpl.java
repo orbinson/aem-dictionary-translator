@@ -34,6 +34,7 @@ public class DictionaryServiceImpl implements DictionaryService {
 
     private static final Logger LOG = LoggerFactory.getLogger(DictionaryServiceImpl.class);
     private static final String SLING_BASENAME = "sling:basename";
+    private static final List<String> EDITABLE_ROOTS = List.of("/content/", "/conf/");
 
     @Reference
     private TranslationConfig translationConfig;
@@ -41,6 +42,10 @@ public class DictionaryServiceImpl implements DictionaryService {
     private ResourceResolverFactory resourceResolverFactory;
     @Reference
     private Replicator replicator;
+
+    public boolean isEditableDictionary(String path) {
+        return EDITABLE_ROOTS.stream().anyMatch(path::startsWith);
+    }
 
     public void addLanguage(Resource dictionary, String language, String basename) throws PersistenceException {
         Map<String, Object> properties = new HashMap<>();

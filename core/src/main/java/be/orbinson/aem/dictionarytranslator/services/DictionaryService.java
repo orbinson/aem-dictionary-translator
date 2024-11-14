@@ -12,6 +12,8 @@ import java.util.Map;
 
 public interface DictionaryService {
 
+    boolean isEditableDictionary(String path);
+
     List<Resource> getDictionaries(ResourceResolver resourceResolver);
 
     void createDictionary(Resource parent, String name, String[] languages, String basename) throws PersistenceException;
