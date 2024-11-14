@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated terminology to message entry and key instead of label [#33]https://github.com/orbinson/aem-dictionary-translator/issues/33)
 - Add option to publish to preview [#43](https://github.com/orbinson/aem-dictionary-translator/issues/43)
 - Added /conf as editable root for dictionaries [#46](https://github.com/orbinson/aem-dictionary-translator/issues/46)
+- Update maven dependencies [#51](https://github.com/orbinson/aem-dictionary-translator/pull/51)
 
 ### Fixed
 
