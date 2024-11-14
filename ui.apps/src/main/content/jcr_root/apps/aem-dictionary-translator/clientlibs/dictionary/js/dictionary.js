@@ -19,7 +19,8 @@
                 text: "publish",
                 primary: true,
                 handler: function () {
-                    activatePublishPaths(ui, collection, publishPaths)
+                    var agentId = config.data?.agentId || "";
+                    activatePublishPaths(ui, collection, agentId, publishPaths)
                 }
             }])
         }
@@ -37,7 +38,7 @@
         return $(document.createElement(name))
     }
 
-    function activatePublishPaths(ui, collection, paths) {
+    function activatePublishPaths(ui, collection, agentId, paths) {
         $.ajax({
             url: REPLICATE_URL,
             type: "POST",
@@ -45,7 +46,7 @@
                 _charset_: "utf-8",
                 cmd: "Activate",
                 path: paths,
-                agentId: "publish"
+                agentId: agentId ? agentId : "publish"
             }
         }).always(function () {
             ui.clearWait()

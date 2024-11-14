@@ -10,6 +10,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Updated terminology to message entry and key instead of label [#33] [#33](https://github.com/orbinson/aem-dictionary-translator/issues/24)
+- Add option to publish to preview [#43](https://github.com/orbinson/aem-dictionary-translator/issues/43)
+
+### Fixed
+
+- Fix publication error on too many keys selected [#45](https://github.com/orbinson/aem-dictionary-translator/issues/45)
+- Fix publication timeout error on too large dictionary [#44](https://github.com/orbinson/aem-dictionary-translator/issues/44)
 
 ## [1.1.4] - 2024-09-16
 

@@ -88,6 +88,21 @@
                             sling:resourceType="granite/ui/components/coral/foundation/renderconditions/simple"
                             expression="${granite:contains(granite:relativeParent(requestPathInfo.suffix, 0), '/content')}"/>
                 </publish>
+                <publish-to-preview
+                        jcr:primaryType="nt:unstructured"
+                        sling:resourceType="granite/ui/components/coral/foundation/collection/action"
+                        action="dictionary.publish"
+                        target="#translation-listview"
+                        icon="globe"
+                        variant="actionBar"
+                        text="Publish to Preview">
+                    <granite:rendercondition
+                            jcr:primaryType="nt:unstructured"
+                            sling:resourceType="granite/ui/components/coral/foundation/renderconditions/simple"
+                            expression="${granite:contains(granite:relativeParent(requestPathInfo.suffix, 0), '/content')}"/>
+                    <data jcr:primaryType="nt:unstructured"
+                          agentId="preview"/>
+                </publish-to-preview>
             </selection>
         </actions>
         <views jcr:primaryType="nt:unstructured">
