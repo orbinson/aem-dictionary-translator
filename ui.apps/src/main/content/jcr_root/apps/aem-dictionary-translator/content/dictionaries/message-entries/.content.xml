@@ -17,7 +17,7 @@
             <clientlibs
                     jcr:primaryType="nt:unstructured"
                     sling:resourceType="granite/ui/components/coral/foundation/includeclientlibs"
-                    categories="[coralui3,granite.ui.coral.foundation]"/>
+                    categories="[coralui3,granite.ui.coral.foundation,dictionary-translator.dictionary]"/>
         </head>
         <breadcrumbs
                 jcr:primaryType="nt:unstructured"
@@ -77,19 +77,32 @@
                 <publish
                         jcr:primaryType="nt:unstructured"
                         sling:resourceType="granite/ui/components/coral/foundation/collection/action"
-                        action="foundation.dialog"
+                        action="dictionary.publish"
                         target="#translation-listview"
                         icon="publish"
                         command="p"
                         variant="actionBar"
                         text="Publish">
-                    <data jcr:primaryType="nt:unstructured"
-                          src.uritemplate="/apps/aem-dictionary-translator/content/granite/dialog/dictionary/key/publish.html{?item*}"/>
                     <granite:rendercondition
                             jcr:primaryType="nt:unstructured"
                             sling:resourceType="aem-dictionary-translator/components/rendercondition/editable-dictionary"
                             path="${requestPathInfo.suffix}"/>
                 </publish>
+                <publish-to-preview
+                        jcr:primaryType="nt:unstructured"
+                        sling:resourceType="granite/ui/components/coral/foundation/collection/action"
+                        action="dictionary.publish"
+                        target="#translation-listview"
+                        icon="globe"
+                        variant="actionBar"
+                        text="Publish to Preview">
+                    <granite:rendercondition
+                            jcr:primaryType="nt:unstructured"
+                            sling:resourceType="aem-dictionary-translator/components/rendercondition/editable-dictionary"
+                            path="${requestPathInfo.suffix}"/>
+                    <data jcr:primaryType="nt:unstructured"
+                          agentId="preview"/>
+                </publish-to-preview>
             </selection>
         </actions>
         <views jcr:primaryType="nt:unstructured">
