@@ -1,2 +1,2 @@
 #base=js
-dictionary.js
+publish.js
