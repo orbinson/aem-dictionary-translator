@@ -7,7 +7,6 @@ import io.wcm.testing.mock.aem.junit5.AemContext;
 import io.wcm.testing.mock.aem.junit5.AemContextExtension;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
-import org.apache.sling.testing.mock.sling.ResourceResolverType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,7 +16,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
@@ -71,6 +70,19 @@ class DictionaryServiceImplTest {
 
         assertEquals("fr", languages.get(0));
         assertEquals("en", languages.get(1));
+    }
+
+
+    @Test
+    public void testIsEditableDictionary() {
+        // Test cases where the path should be editable
+        assertTrue(dictionaryService.isEditableDictionary("/content/example"), "Path starting with /content/ should be editable");
+        assertTrue(dictionaryService.isEditableDictionary("/conf/example"), "Path starting with /conf/ should be editable");
+
+        // Test cases where the path should not be editable
+        assertFalse(dictionaryService.isEditableDictionary("/other/example"), "Path not starting with /content/ or /conf/ should not be editable");
+        assertFalse(dictionaryService.isEditableDictionary("/configuration"), "Path starting with /configuration should not be editable");
+        assertFalse(dictionaryService.isEditableDictionary("/contents"), "Path starting with /contents should not be editable");
     }
 
 }
