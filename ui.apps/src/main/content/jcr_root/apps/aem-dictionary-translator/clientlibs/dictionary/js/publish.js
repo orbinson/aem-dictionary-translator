@@ -45,7 +45,7 @@
                 agentId: agentId ? agentId : "publish"
             }
         }).always(function () {
-            ui.clearWait()
+            ui.clearWait();
         }).done(function () {
             var api = $(collection).adaptTo("foundation-collection");
             if (api && "reload" in api) {
