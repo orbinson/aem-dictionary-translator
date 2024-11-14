@@ -9,7 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Updated terminology to message entry and key instead of label [#33] [#33](https://github.com/orbinson/aem-dictionary-translator/issues/24)
+- Updated terminology to message entry and key instead of label [#33](https://github.com/orbinson/aem-dictionary-translator/issues/33)
+- Added /conf as editable root for dictionaries [#46](https://github.com/orbinson/aem-dictionary-translator/issues/46)
 
 ## [1.1.4] - 2024-09-16
 

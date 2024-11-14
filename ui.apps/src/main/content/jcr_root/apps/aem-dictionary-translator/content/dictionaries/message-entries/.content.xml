@@ -36,8 +36,8 @@
                           src.uritemplate="/apps/aem-dictionary-translator/content/granite/dialog/dictionary/key/create.html${requestPathInfo.suffix}"/>
                     <granite:rendercondition
                             jcr:primaryType="nt:unstructured"
-                            sling:resourceType="granite/ui/components/coral/foundation/renderconditions/simple"
-                            expression="${granite:contains(granite:relativeParent(requestPathInfo.suffix, 0), '/content')}"/>
+                            sling:resourceType="aem-dictionary-translator/components/rendercondition/editable-dictionary"
+                            path="${requestPathInfo.suffix}"/>
                 </create-key>
             </primary>
             <selection jcr:primaryType="nt:unstructured">
@@ -55,8 +55,8 @@
                           src.uritemplate="/apps/aem-dictionary-translator/content/granite/dialog/dictionary/key/update.html{?item*}"/>
                     <granite:rendercondition
                             jcr:primaryType="nt:unstructured"
-                            sling:resourceType="granite/ui/components/coral/foundation/renderconditions/simple"
-                            expression="${granite:contains(granite:relativeParent(requestPathInfo.suffix, 0), '/content')}"/>
+                            sling:resourceType="aem-dictionary-translator/components/rendercondition/editable-dictionary"
+                            path="${requestPathInfo.suffix}"/>
                 </edit>
                 <delete
                         jcr:primaryType="nt:unstructured"
@@ -71,8 +71,8 @@
                           src.uritemplate="/apps/aem-dictionary-translator/content/granite/dialog/dictionary/key/delete.html{?item*}"/>
                     <granite:rendercondition
                             jcr:primaryType="nt:unstructured"
-                            sling:resourceType="granite/ui/components/coral/foundation/renderconditions/simple"
-                            expression="${granite:contains(granite:relativeParent(requestPathInfo.suffix, 0), '/content')}"/>
+                            sling:resourceType="aem-dictionary-translator/components/rendercondition/editable-dictionary"
+                            path="${requestPathInfo.suffix}"/>
                 </delete>
                 <publish
                         jcr:primaryType="nt:unstructured"
@@ -87,8 +87,8 @@
                           src.uritemplate="/apps/aem-dictionary-translator/content/granite/dialog/dictionary/key/publish.html{?item*}"/>
                     <granite:rendercondition
                             jcr:primaryType="nt:unstructured"
-                            sling:resourceType="granite/ui/components/coral/foundation/renderconditions/simple"
-                            expression="${granite:contains(granite:relativeParent(requestPathInfo.suffix, 0), '/content')}"/>
+                            sling:resourceType="aem-dictionary-translator/components/rendercondition/editable-dictionary"
+                            path="${requestPathInfo.suffix}"/>
                 </publish>
             </selection>
         </actions>
