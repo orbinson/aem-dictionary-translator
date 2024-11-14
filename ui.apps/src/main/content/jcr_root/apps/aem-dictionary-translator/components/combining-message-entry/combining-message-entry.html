@@ -4,6 +4,9 @@
     <td is="coral-table-cell" coral-table-rowselect></td>
     <td is="coral-table-cell">${properties.key}</td>
     <sly data-sly-repeat.language="${properties.languages}">
-        <td is="coral-table-cell">${properties[language]}</td>
+        <td is="coral-table-cell"
+            data-publish-path="${properties.messageEntryPaths[languageList.index]}">
+            ${properties[language]}
+        </td>
     </sly>
 </tr>

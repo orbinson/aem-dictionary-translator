@@ -48,13 +48,11 @@
                         jcr:primaryType="nt:unstructured"
                         sling:resourceType="granite/ui/components/coral/foundation/collection/action"
                         activeSelectionCount="single"
-                        action="foundation.dialog"
+                        action="dictionary.publish"
                         command="p"
                         icon="globe"
                         variant="actionBar"
                         text="Publish">
-                    <data jcr:primaryType="nt:unstructured"
-                          src.uritemplate="/apps/aem-dictionary-translator/content/granite/dialog/dictionary/publish.html?dictionary={+item}"/>
                 </publish>
                 <create-language
                         jcr:primaryType="nt:unstructured"
