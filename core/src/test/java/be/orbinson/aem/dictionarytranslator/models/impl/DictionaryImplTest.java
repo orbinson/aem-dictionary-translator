@@ -49,9 +49,9 @@ class DictionaryImplTest {
     @Test
     void testGetLanguages() {
         final List<String> expectedLanguages = new ArrayList<>();
+        expectedLanguages.add("de");
         expectedLanguages.add("en");
         expectedLanguages.add("fr");
-        expectedLanguages.add("de");
 
         final Resource testResource = context.currentResource("/content/dictionaries/languages");
         if (testResource != null) {
@@ -70,7 +70,7 @@ class DictionaryImplTest {
 
     @Test
     void testGetLanguagesString() {
-        final String expectedLanguages = "en, fr, de";
+        final String expectedLanguages = "de, en, fr";
 
         final Resource testResource = context.currentResource("/content/dictionaries/languages");
         if (testResource != null) {

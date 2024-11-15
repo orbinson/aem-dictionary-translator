@@ -73,7 +73,7 @@ public class DictionaryServiceImpl implements DictionaryService {
     }
 
     public @NotNull Map<String, String> getLanguagesForPath(ResourceResolver resourceResolver, String dictionaryPath) {
-        Map<String, String> result = new HashMap<>();
+        Map<String, String> result = new TreeMap<>();
         Resource resource = resourceResolver.getResource(dictionaryPath);
 
         if (resource != null && translationConfig != null) {
@@ -138,7 +138,7 @@ public class DictionaryServiceImpl implements DictionaryService {
 
 
     public List<String> getLanguages(Resource dictionaryResource) {
-        List<String> result = new ArrayList<>();
+        Set<String> result = new TreeSet<>();
 
         dictionaryResource.listChildren().forEachRemaining(child -> {
             ValueMap properties = child.getValueMap();
@@ -148,7 +148,7 @@ public class DictionaryServiceImpl implements DictionaryService {
             }
         });
 
-        return result;
+        return new ArrayList<>(result);
     }
 
     @Override

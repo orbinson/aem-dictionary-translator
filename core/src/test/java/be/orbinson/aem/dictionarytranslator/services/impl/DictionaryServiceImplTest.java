@@ -68,8 +68,8 @@ class DictionaryServiceImplTest {
 
         List<String> languages = dictionaryService.getLanguages(context.currentResource("/content/dictionaries/site/i18"));
 
-        assertEquals("fr", languages.get(0));
-        assertEquals("en", languages.get(1));
+        assertEquals("en", languages.get(0));
+        assertEquals("fr", languages.get(1));
     }
 
 
