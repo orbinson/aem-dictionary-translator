@@ -9,7 +9,8 @@ AEM TouchUI tool to translate dictionaries for i18n internationalisation in AEM 
 Dictionary Translator is a replacement for the
 ClassicUI [translator](http://localhost:4502/libs/cq/i18n/translator.html) which is not available on AEMaaCS.
 
-The [AEM Dictionary Translator](http://localhost:4502/tools/translation/dictionaries.html) is available under `Tools` > `Translation` > `Dictionary`.
+The [AEM Dictionary Translator](http://localhost:4502/tools/translation/dictionaries.html) is available under `Tools` >
+`Translation` > `Dictionary`.
 
 ![Dictionaries](docs/assets/dictionaries.png)
 
@@ -40,12 +41,15 @@ To deploy the AEM Dictionary Translator as an embedded package you need to updat
       <target>/apps/vendor-packages/content/install</target>
    </embedded>
    ```
-   
-3. Currently, AEMaaCS doesn't allow loading of i18n dictionaries outside `/apps`,  `/libs`, `/content/forms/af` and `/content/dam/formsanddocuments`.
 
-To mitigate this, update the `org.apache.sling.i18n.impl.JcrResourceBundleProvider` OSGi config to allow dictionaries in other folders, for example by using `/content/dictionaries` for all your editable dictionaries.
+3. Currently, AEMaaCS doesn't allow loading of i18n dictionaries outside `/apps`,  `/libs`, `/content/forms/af` and
+   `/content/dam/formsanddocuments`.
+
+To mitigate this, update the `org.apache.sling.i18n.impl.JcrResourceBundleProvider` OSGi config to allow dictionaries in
+other folders, for example by using `/content/dictionaries` for all your editable dictionaries.
 
 Example `org.apache.sling.i18n.impl.JcrResourceBundleProvider` OSGi config:
+
 ```json
 {
   "included.paths": [
