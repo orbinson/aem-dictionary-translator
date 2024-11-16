@@ -38,6 +38,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.1.2] - 2024-02-28
 
+### Added
+
+-   Nothing, same release as `1.1.1` but was accidentaly published.
+
 ## [1.1.1] - 2024-02-08
 
 ### Added
