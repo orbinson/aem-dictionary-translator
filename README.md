@@ -61,7 +61,7 @@ To deploy the AEM Dictionary Translator as an embedded package you need to updat
 To mitigate this, update the `org.apache.sling.i18n.impl.JcrResourceBundleProvider` OSGi config to allow dictionaries in
 other folders, for example by using `/content/dictionaries` for all your editable dictionaries.
 
-Example `org.apache.sling.i18n.impl.JcrResourceBundleProvider` OSGi config:
+Example `org.apache.sling.i18n.impl.JcrResourceBundleProvider` OSGi config
 
 ```json
 {
@@ -95,3 +95,17 @@ mvn clean install -PautoInstallSinglePackage
 
 This project follows the [AEM Archetype](https://github.com/adobe/aem-project-archetype) conventions so for further
 guidelines consult the available documentation.
+
+### UI Tests
+
+First install the `it.content` module to your local AEM instance
+
+```shell
+mvn clean install -pl it.content -PautoInstallSinglePackage
+```
+
+Afterward run the UI tests with the following command
+
+```shell
+mvn clean test -Pui-tests
+```

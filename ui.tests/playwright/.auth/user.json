@@ -1,0 +1,65 @@
+{
+  "cookies": [
+    {
+      "name": "login-token",
+      "value": "a7bea984-6706-484a-9a37-4f549a9fe7ae%3a2a33069a-07bd-425d-9aa3-480f57126e6e_460c6d6e3106ba4dc9c1b6da107eda16%3acrx.default",
+      "domain": "localhost",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": true,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "cq-authoring-mode",
+      "value": "TOUCH",
+      "domain": "localhost",
+      "path": "/",
+      "expires": 1733273125.903571,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "AMCV_8F99160E571FC0427F000101%40AdobeOrg",
+      "value": "-1124106680%7CMCMID%7C42222698020218471306652534949252870490%7CMCAID%7CNONE%7CvVersion%7C5.2.0",
+      "domain": "localhost",
+      "path": "/",
+      "expires": 1767228326.141162,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "s_fid",
+      "value": "4FB9561AFAAE6E77-158E31A19A796464",
+      "domain": "localhost",
+      "path": "/",
+      "expires": 1767228326.343602,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "s_cc",
+      "value": "true",
+      "domain": "localhost",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    }
+  ],
+  "origins": [
+    {
+      "origin": "http://localhost:4502",
+      "localStorage": [
+        {
+          "name": "ORIGINATOR_UNIFIED_SHELL_ENABLED",
+          "value": "false"
+        }
+      ]
+    }
+  ]
+}
