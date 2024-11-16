@@ -27,33 +27,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   Language nodes can be different than the jcr:language property value [#37](https://github.com/orbinson/aem-dictionary-translator/issues/37)
 -   Allow nt:folder as language node [#38](https://github.com/orbinson/aem-dictionary-translator/issues/38)
 -   Language nodes can be names different between the languages [#39](https://github.com/orbinson/aem-dictionary-translator/issues/39)
--   Update all responses to use HTML based error responses so that Granite UI shows them in the dialogs: [#24](https://github.com/orbinson/aem-dictionary-translator/issues/24)
--   Don't swallow the replication exceptions, but show the user that it does not have the rights: [#23](https://github.com/orbinson/aem-dictionary-translator/issues/23)
+-   Update all responses to use HTML based error responses so that Granite UI shows them in the dialogs [#24](https://github.com/orbinson/aem-dictionary-translator/issues/24)
+-   Don't swallow the replication exceptions, but show the user that it does not have the rights [#23](https://github.com/orbinson/aem-dictionary-translator/issues/23)
 
 ## [1.1.3] - 2024-08-03
 
 ### Fixed
 
--   Add sling:key to message entries for a newly created language: [#28](https://github.com/orbinson/aem-dictionary-translator/issues/28)
+-   Add sling:key to message entries for a newly created language [#28](https://github.com/orbinson/aem-dictionary-translator/issues/28)
 
 ## [1.1.2] - 2024-02-28
 
-### Added
+### Fixed
 
--   Nothing, same release as `1.1.1` but was accidentaly published.
+-   Unpublish items before deleting them [#21](https://github.com/orbinson/aem-dictionary-translator/issues/21)
 
 ## [1.1.1] - 2024-02-08
 
 ### Added
 
--   CSV files with other languages than the dictionary currently has will not be imported: [#17](https://github.com/orbinson/aem-dictionary-translator/pull/17)
+-   CSV files with other languages than the dictionary currently has will not be imported [#17](https://github.com/orbinson/aem-dictionary-translator/pull/17)
 
 ### Fixed
 
--   Resolved errors occurring when publishing message entries: [#13](https://github.com/orbinson/aem-dictionary-translator/issues/13)
--   Reactivated publish button for dictionaries: [#13](https://github.com/orbinson/aem-dictionary-translator/issues/13)
--   Exporting a csv sometimes gives completely empty file: [#15](https://github.com/orbinson/aem-dictionary-translator/issues/15)
--   Importing a csv with the correct languages sometimes still gives the error of wrong languages: [#19](https://github.com/orbinson/aem-dictionary-translator/issues/19)
+-   Resolved errors occurring when publishing message entries [#13](https://github.com/orbinson/aem-dictionary-translator/issues/13)
+-   Reactivated publish button for dictionaries [#13](https://github.com/orbinson/aem-dictionary-translator/issues/13)
+-   Exporting a csv sometimes gives completely empty file [#15](https://github.com/orbinson/aem-dictionary-translator/issues/15)
+-   Importing a csv with the correct languages sometimes still gives the error of wrong languages [#19](https://github.com/orbinson/aem-dictionary-translator/issues/19)
 
 ## [1.1.0] - 2024-02-01
 
@@ -63,18 +63,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     list: [#8](https://github.com/orbinson/aem-dictionary-translator/pull/5)
 -   Message entries with no translation for a specific language no longer have a
     sling:message so the value won't be empty but will have a fallback
-    from another language or the key itself: [#12](https://github.com/orbinson/aem-dictionary-translator/pull/12)
+    from another language or the key itself [#12](https://github.com/orbinson/aem-dictionary-translator/pull/12)
 
 ### Added
 
--   Publish specific message entries in a dictionary: [#8](https://github.com/orbinson/aem-dictionary-translator/pull/5)
--   Export/Import CSV files of/to dictionaries: [#10](https://github.com/orbinson/aem-dictionary-translator/issues/10)
+-   Publish specific message entries in a dictionary [#8](https://github.com/orbinson/aem-dictionary-translator/pull/5)
+-   Export/Import CSV files of/to dictionaries [#10](https://github.com/orbinson/aem-dictionary-translator/issues/10)
 
 ## [1.0.6] - 2023-09-12
 
 ### Changed
 
--   Add breadcrumbs to the dictionary page: [#3](https://github.com/orbinson/aem-dictionary-translator/issues/3)
+-   Add breadcrumbs to the dictionary page [#3](https://github.com/orbinson/aem-dictionary-translator/issues/3)
 
 ## [1.0.5] - 2023-08-30
 
@@ -87,7 +87,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 -   Use the distribution API to be able to deep replicate a
-    dictionary: [#1](https://github.com/orbinson/aem-dictionary-translator/pull/1)
+    dictionary [#1](https://github.com/orbinson/aem-dictionary-translator/pull/1)
 
 ## [1.0.3] - 2023-08-14
 
