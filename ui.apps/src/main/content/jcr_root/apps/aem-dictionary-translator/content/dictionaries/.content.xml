@@ -75,7 +75,7 @@
                         variant="actionBar"
                         text="Create Language">
                     <data jcr:primaryType="nt:unstructured"
-                          src.uritemplate="/apps/aem-dictionary-translator/content/granite/dialog/dictionary/language/create.html?dictionary={+item}"/>
+                          src.uritemplate="/apps/aem-dictionary-translator/content/granite/dialog/dictionary/language/create.html{+item}"/>
                 </create-language>
                 <delete-language
                         jcr:primaryType="nt:unstructured"
