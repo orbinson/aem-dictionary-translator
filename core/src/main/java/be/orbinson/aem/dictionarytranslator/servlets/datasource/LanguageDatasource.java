@@ -79,7 +79,7 @@ public class LanguageDatasource extends SlingSafeMethodsServlet {
      * @throws IOException 
      * @throws ServletException 
      */
-    private Map<String, String> getAllAvailableLanguages(SlingHttpServletRequest request, @NotNull SlingHttpServletResponse response) throws ServletException, IOException {
+    public static Map<String, String> getAllAvailableLanguages(SlingHttpServletRequest request, @NotNull SlingHttpServletResponse response) throws ServletException, IOException {
         // TranslationConfig.getLanguages(ResourceResolver) does never return the country label, 
         // therefore use the data source which is also used in the Page Properties dialog (Advanced Tab in Language)
         RequestDispatcherOptions options = new RequestDispatcherOptions();

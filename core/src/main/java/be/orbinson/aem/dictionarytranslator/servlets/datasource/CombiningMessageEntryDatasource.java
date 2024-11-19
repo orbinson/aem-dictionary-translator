@@ -20,6 +20,9 @@ import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
 import javax.servlet.Servlet;
+import javax.servlet.ServletException;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -82,7 +85,7 @@ public class CombiningMessageEntryDatasource extends SlingSafeMethodsServlet {
     }
 
     @Override
-    protected void doGet(@NotNull SlingHttpServletRequest request, @NotNull SlingHttpServletResponse response) {
+    protected void doGet(@NotNull SlingHttpServletRequest request, @NotNull SlingHttpServletResponse response) throws ServletException, IOException {
         List<Resource> resourceList = new ArrayList<>();
         ResourceResolver resourceResolver = request.getResourceResolver();
 
@@ -91,16 +94,17 @@ public class CombiningMessageEntryDatasource extends SlingSafeMethodsServlet {
             createDictionaryDataSource(request, resourceResolver, dictionaryPath, resourceList);
         }
 
+        Map<String, String> languageMap = LanguageDatasource.getAllAvailableLanguages(request, response);
         String combiningMessageEntryPath = request.getParameter("item");
         if (combiningMessageEntryPath != null) {
-            createCombiningMessageEntryDataSource(resourceResolver, combiningMessageEntryPath, resourceList);
+            createCombiningMessageEntryDataSource(languageMap, resourceResolver, combiningMessageEntryPath, resourceList);
         }
 
         DataSource dataSource = new SimpleDataSource(resourceList.iterator());
         request.setAttribute(DataSource.class.getName(), dataSource);
     }
 
-    private static void createCombiningMessageEntryDataSource(ResourceResolver resourceResolver, String combiningMessageEntryPath, List<Resource> resourceList) {
+    private static void createCombiningMessageEntryDataSource(Map<String, String> languageMap, ResourceResolver resourceResolver, String combiningMessageEntryPath, List<Resource> resourceList) {
         Resource combiningMessageEntryResource = resourceResolver.getResource(combiningMessageEntryPath);
         if (combiningMessageEntryResource != null) {
             ValueMap properties = combiningMessageEntryResource.getValueMap();
@@ -112,7 +116,8 @@ public class CombiningMessageEntryDatasource extends SlingSafeMethodsServlet {
             if (languages != null) {
                 for (String language : languages) {
                     String message = properties.get(language, StringUtils.EMPTY);
-                    createTextFieldResource(resourceResolver, resourceList, language, message);
+                    String languageLabel = languageMap.getOrDefault(language, "") + " (" + language + ")";
+                    createTextFieldResource(resourceResolver, resourceList, languageLabel, message);
                 }
             }
         }
