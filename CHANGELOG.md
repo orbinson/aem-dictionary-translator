@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+-   Remove shortcut `d` for "Delete Language" as it conflicts with `Cmd + Opt + I` on Mac OS Chrome (Open Developer Tools)
 -   Fix publication error when too many keys are selected [#45](https://github.com/orbinson/aem-dictionary-translator/issues/45)
 -   Fix publication timeout when for large dictionaries [#44](https://github.com/orbinson/aem-dictionary-translator/issues/44)
 

@@ -82,7 +82,6 @@
                         sling:resourceType="granite/ui/components/coral/foundation/collection/action"
                         activeSelectionCount="single"
                         action="foundation.dialog"
-                        command="d"
                         icon="deleteOutline"
                         variant="actionBar"
                         text="Delete Language">
