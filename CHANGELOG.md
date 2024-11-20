@@ -9,11 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+-   Consolidate field labels in dialog for "Create Key" and "Edit Key"[#57](https://github.com/orbinson/aem-dictionary-translator/issues/57)
+-   Language drop-down should expose both language and optionally country name [#56](https://github.com/orbinson/aem-dictionary-translator/issues/56)
 -   Update terminology to message entry and key instead of label [#33](https://github.com/orbinson/aem-dictionary-translator/issues/33)
 -   Add option to publish to preview [#43](https://github.com/orbinson/aem-dictionary-translator/issues/43)
 -   Add `/conf` as editable root for dictionaries [#46](https://github.com/orbinson/aem-dictionary-translator/issues/46)
 -   Update maven dependencies [#51](https://github.com/orbinson/aem-dictionary-translator/pull/51)
--   Sort dictionary languages alphanumeric [#52](https://github.com/orbinson/aem-dictionary-translator/pull/52)
+-   Sort dictionary languages alphanumerically [#52](https://github.com/orbinson/aem-dictionary-translator/pull/52)
 
 ### Fixed
 

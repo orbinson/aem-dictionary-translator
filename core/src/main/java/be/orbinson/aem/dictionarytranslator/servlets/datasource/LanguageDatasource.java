@@ -96,7 +96,7 @@ public class LanguageDatasource extends SlingSafeMethodsServlet {
                 .filter(r -> !AccessControlConstants.REP_POLICY.equals(r.getValue()))
                 .collect(Collectors.toMap(
                 ValueTextResource::getValue,
-                ValueTextResource::getText,
+                r -> r.getText() + " (" + r.getValue() + ")",
                 (oldValue, newValue) -> {
                             LOG.warn("Duplicate language/country code: {}", oldValue);
                             return oldValue;
@@ -117,7 +117,9 @@ public class LanguageDatasource extends SlingSafeMethodsServlet {
         Config dsCfg = new Config(request.getResource().getChild("datasource"));
         if (dsCfg.get("hideNonDictionaryLanguages", false)) {
             languageFilter = dictionaryLanguages::contains;
-        } else { 
+            // add missing languages to dictionary
+            dictionaryLanguages.forEach(l -> languageMap.putIfAbsent(l, l));
+        } else {
             languageFilter = l -> !dictionaryLanguages.contains(l);
         }
         // convert to list of resources
@@ -159,7 +161,7 @@ public class LanguageDatasource extends SlingSafeMethodsServlet {
     private static class TextFieldResource extends OrderedValueMapResource{
 
         public static TextFieldResource create(Locale locale, ResourceResolver resolver, String value, String text) {
-            ValueMap valueMap = new ValueMapDecorator(Map.of("fieldLabel", text + " (" + value + ")", "name", value));
+            ValueMap valueMap = new ValueMapDecorator(Map.of("fieldLabel", text, "name", value));
             return new TextFieldResource(locale, resolver, valueMap);
         }
 
@@ -182,7 +184,7 @@ public class LanguageDatasource extends SlingSafeMethodsServlet {
         }
         
         public static ValueTextResource create(Locale locale, ResourceResolver resolver, String value, String text) {
-            ValueMap valueMap = new ValueMapDecorator(Map.of("value", value, "text", text + " (" + value + ")"));
+            ValueMap valueMap = new ValueMapDecorator(Map.of("value", value, "text", text));
             return new ValueTextResource(locale, resolver, valueMap);
         }
 
