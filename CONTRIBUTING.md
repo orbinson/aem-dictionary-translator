@@ -25,7 +25,7 @@ After your issue is approved, follow these steps to submit a pull request:
 2. **Address the issue** described and follow the coding standards of the project.
 3. **Write or update tests** to ensure your changes are properly covered.
 4. Ensure all **quality gates pass** (e.g., linter, formatter, build, tests, etc.).
-5. **Update the changelog** with a brief description of your changes:
+5. **Update the [CHANGELOG.md](CHANGELOG.md)** with a brief description of your changes:
    - Include the issue number and a summary of your contribution.
 
 ### Quality Gates
