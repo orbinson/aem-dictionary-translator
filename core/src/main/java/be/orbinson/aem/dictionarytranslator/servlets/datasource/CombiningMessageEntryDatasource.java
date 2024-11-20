@@ -116,8 +116,7 @@ public class CombiningMessageEntryDatasource extends SlingSafeMethodsServlet {
             if (languages != null) {
                 for (String language : languages) {
                     String message = properties.get(language, StringUtils.EMPTY);
-                    String languageLabel = languageMap.getOrDefault(language, "") + " (" + language + ")";
-                    createTextFieldResource(resourceResolver, resourceList, languageLabel, message);
+                    createTextFieldResource(resourceResolver, resourceList, languageMap.getOrDefault(language, language), message);
                 }
             }
         }
