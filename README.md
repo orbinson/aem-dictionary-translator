@@ -65,6 +65,8 @@ Example `org.apache.sling.i18n.impl.JcrResourceBundleProvider` OSGi config:
 
 ## Development
 
+If you want to contribute to the project make sure to check the contribution guidelines in [CONTRIBUTING.md](CONTRIBUTING.md).
+
 To build all the modules run in the project root directory the following command
 
 ```shell
