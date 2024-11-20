@@ -52,5 +52,5 @@ After submitting your pull request:
 
 ## Need Help?
 
-If you have questions or need help at any stage of the contribution processf eel free to comment on your issue or pull request for clarification.
+If you have questions or need help at any stage of the contribution process feel free to comment on your issue or pull request for clarification.
 Thank you for contributing! Your efforts make this project better for everyone.
