@@ -23,8 +23,10 @@ import javax.servlet.Servlet;
 import javax.servlet.ServletException;
 
 import java.io.IOException;
+import java.text.Collator;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 @Component(service = Servlet.class)
@@ -59,12 +61,12 @@ public class CombiningMessageEntryDatasource extends SlingSafeMethodsServlet {
         }
     }
 
-    private static void createTextFieldResource(ResourceResolver resourceResolver, List<Resource> resourceList, String key, String value) {
-        createTextFieldResource(resourceResolver, resourceList, key, value, false, false);
+    private static Resource createTextFieldResource(ResourceResolver resourceResolver, String key, String value) {
+        return createTextFieldResource(resourceResolver, key, value, false, false);
     }
 
 
-    private static void createTextFieldResource(ResourceResolver resourceResolver, List<Resource> resourceList, String key, String value, boolean required, boolean disabled) {
+    private static Resource createTextFieldResource(ResourceResolver resourceResolver, String key, String value, boolean required, boolean disabled) {
         ValueMap valueMap = new ValueMapDecorator(Map.of(
                 "fieldLabel", key,
                 "name", key,
@@ -72,16 +74,16 @@ public class CombiningMessageEntryDatasource extends SlingSafeMethodsServlet {
                 "disabled", disabled,
                 "required", required)
         );
-        resourceList.add(new ValueMapResource(resourceResolver, "", "granite/ui/components/coral/foundation/form/textfield", valueMap));
+        return new ValueMapResource(resourceResolver, "", "granite/ui/components/coral/foundation/form/textfield", valueMap);
     }
 
-    private static void createHiddenFieldResource(ResourceResolver resourceResolver, List<Resource> resourceList, String key, String value) {
+    private static Resource createHiddenFieldResource(ResourceResolver resourceResolver, String key, String value) {
         ValueMap valueMap = new ValueMapDecorator(Map.of(
                 "fieldLabel", key,
                 "name", key,
                 "value", value)
         );
-        resourceList.add(new ValueMapResource(resourceResolver, "", "granite/ui/components/coral/foundation/form/hidden", valueMap));
+        return new ValueMapResource(resourceResolver, "", "granite/ui/components/coral/foundation/form/hidden", valueMap);
     }
 
     @Override
@@ -97,28 +99,42 @@ public class CombiningMessageEntryDatasource extends SlingSafeMethodsServlet {
         Map<String, String> languageMap = LanguageDatasource.getAllAvailableLanguages(request, response);
         String combiningMessageEntryPath = request.getParameter("item");
         if (combiningMessageEntryPath != null) {
-            createCombiningMessageEntryDataSource(languageMap, resourceResolver, combiningMessageEntryPath, resourceList);
+            createCombiningMessageEntryDataSource(request.getLocale(), languageMap, resourceResolver, combiningMessageEntryPath, resourceList);
+           
         }
 
         DataSource dataSource = new SimpleDataSource(resourceList.iterator());
         request.setAttribute(DataSource.class.getName(), dataSource);
     }
 
-    private static void createCombiningMessageEntryDataSource(Map<String, String> languageMap, ResourceResolver resourceResolver, String combiningMessageEntryPath, List<Resource> resourceList) {
+    
+    private static void sortResourcesByProperty(String propertyName, Locale locale, List<Resource> resources) {
+        Collator collator = Collator.getInstance(locale);
+        resources.sort((o1, o2) -> {
+            ValueMap properties1 = o1.getValueMap();
+            ValueMap properties2 = o2.getValueMap();
+            return collator.compare(properties1.get(propertyName, ""), properties2.get(propertyName, ""));
+        });
+    }
+
+    private static void createCombiningMessageEntryDataSource(Locale locale, Map<String, String> languageMap, ResourceResolver resourceResolver, String combiningMessageEntryPath, List<Resource> resourceList) {
         Resource combiningMessageEntryResource = resourceResolver.getResource(combiningMessageEntryPath);
         if (combiningMessageEntryResource != null) {
             ValueMap properties = combiningMessageEntryResource.getValueMap();
             String[] languages = properties.get(CombiningMessageEntryResourceProvider.LANGUAGES, String[].class);
             String key = properties.get(CombiningMessageEntryResourceProvider.KEY, String.class);
 
-            createTextFieldResource(resourceResolver, resourceList, "Key", key, false, true);
-            createHiddenFieldResource(resourceResolver, resourceList, "key", key);
             if (languages != null) {
                 for (String language : languages) {
                     String message = properties.get(language, StringUtils.EMPTY);
-                    createTextFieldResource(resourceResolver, resourceList, languageMap.getOrDefault(language, language), message);
+                    resourceList.add(createTextFieldResource(resourceResolver, languageMap.getOrDefault(language, language), message));
                 }
+                // sort by fieldLabel
+                sortResourcesByProperty("fieldLabel", locale, resourceList);
             }
+            // make sure that key is always at the top
+            resourceList.add(0, createTextFieldResource(resourceResolver, "Key", key, false, true));
+            resourceList.add(1, createHiddenFieldResource(resourceResolver, "key", key));
         }
     }
 

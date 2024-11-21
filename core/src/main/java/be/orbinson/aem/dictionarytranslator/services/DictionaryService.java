@@ -28,8 +28,6 @@ public interface DictionaryService {
 
     Resource getLanguageResource(Resource dictionaryResource, String language);
 
-    Map<String, String> getLanguagesForPath(ResourceResolver resourceResolver, String dictionaryPath);
-
     String getBasename(Resource dictionaryResource);
 
     List<String> getKeys(Resource dictionaryResource);

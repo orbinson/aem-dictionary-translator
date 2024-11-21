@@ -5,7 +5,6 @@ import com.adobe.granite.ui.components.Config;
 import com.adobe.granite.ui.components.ds.DataSource;
 import com.adobe.granite.ui.components.ds.SimpleDataSource;
 import com.adobe.granite.ui.components.ds.ValueMapResource;
-import com.day.cq.commons.LanguageUtil;
 import org.apache.commons.collections4.IteratorUtils;
 import org.apache.commons.collections4.iterators.TransformIterator;
 import org.apache.jackrabbit.oak.spi.security.authorization.accesscontrol.AccessControlConstants;
@@ -27,6 +26,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.text.Collator;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -67,8 +67,7 @@ public class LanguageDatasource extends SlingSafeMethodsServlet {
      * @return a set of language/country codes
      */
     private Set<String> getDictionaryLanguages(ResourceResolver resourceResolver, String dictionaryPath) {
-        return dictionaryService.getLanguagesForPath(resourceResolver, dictionaryPath).keySet().stream()
-                .collect(Collectors.toSet());
+        return new HashSet<>(dictionaryService.getLanguages(resourceResolver.getResource(dictionaryPath)));
     }
 
     /**
@@ -157,7 +156,7 @@ public class LanguageDatasource extends SlingSafeMethodsServlet {
             return collator.compare(getLabel(), o.getLabel());
         }
     }
-    
+
     private static class TextFieldResource extends OrderedValueMapResource{
 
         public static TextFieldResource create(Locale locale, ResourceResolver resolver, String value, String text) {
@@ -172,7 +171,6 @@ public class LanguageDatasource extends SlingSafeMethodsServlet {
         String getLabel() {
             return getValueMap().get("fieldLabel", String.class);
         }
-
     }
 
     /**
@@ -182,7 +180,7 @@ public class LanguageDatasource extends SlingSafeMethodsServlet {
         public static ValueTextResource fromResource(Locale locale, Resource resource) {
             return new ValueTextResource(locale, resource.getResourceResolver(), resource.getValueMap());
         }
-        
+
         public static ValueTextResource create(Locale locale, ResourceResolver resolver, String value, String text) {
             ValueMap valueMap = new ValueMapDecorator(Map.of("value", value, "text", text));
             return new ValueTextResource(locale, resolver, valueMap);
@@ -204,6 +202,5 @@ public class LanguageDatasource extends SlingSafeMethodsServlet {
         String getLabel() {
             return getText();
         }
-        
     }
 }

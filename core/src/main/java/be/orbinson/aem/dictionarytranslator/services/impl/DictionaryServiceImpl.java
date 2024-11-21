@@ -37,8 +37,6 @@ public class DictionaryServiceImpl implements DictionaryService {
     private static final List<String> EDITABLE_ROOTS = List.of("/content/", "/conf/");
 
     @Reference
-    private TranslationConfig translationConfig;
-    @Reference
     private ResourceResolverFactory resourceResolverFactory;
     @Reference
     private Replicator replicator;
@@ -70,32 +68,6 @@ public class DictionaryServiceImpl implements DictionaryService {
     private ResourceResolver getServiceResourceResolver() throws LoginException {
         Map<String, Object> authenticationInfo = Map.of(ResourceResolverFactory.SUBSERVICE, "dictionary-service");
         return resourceResolverFactory.getServiceResourceResolver(authenticationInfo);
-    }
-
-    public @NotNull Map<String, String> getLanguagesForPath(ResourceResolver resourceResolver, String dictionaryPath) {
-        Map<String, String> result = new TreeMap<>();
-        Resource resource = resourceResolver.getResource(dictionaryPath);
-
-        if (resource != null && translationConfig != null) {
-            try (ResourceResolver serviceResourceResolver = getServiceResourceResolver()) {
-                Map<String, String> languages = translationConfig.getLanguages(serviceResourceResolver);
-
-                resource.getChildren().forEach(child -> {
-                    if (child.getValueMap().containsKey(JcrConstants.JCR_LANGUAGE)) {
-                        String language = child.getValueMap().get(JcrConstants.JCR_LANGUAGE, String.class);
-                        if (language != null) {
-                            String name = languages.get(language);
-                            LOG.trace("Add language '{}' with name '{}'", language, name);
-                            result.put(language, name);
-                        }
-                    }
-                });
-            } catch (LoginException e) {
-                LOG.error("Unable to get service resource resolver to get languages", e);
-            }
-        }
-
-        return result;
     }
 
     public @NotNull List<Resource> getDictionaries(ResourceResolver resourceResolver) {
