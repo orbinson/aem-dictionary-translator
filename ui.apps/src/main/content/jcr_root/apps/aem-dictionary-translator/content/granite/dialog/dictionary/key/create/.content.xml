@@ -43,7 +43,9 @@
                                                 sling:resourceType="granite/ui/components/coral/foundation/container">
                                             <datasource
                                                     jcr:primaryType="nt:unstructured"
-                                                    sling:resourceType="aem-dictionary-translator/datasource/language"/>
+                                                    sling:resourceType="aem-dictionary-translator/datasource/dictionary-language"
+                                                    hideNonDictionaryLanguages="{Boolean}true"
+                                                    emitTextFieldResources="{Boolean}true" />
                                         </translations>
                                     </items>
                                 </form>

@@ -24,7 +24,7 @@
                                         jcr:primaryType="nt:unstructured"
                                         sling:resourceType="aem-dictionary-translator/servlet/action/create-language"
                                         granite:id="create-language-form"
-                                        action="${requestPathInfo.resourcePath}?dictionary=${param.dictionary}"
+                                        action="${requestPathInfo.resourcePath}?dictionary=${requestPathInfo.suffix}"
                                         foundationForm="true"
                                         method="post"
                                         style="vertical">
