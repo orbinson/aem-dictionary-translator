@@ -3,7 +3,46 @@ name: Build
 on: [ push, pull_request ]
 
 jobs:
-  call-workflow:
+  aem-maven-build:
     uses: orbinson/workflows/.github/workflows/aem-maven-build.yml@main
     with:
       java-version: 11
+
+  ui-tests:
+    name: UI Tests
+    runs-on: ubuntu-latest
+    needs: aem-maven-build
+    services:
+      aem-author:
+        image: ghcr.io/orbinson/aem-author:2024.10.18459.20241031T210302Z-241000
+        ports:
+          - 4502:4502
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: zulu
+          java-version: 11
+          cache: maven
+      - name: Install package
+        run: |
+          mvn \
+            --batch-mode \
+            --update-snapshots \
+            --activate-profiles autoInstallSinglePackage \
+            install
+      - name: Install it.content
+        run: |
+          mvn install \
+            --batch-mode \
+            --update-snapshots \
+            --activate-profiles autoInstallPackage \
+            --projects it.content
+      - name: Run ui.tests
+        run: |
+          mvn test \
+            --batch-mode \
+            --projects ui.tests \
+            --define skipTests=false

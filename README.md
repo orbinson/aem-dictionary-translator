@@ -101,11 +101,11 @@ guidelines consult the available documentation.
 First install the `it.content` module to your local AEM instance
 
 ```shell
-mvn clean install -pl it.content -PautoInstallSinglePackage
+mvn clean install -pl it.content -PautoInstallPackage
 ```
 
 Afterward run the UI tests with the following command
 
 ```shell
-mvn clean test -Pui-tests
+mvn clean test -pl ui.tests -DskipTests=false
 ```

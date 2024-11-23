@@ -15,6 +15,21 @@
     <name>IT Content</name>
     <description>IT Content package for the Dictionary Translator</description>
 
+    <profiles>
+        <profile>
+            <id>autoInstallPackage</id>
+
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>io.wcm.maven.plugins</groupId>
+                        <artifactId>wcmio-content-package-maven-plugin</artifactId>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
     <build>
         <sourceDirectory>src/main/content/jcr_root</sourceDirectory>
 
@@ -35,10 +50,6 @@
                         </repositoryStructurePackage>
                     </repositoryStructurePackages>
                 </configuration>
-            </plugin>
-            <plugin>
-                <groupId>io.wcm.maven.plugins</groupId>
-                <artifactId>wcmio-content-package-maven-plugin</artifactId>
             </plugin>
         </plugins>
     </build>
