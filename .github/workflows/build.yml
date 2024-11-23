@@ -22,19 +22,18 @@ jobs:
           - 4502:4502
     steps:
       - run: |
-          docker ps
+          sleep 60
           docker ps -a
-          curl -u admin:admin --connect-timeout 10 --max-time 60 -v http://localhost:4502/system/console/bundles.json
-          curl -u admin:admin --connect-timeout 10 --max-time 60 -v http://aem-author:4502/system/console/bundles.json
-          curl -u admin:admin --connect-timeout 10 --max-time 60 -v http://localhost:4502/system/console/slinglog/tailer.txt?tail=10000&grep=*&name=/logs/error.log
-          curl -u admin:admin --connect-timeout 10 --max-time 60 -v http://aem-author:4502/system/console/slinglog/tailer.txt?tail=10000&grep=*&name=/logs/error.log
+          curl -u admin:admin --connect-timeout 10 --max-time 60 -v http://localhost:4502/system/console/bundles.json || true
+          curl -u admin:admin --connect-timeout 10 --max-time 60 -v http://aem-author:4502/system/console/bundles.json || true
+          curl -u admin:admin --connect-timeout 10 --max-time 60 -v http://localhost:4502/system/console/slinglog/tailer.txt?tail=10000&grep=*&name=/logs/error.log || true
+          curl -u admin:admin --connect-timeout 10 --max-time 60 -v http://aem-author:4502/system/console/slinglog/tailer.txt?tail=10000&grep=*&name=/logs/error.log || true
           sleep 120
-          docker ps
           docker ps -a
-          curl -u admin:admin --connect-timeout 10 --max-time 60 -v http://localhost:4502/system/console/bundles.json
-          curl -u admin:admin --connect-timeout 10 --max-time 60 -v http://aem-author:4502/system/console/bundles.json
-          curl -u admin:admin --connect-timeout 10 --max-time 60 -v http://localhost:4502/system/console/slinglog/tailer.txt?tail=10000&grep=*&name=/logs/error.log
-          curl -u admin:admin --connect-timeout 10 --max-time 60 -v http://aem-author:4502/system/console/slinglog/tailer.txt?tail=10000&grep=*&name=/logs/error.log
+          curl -u admin:admin --connect-timeout 10 --max-time 60 -v http://localhost:4502/system/console/bundles.json || true
+          curl -u admin:admin --connect-timeout 10 --max-time 60 -v http://aem-author:4502/system/console/bundles.json || true
+          curl -u admin:admin --connect-timeout 10 --max-time 60 -v http://localhost:4502/system/console/slinglog/tailer.txt?tail=10000&grep=*&name=/logs/error.log || true
+          curl -u admin:admin --connect-timeout 10 --max-time 60 -v http://aem-author:4502/system/console/slinglog/tailer.txt?tail=10000&grep=*&name=/logs/error.log || true
 
 #      - name: Checkout repository
 #        uses: actions/checkout@v2
