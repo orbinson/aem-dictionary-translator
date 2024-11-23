@@ -31,21 +31,23 @@ jobs:
           cache: maven
       - name: Install package
         run: |
-          mvn \
+          mvn install \
             --batch-mode \
             --update-snapshots \
             --activate-profiles autoInstallSinglePackage \
-            install
+            --define aem.host=aem-author
       - name: Install it.content
         run: |
           mvn install \
             --batch-mode \
             --update-snapshots \
             --activate-profiles autoInstallPackage \
-            --projects it.content
+            --projects it.content \
+            --define aem.host=aem-author
       - name: Run ui.tests
         run: |
           mvn test \
             --batch-mode \
             --projects ui.tests \
-            --define skipTests=false
+            --define skipTests=false \
+            --define aem.host=aem-author
