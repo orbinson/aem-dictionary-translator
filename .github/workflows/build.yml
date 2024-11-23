@@ -21,33 +21,48 @@ jobs:
         ports:
           - 4502:4502
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-      - name: Setup Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: zulu
-          java-version: 11
-          cache: maven
-      - name: Install package
-        run: |
-          mvn install \
-            --batch-mode \
-            --update-snapshots \
-            --activate-profiles autoInstallSinglePackage \
-            --define aem.host=aem-author
-      - name: Install it.content
-        run: |
-          mvn install \
-            --batch-mode \
-            --update-snapshots \
-            --activate-profiles autoInstallPackage \
-            --projects it.content \
-            --define aem.host=aem-author
-      - name: Run ui.tests
-        run: |
-          mvn test \
-            --batch-mode \
-            --projects ui.tests \
-            --define skipTests=false \
-            --define aem.host=aem-author
+      - run: |
+          docker ps
+          docker ps -a
+          curl -u admin:admin --connect-timeout 10 --max-time 60 -v http://localhost:4502/system/console/bundles.json
+          curl -u admin:admin --connect-timeout 10 --max-time 60 -v http://aem-author:4502/system/console/bundles.json
+          curl -u admin:admin --connect-timeout 10 --max-time 60 -v http://localhost:4502/system/console/slinglog/tailer.txt?tail=10000&grep=*&name=/logs/error.log
+          curl -u admin:admin --connect-timeout 10 --max-time 60 -v http://aem-author:4502/system/console/slinglog/tailer.txt?tail=10000&grep=*&name=/logs/error.log
+          sleep 120
+          docker ps
+          docker ps -a
+          curl -u admin:admin --connect-timeout 10 --max-time 60 -v http://localhost:4502/system/console/bundles.json
+          curl -u admin:admin --connect-timeout 10 --max-time 60 -v http://aem-author:4502/system/console/bundles.json
+          curl -u admin:admin --connect-timeout 10 --max-time 60 -v http://localhost:4502/system/console/slinglog/tailer.txt?tail=10000&grep=*&name=/logs/error.log
+          curl -u admin:admin --connect-timeout 10 --max-time 60 -v http://aem-author:4502/system/console/slinglog/tailer.txt?tail=10000&grep=*&name=/logs/error.log
+
+#      - name: Checkout repository
+#        uses: actions/checkout@v2
+#      - name: Setup Java
+#        uses: actions/setup-java@v4
+#        with:
+#          distribution: zulu
+#          java-version: 11
+#          cache: maven
+#      - name: Install package
+#        run: |
+#          mvn install \
+#            --batch-mode \
+#            --update-snapshots \
+#            --activate-profiles autoInstallSinglePackage \
+#            --define aem.host=aem-author
+#      - name: Install it.content
+#        run: |
+#          mvn install \
+#            --batch-mode \
+#            --update-snapshots \
+#            --activate-profiles autoInstallPackage \
+#            --projects it.content \
+#            --define aem.host=aem-author
+#      - name: Run ui.tests
+#        run: |
+#          mvn test \
+#            --batch-mode \
+#            --projects ui.tests \
+#            --define skipTests=false \
+#            --define aem.host=aem-author
