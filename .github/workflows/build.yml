@@ -11,7 +11,7 @@ jobs:
   ui-tests:
     name: UI Tests
     runs-on: ubuntu-latest
-    needs: aem-maven-build
+#    needs: aem-maven-build
     services:
       aem-author:
         image: ghcr.io/orbinson/aem-sdk:author-2024.10.18459.20241031T210302Z-241000
