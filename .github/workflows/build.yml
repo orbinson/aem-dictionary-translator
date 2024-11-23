@@ -22,19 +22,8 @@ jobs:
           - 4502:4502
     steps:
       - run: |
-          sleep 60
-          docker ps -a
-          curl -u admin:admin --connect-timeout 10 --max-time 60 -v http://localhost:4502/system/console/bundles.json || true
-          curl -u admin:admin --connect-timeout 10 --max-time 60 -v http://aem-author:4502/system/console/bundles.json || true
-          curl -u admin:admin --connect-timeout 10 --max-time 60 -v http://localhost:4502/system/console/slinglog/tailer.txt?tail=10000&grep=*&name=/logs/error.log || true
-          curl -u admin:admin --connect-timeout 10 --max-time 60 -v http://aem-author:4502/system/console/slinglog/tailer.txt?tail=10000&grep=*&name=/logs/error.log || true
           sleep 120
-          docker ps -a
-          curl -u admin:admin --connect-timeout 10 --max-time 60 -v http://localhost:4502/system/console/bundles.json || true
-          curl -u admin:admin --connect-timeout 10 --max-time 60 -v http://aem-author:4502/system/console/bundles.json || true
-          curl -u admin:admin --connect-timeout 10 --max-time 60 -v http://localhost:4502/system/console/slinglog/tailer.txt?tail=10000&grep=*&name=/logs/error.log || true
-          curl -u admin:admin --connect-timeout 10 --max-time 60 -v http://aem-author:4502/system/console/slinglog/tailer.txt?tail=10000&grep=*&name=/logs/error.log || true
-
+          docker ps -q | xargs -I {} docker logs {}
 #      - name: Checkout repository
 #        uses: actions/checkout@v2
 #      - name: Setup Java
@@ -48,20 +37,17 @@ jobs:
 #          mvn install \
 #            --batch-mode \
 #            --update-snapshots \
-#            --activate-profiles autoInstallSinglePackage \
-#            --define aem.host=aem-author
+#            --activate-profiles autoInstallSinglePackage
 #      - name: Install it.content
 #        run: |
 #          mvn install \
 #            --batch-mode \
 #            --update-snapshots \
 #            --activate-profiles autoInstallPackage \
-#            --projects it.content \
-#            --define aem.host=aem-author
+#            --projects it.content
 #      - name: Run ui.tests
 #        run: |
 #          mvn test \
 #            --batch-mode \
 #            --projects ui.tests \
-#            --define skipTests=false \
-#            --define aem.host=aem-author
+#            --define skipTests=false
