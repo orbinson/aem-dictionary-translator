@@ -15,6 +15,9 @@ jobs:
     services:
       aem-author:
         image: ghcr.io/orbinson/aem-author:2024.10.18459.20241031T210302Z-241000
+        credentials:
+          username: ${{ secrets.GHCR_USER }}
+          password: ${{ secrets.GHCR_TOKEN }}
         ports:
           - 4502:4502
     steps:
