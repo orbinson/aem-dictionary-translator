@@ -34,21 +34,8 @@ jobs:
           path: ~/.cache/ms-playwright
           key: ${{ runner.os }}-playwright-${{ env.PLAYWRIGHT_VERSION }}
       - name: Install package
-        run: |
-          mvn install \
-            --batch-mode \
-            --update-snapshots \
-            --activate-profiles autoInstallSinglePackage
+        run: mvn install -B -U -PautoInstallSinglePackage
       - name: Install it.content
-        run: |
-          mvn install \
-            --batch-mode \
-            --update-snapshots \
-            --activate-profiles autoInstallPackage \
-            --projects it.content
+        run: mvn install -B -U -PautoInstallPackage -pl it.content
       - name: Run ui.tests
-        run: |
-          mvn test \
-            --batch-mode \
-            --projects ui.tests \
-            --define skipTests=false
+        run: mvn test -B -pl ui.tests -DskipTests=false
