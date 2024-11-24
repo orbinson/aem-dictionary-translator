@@ -19,7 +19,7 @@ jobs:
           - 4502:4502
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
@@ -29,7 +29,7 @@ jobs:
       - name: Get Playwright version from package-lock.json
         run: echo "PLAYWRIGHT_VERSION=$(jq -r '.packages["node_modules/playwright-core"].version' ui.tests/package-lock.json)" >> $GITHUB_ENV
       - name: Cache Playwright binaries
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.cache/ms-playwright
           key: ${{ runner.os }}-playwright-${{ env.PLAYWRIGHT_VERSION }}
