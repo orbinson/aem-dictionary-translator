@@ -9,7 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
--   Consolidate field labels in dialog for "Create Key" and "Edit Key"[#57](https://github.com/orbinson/aem-dictionary-translator/issues/57)
+-   Add button to default AEM translator (if it exists) [#47](https://github.com/orbinson/aem-dictionary-translator/issues/47)
+-   Consolidate field labels in dialog for "Create Key" and "Edit Key" [#57](https://github.com/orbinson/aem-dictionary-translator/issues/57)
 -   Language drop-down should expose both language and optionally country name [#56](https://github.com/orbinson/aem-dictionary-translator/issues/56)
 -   Update terminology to message entry and key instead of label [#33](https://github.com/orbinson/aem-dictionary-translator/issues/33)
 -   Add option to publish to preview [#43](https://github.com/orbinson/aem-dictionary-translator/issues/43)
