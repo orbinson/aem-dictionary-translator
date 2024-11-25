@@ -39,3 +39,9 @@ jobs:
         run: mvn install -B -U -PautoInstallPackage -pl it.content
       - name: Run ui.tests
         run: mvn test -B -pl ui.tests -DskipTests=false
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30
