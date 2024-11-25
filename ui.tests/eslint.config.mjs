@@ -1,7 +1,6 @@
 import globals from "globals";
 import pluginJs from "@eslint/js";
-// enable when issue solved: https://github.com/eslint/eslint/issues/19134
-// import tseslint from "typescript-eslint";
+import tseslint from "typescript-eslint";
 
 export default [
     {
@@ -18,5 +17,5 @@ export default [
         }
     },
     pluginJs.configs.recommended,
-    // ...tseslint.configs.recommended,
+    ...tseslint.configs.recommended,
 ];

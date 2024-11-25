@@ -17,6 +17,6 @@
     "eslint": "^9.15.0",
     "globals": "^15.11.0",
     "typescript": "5.5.4",
-    "typescript-eslint": "^8.14.0"
+    "typescript-eslint": "^8.16.0"
   }
 }
