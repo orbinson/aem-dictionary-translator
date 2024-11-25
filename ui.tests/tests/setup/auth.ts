@@ -1,7 +1,7 @@
 import { test as setup } from "@playwright/test";
 import * as path from "path";
 
-const authFile = path.join(__dirname, "../playwright/.auth/user.json");
+const authFile = path.join(__dirname, "../../playwright/.auth/user.json");
 
 setup("AEM Login", async ({ page }) => {
     await page.goto("/");
