@@ -37,16 +37,6 @@ import java.util.stream.Collectors;
 import javax.servlet.Servlet;
 import javax.servlet.ServletException;
 
-/**
- * Granite UI data source for languages in the context of a dictionary.
- * It supports the following configuration properties:
- * <ul>
- * <li>{@code hideNonDictionaryLanguages} if set to true, only languages that are available in the dictionary are shown, if false all languages which are not yet in the dictionary are shown</li>
- * <li>{@code emitTextFieldResources} if set to true resources of type {@code granite/ui/components/coral/foundation/form/textfield} with {@code fieldLabel} and {@code name} properties for a 
- * text field are emitted, otherwise resources of empty type {@code text} and {@code value} properties for usage inside a select field
- * </ul>
- * All available languages are retrieved from {@code wcm/core/resources/languages} (by leveraging the {@code cq/gui/components/common/datasources/languages} data source).
- */
 @Component(service = Servlet.class)
 @SlingServletResourceTypes(
         resourceTypes = "aem-dictionary-translator/datasource/dictionary-language",
@@ -60,24 +50,10 @@ public class LanguageDatasource extends SlingSafeMethodsServlet {
     @Reference
     transient DictionaryService dictionaryService;
 
-    /**
-     * Returns the languages contained in the dictionary at the given path.
-     * @param resourceResolver
-     * @param dictionaryPath
-     * @return a set of language/country codes
-     */
     private Set<String> getDictionaryLanguages(ResourceResolver resourceResolver, String dictionaryPath) {
         return new HashSet<>(dictionaryService.getLanguages(resourceResolver.getResource(dictionaryPath)));
     }
 
-    /**
-     * Returns all available languages.
-     * @param resourceResolver
-     * @param dictionaryPath
-     * @return a map of language/country codes and their display names
-     * @throws IOException 
-     * @throws ServletException 
-     */
     public static Map<String, String> getAllAvailableLanguages(SlingHttpServletRequest request, @NotNull SlingHttpServletResponse response) throws ServletException, IOException {
         // TranslationConfig.getLanguages(ResourceResolver) does never return the country label, 
         // therefore use the data source which is also used in the Page Properties dialog (Advanced Tab in Language)
@@ -173,9 +149,6 @@ public class LanguageDatasource extends SlingSafeMethodsServlet {
         }
     }
 
-    /**
-     * Value exposes the language tag while text exposes the display name (label) of the language
-     */
     private static class ValueTextResource extends OrderedValueMapResource {
         public static ValueTextResource fromResource(Locale locale, Resource resource) {
             return new ValueTextResource(locale, resource.getResourceResolver(), resource.getValueMap());
