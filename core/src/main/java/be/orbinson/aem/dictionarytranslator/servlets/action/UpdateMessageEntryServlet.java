@@ -74,6 +74,9 @@ public class UpdateMessageEntryServlet extends SlingAllMethodsServlet {
             String[] languages = combiningMessageEntryResource.getValueMap().get(CombiningMessageEntryResourceProvider.LANGUAGES, new String[0]);
             for (String language : languages) {
                 String message = request.getParameter(language);
+                if (message == null) {
+                    throw new DictionaryException("Unable to get message for language '" + language + "'");
+                }
                 dictionaryService.updateMessageEntry(resourceResolver, dictionaryResource, language, key, message);
             }
         } else {
