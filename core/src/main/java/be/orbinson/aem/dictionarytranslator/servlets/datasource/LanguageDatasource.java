@@ -18,11 +18,14 @@ import org.apache.sling.api.servlets.SlingSafeMethodsServlet;
 import org.apache.sling.api.wrappers.ValueMapDecorator;
 import org.apache.sling.servlets.annotations.SlingServletResourceTypes;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.servlet.Servlet;
+import javax.servlet.ServletException;
 import java.io.IOException;
 import java.text.Collator;
 import java.util.Collections;
@@ -33,9 +36,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-
-import javax.servlet.Servlet;
-import javax.servlet.ServletException;
 
 @Component(service = Servlet.class)
 @SlingServletResourceTypes(
@@ -50,12 +50,8 @@ public class LanguageDatasource extends SlingSafeMethodsServlet {
     @Reference
     transient DictionaryService dictionaryService;
 
-    private Set<String> getDictionaryLanguages(ResourceResolver resourceResolver, String dictionaryPath) {
-        return new HashSet<>(dictionaryService.getLanguages(resourceResolver.getResource(dictionaryPath)));
-    }
-
     public static Map<String, String> getAllAvailableLanguages(SlingHttpServletRequest request, @NotNull SlingHttpServletResponse response) throws ServletException, IOException {
-        // TranslationConfig.getLanguages(ResourceResolver) does never return the country label, 
+        // TranslationConfig.getLanguages(ResourceResolver) does never return the country label,
         // therefore use the data source which is also used in the Page Properties dialog (Advanced Tab in Language)
         RequestDispatcherOptions options = new RequestDispatcherOptions();
         options.setForceResourceType("cq/gui/components/common/datasources/languages");
@@ -70,21 +66,29 @@ public class LanguageDatasource extends SlingSafeMethodsServlet {
                 // the upstream data source does not filter access control child resource
                 .filter(r -> !AccessControlConstants.REP_POLICY.equals(r.getValue()))
                 .collect(Collectors.toMap(
-                ValueTextResource::getValue,
-                r -> r.getText() + " (" + r.getValue() + ")",
-                (oldValue, newValue) -> {
+                        ValueTextResource::getValue,
+                        r -> r.getText() + " (" + r.getValue() + ")",
+                        (oldValue, newValue) -> {
                             LOG.warn("Duplicate language/country code: {}", oldValue);
                             return oldValue;
-                }));
+                        }));
+    }
+
+    private Set<String> getDictionaryLanguages(ResourceResolver resourceResolver, @Nullable String dictionaryPath) {
+        if (dictionaryPath != null) {
+            Resource dictionaryResource = resourceResolver.getResource(dictionaryPath);
+            if (dictionaryResource != null) {
+                return new HashSet<>(dictionaryService.getLanguages(dictionaryResource));
+            }
+        }
+        return new HashSet<>();
     }
 
     @Override
     protected void doGet(@NotNull SlingHttpServletRequest request, @NotNull SlingHttpServletResponse response) throws ServletException, IOException {
         // populate language map and filter
         String dictionaryPath = request.getRequestPathInfo().getSuffix();
-        if (dictionaryPath == null) {
-            throw new IllegalArgumentException("This data source must always be called with a dictionary path as request suffix");
-        }
+
         Map<String, String> languageMap = getAllAvailableLanguages(request, response);
         Set<String> dictionaryLanguages = getDictionaryLanguages(request.getResourceResolver(), dictionaryPath);
         Predicate<String> languageFilter;
@@ -119,29 +123,29 @@ public class LanguageDatasource extends SlingSafeMethodsServlet {
     private abstract static class OrderedValueMapResource extends ValueMapResource implements Comparable<OrderedValueMapResource> {
 
         private final Collator collator;
-        
+
         protected OrderedValueMapResource(Locale locale, ResourceResolver resourceResolver, String resourceType, ValueMap vm) {
             super(resourceResolver, "", resourceType, vm);
             collator = Collator.getInstance(locale);
         }
 
         abstract String getLabel();
- 
+
         @Override
         public int compareTo(OrderedValueMapResource o) {
             return collator.compare(getLabel(), o.getLabel());
         }
     }
 
-    private static class TextFieldResource extends OrderedValueMapResource{
+    private static class TextFieldResource extends OrderedValueMapResource {
+
+        private TextFieldResource(Locale locale, ResourceResolver resolver, ValueMap valueMap) {
+            super(locale, resolver, "granite/ui/components/coral/foundation/form/textfield", valueMap);
+        }
 
         public static TextFieldResource create(Locale locale, ResourceResolver resolver, String value, String text) {
             ValueMap valueMap = new ValueMapDecorator(Map.of("fieldLabel", text, "name", value));
             return new TextFieldResource(locale, resolver, valueMap);
-        }
-
-        private TextFieldResource(Locale locale, ResourceResolver resolver, ValueMap valueMap) {
-             super(locale, resolver, "granite/ui/components/coral/foundation/form/textfield", valueMap);
         }
 
         String getLabel() {
@@ -150,6 +154,10 @@ public class LanguageDatasource extends SlingSafeMethodsServlet {
     }
 
     private static class ValueTextResource extends OrderedValueMapResource {
+        private ValueTextResource(Locale locale, ResourceResolver resolver, ValueMap valueMap) {
+            super(locale, resolver, "nt:unstructured", valueMap);
+        }
+
         public static ValueTextResource fromResource(Locale locale, Resource resource) {
             return new ValueTextResource(locale, resource.getResourceResolver(), resource.getValueMap());
         }
@@ -157,10 +165,6 @@ public class LanguageDatasource extends SlingSafeMethodsServlet {
         public static ValueTextResource create(Locale locale, ResourceResolver resolver, String value, String text) {
             ValueMap valueMap = new ValueMapDecorator(Map.of("value", value, "text", text));
             return new ValueTextResource(locale, resolver, valueMap);
-        }
-
-        private ValueTextResource(Locale locale, ResourceResolver resolver, ValueMap valueMap) {
-             super(locale, resolver, "nt:unstructured", valueMap);
         }
 
         public String getText() {

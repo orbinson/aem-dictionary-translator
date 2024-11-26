@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Creation of new dictionary and editing of labels [#62](https://github.com/orbinson/aem-dictionary-translator/issues/62)
+
 ## [1.2.0] - 2024-11-26
 
 ### Changed

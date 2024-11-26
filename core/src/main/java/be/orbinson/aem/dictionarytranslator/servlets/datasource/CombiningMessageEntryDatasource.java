@@ -61,15 +61,15 @@ public class CombiningMessageEntryDatasource extends SlingSafeMethodsServlet {
         }
     }
 
-    private static Resource createTextFieldResource(ResourceResolver resourceResolver, String key, String value) {
-        return createTextFieldResource(resourceResolver, key, value, false, false);
+    private static Resource createTextFieldResource(ResourceResolver resourceResolver, String label, String name, String value) {
+        return createTextFieldResource(resourceResolver, label, name, value, false, false);
     }
 
 
-    private static Resource createTextFieldResource(ResourceResolver resourceResolver, String key, String value, boolean required, boolean disabled) {
+    private static Resource createTextFieldResource(ResourceResolver resourceResolver, String label, String name, String value, boolean required, boolean disabled) {
         ValueMap valueMap = new ValueMapDecorator(Map.of(
-                "fieldLabel", key,
-                "name", key,
+                "fieldLabel", label,
+                "name", name,
                 "value", value,
                 "disabled", disabled,
                 "required", required)
@@ -127,13 +127,14 @@ public class CombiningMessageEntryDatasource extends SlingSafeMethodsServlet {
             if (languages != null) {
                 for (String language : languages) {
                     String message = properties.get(language, StringUtils.EMPTY);
-                    resourceList.add(createTextFieldResource(resourceResolver, languageMap.getOrDefault(language, language), message));
+                    String label = languageMap.getOrDefault(language, language);
+                    resourceList.add(createTextFieldResource(resourceResolver, label, language, message));
                 }
                 // sort by fieldLabel
                 sortResourcesByProperty("fieldLabel", locale, resourceList);
             }
             // make sure that key is always at the top
-            resourceList.add(0, createTextFieldResource(resourceResolver, "Key", key, false, true));
+            resourceList.add(0, createTextFieldResource(resourceResolver, "Key", key, key, false, true));
             resourceList.add(1, createHiddenFieldResource(resourceResolver, "key", key));
         }
     }
