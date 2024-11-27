@@ -18,6 +18,12 @@ The [AEM Dictionary Translator](http://localhost:4502/tools/translation/dictiona
 
 ## Installation
 
+### System requirements
+
+The minimal tested AEM SDK version is `2021.6.5561.20210622T143945Z-210527`. AEM `6.5` is **not** supported.
+
+### Package installation
+
 To deploy the AEM Dictionary Translator as an embedded package you need to update your `pom.xml`
 
 1. Add the `aem-dictionary-translator.all` to the `<dependencies>` section

@@ -19,7 +19,7 @@
                 text: "publish",
                 primary: true,
                 handler: function () {
-                    var agentId = config.data?.agentId || "";
+                    var agentId = (config.data && config.data.agentId) || "";
                     activatePublishPaths(ui, collection, agentId, publishPaths);
                 }
             }])
@@ -27,11 +27,16 @@
     })
 
     function getPublishPaths(selections) {
-        return selections.flatMap(selection =>
-            Array.from(selection.querySelectorAll('[data-publish-path]'))
-                .map(element => element.getAttribute('data-publish-path'))
-                .filter(value => value !== null)
-        );
+        return selections.reduce(function(accum, selection) {
+            var paths = Array.from(selection.querySelectorAll('[data-publish-path]'))
+                .map(function(element) {
+                    return element.getAttribute('data-publish-path');
+                })
+                .filter(function(value) {
+                    return value !== null;
+                });
+            return accum.concat(paths);
+        }, []);
     }
 
     function activatePublishPaths(ui, collection, agentId, paths) {
