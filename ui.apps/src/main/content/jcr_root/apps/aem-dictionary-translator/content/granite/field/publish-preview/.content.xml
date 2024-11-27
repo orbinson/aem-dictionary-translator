@@ -10,7 +10,9 @@
         activeCondition="aem-dictionary-translator.dictionary.editable"
         icon="globe"
         variant="actionBar"
-        text="Publish to Preview">
+        text="Publish to Preview"
+        trackingFeature="aem-dictionary-translator"
+        trackingElement="publish-preview">
     <data jcr:primaryType="nt:unstructured"
           agentId="preview"/>
     <granite:rendercondition

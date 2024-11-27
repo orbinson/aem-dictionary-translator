@@ -1,6 +1,6 @@
 import { test } from "@playwright/test";
 
-test("Open Tools > Translation > Dictionaries", async ({ page }) => {
+test("Go to the dictionaries tool via the AEM shell", async ({ page }) => {
   await page.goto("/aem/start.html");
 
   await page.getByLabel("Tools").click();

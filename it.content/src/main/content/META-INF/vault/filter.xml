@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <workspaceFilter version="1.0">
+    <filter root="/apps/aem-dictionary-translator/osgiconfig/config/org.apache.sling.jcr.repoinit.RepositoryInitializer~dictionary-translator-it-content.config"/>
+    <filter root="/apps/wcm/core/resources/languages"/>
     <filter root="/content/dictionaries"/>
     <filter root="/etc/replication/agents.author/publish"/>
     <filter root="/etc/replication/agents.author/preview"/>
