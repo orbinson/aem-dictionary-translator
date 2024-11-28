@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Errors on compilation of dictionary clientlib [#61](https://github.com/orbinson/aem-dictionary-translator/issues/61)
+
 ## [1.2.1] - 2024-11-26
 
 ### Fixed
