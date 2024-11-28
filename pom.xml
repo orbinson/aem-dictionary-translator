@@ -6,7 +6,7 @@
     <groupId>be.orbinson.aem</groupId>
     <artifactId>aem-dictionary-translator</artifactId>
     <packaging>pom</packaging>
-    <version>1.2.2-SNAPSHOT</version>
+    <version>1.3.0-SNAPSHOT</version>
 
     <name>AEM Dictionary Translator</name>
     <description>Tool to translate AEM i18 dictionaries for internationalization</description>
@@ -80,8 +80,8 @@
         <componentName>Dictionary Translator</componentName>
         <componentGroupName>Orbinson Tools</componentGroupName>
 
-        <aem.sdk.api.version>2023.6.12255.20230608T053118Z-230400</aem.sdk.api.version>
-        <aemanalyser.version>1.6.4</aemanalyser.version>
+        <aem.version>6.5.17.0001</aem.version>
+        <aemanalyser.version>1.6.6</aemanalyser.version>
 
         <sonar.organization>orbinson</sonar.organization>
         <sonar.projectKey>${sonar.organization}_${project.artifactId}</sonar.projectKey>
@@ -561,8 +561,8 @@ Bundle-DocURL:
         <dependencies>
             <dependency>
                 <groupId>io.wcm.maven</groupId>
-                <artifactId>io.wcm.maven.aem-cloud-dependencies</artifactId>
-                <version>${aem.sdk.api.version}.0000</version>
+                <artifactId>io.wcm.maven.aem-dependencies</artifactId>
+                <version>${aem.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -614,6 +614,12 @@ Bundle-DocURL:
                 <groupId>uk.org.lidalia</groupId>
                 <artifactId>slf4j-test</artifactId>
                 <version>1.2.0</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>io.wcm</groupId>
+                <artifactId>io.wcm.testing.logging.logback</artifactId>
+                <version>1.0.0</version>
                 <scope>test</scope>
             </dependency>
 

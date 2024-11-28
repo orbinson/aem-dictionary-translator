@@ -49,7 +49,7 @@
         }).done(function () {
             var api = $(collection).adaptTo("foundation-collection");
             if (api && "reload" in api) {
-                api.reload();
+                // api.reload();
                 ui.notify(null, getSuccessMessage(paths));
                 return;
             }
