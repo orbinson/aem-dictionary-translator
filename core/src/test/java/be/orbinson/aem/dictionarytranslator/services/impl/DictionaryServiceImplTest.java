@@ -1,7 +1,6 @@
 package be.orbinson.aem.dictionarytranslator.services.impl;
 
 import be.orbinson.aem.dictionarytranslator.services.DictionaryService;
-import com.adobe.granite.translation.api.TranslationConfig;
 import com.day.cq.replication.Replicator;
 import io.wcm.testing.mock.aem.junit5.AemContext;
 import io.wcm.testing.mock.aem.junit5.AemContextExtension;
@@ -27,12 +26,8 @@ class DictionaryServiceImplTest {
 
     DictionaryService dictionaryService;
 
-    @Mock
-    TranslationConfig translationConfig;
-
     @BeforeEach
     void setup() {
-        translationConfig = context.registerService(TranslationConfig.class, translationConfig);
         context.registerService(Replicator.class, mock(Replicator.class));
         dictionaryService = context.registerInjectActivateService(new DictionaryServiceImpl());
     }
