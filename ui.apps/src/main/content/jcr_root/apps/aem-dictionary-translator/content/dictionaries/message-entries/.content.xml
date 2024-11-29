@@ -70,27 +70,12 @@
                 </delete>
                 <publish
                         jcr:primaryType="nt:unstructured"
-                        sling:resourceType="granite/ui/components/coral/foundation/collection/action"
-                        action="aem-dictionary-translator.dictionary.publish"
-                        activeCondition="aem-dictionary-translator.dictionary.editable"
-                        target="#key-list"
-                        icon="publish"
-                        command="p"
-                        variant="actionBar"
-                        text="Publish">
-                </publish>
-                <publish-to-preview
+                        sling:resourceType="granite/ui/components/foundation/include"
+                        path="/apps/aem-dictionary-translator/content/granite/field/publish"/>
+                <publish-preview
                         jcr:primaryType="nt:unstructured"
-                        sling:resourceType="granite/ui/components/coral/foundation/collection/action"
-                        action="aem-dictionary-translator.dictionary.publish"
-                        activeCondition="aem-dictionary-translator.dictionary.editable"
-                        target="#key-list"
-                        icon="globe"
-                        variant="actionBar"
-                        text="Publish to Preview">
-                    <data jcr:primaryType="nt:unstructured"
-                          agentId="preview"/>
-                </publish-to-preview>
+                        sling:resourceType="granite/ui/components/foundation/include"
+                        path="/apps/aem-dictionary-translator/content/granite/field/publish-preview"/>
             </selection>
         </actions>
         <views jcr:primaryType="nt:unstructured">

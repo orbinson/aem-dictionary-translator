@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jcr:root
+        xmlns:sling="http://sling.apache.org/jcr/sling/1.0"
+        xmlns:jcr="http://www.jcp.org/jcr/1.0"
+        xmlns:nt="http://www.jcp.org/jcr/nt/1.0"
+        xmlns:granite="http://www.adobe.com/jcr/granite/1.0"
+        jcr:primaryType="nt:unstructured"
+        sling:resourceType="granite/ui/components/coral/foundation/collection/action"
+        action="aem-dictionary-translator.dictionary.publish"
+        activeCondition="aem-dictionary-translator.dictionary.editable"
+        command="p"
+        icon="publish"
+        variant="actionBar"
+        text="Publish">
+    <granite:rendercondition
+            jcr:primaryType="nt:unstructured"
+            sling:resourceType="aem-dictionary-translator/components/rendercondition/replication-agent-enabled"
+            agentId="publish"/>
+</jcr:root>
