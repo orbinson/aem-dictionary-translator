@@ -13,7 +13,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.inject.Named;
-import javax.jcr.Session;
 import java.text.DateFormat;
 import java.util.Calendar;
 import java.util.Date;
