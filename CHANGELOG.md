@@ -10,11 +10,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - AEM 6.5 support [#62](https://github.com/orbinson/aem-dictionary-translator/issues/62)
-- Added prerequisites to README.md [#65](https://github.com/orbinson/aem-dictionary-translator/issues/65)
+- Prerequisites for AEM and Java added in README.md [#65](https://github.com/orbinson/aem-dictionary-translator/issues/65)
 
 ### Fixed
 
-- Errors on compilation of dictionary clientlib [#61](https://github.com/orbinson/aem-dictionary-translator/issues/61)
+- Compilation of dictionary clientlib [#61](https://github.com/orbinson/aem-dictionary-translator/issues/61)
 - Action bar for read only dictionaries shows only valid actions [#42](https://github.com/orbinson/aem-dictionary-translator/issues/42)
 
 ### Changed
