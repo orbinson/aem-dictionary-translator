@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Compilation of dictionary clientlib [#61](https://github.com/orbinson/aem-dictionary-translator/issues/61)
 - Action bar for read only dictionaries shows only valid actions [#42](https://github.com/orbinson/aem-dictionary-translator/issues/42)
+- Publish buttons are only visible for enabled agents [#62](https://github.com/orbinson/aem-dictionary-translator/issues/62)
 
 ### Changed
 
