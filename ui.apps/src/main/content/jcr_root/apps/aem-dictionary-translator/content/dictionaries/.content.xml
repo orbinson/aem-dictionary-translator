@@ -162,6 +162,7 @@
                     granite:class="dictionary-list"
                     granite:rel="dictionary-list"
                     modeGroup="dictionary-list"
+                    layoutId="list"
                     selectionMode="row"
                     selectionCount="single">
                 <datasource
@@ -177,8 +178,7 @@
                             sortable="true"/>
                     <languages
                             jcr:primaryType="nt:unstructured"
-                            jcr:title="Languages"
-                            sortable="false"/>
+                            jcr:title="Languages"/>
                     <last-modified
                             jcr:primaryType="nt:unstructured"
                             jcr:title="Last Modified"
@@ -194,7 +194,8 @@
                     <message-entries
                             jcr:primaryType="nt:unstructured"
                             jcr:title="Message Entries"
-                            sortable="true"/>
+                            sortable="true"
+                            sortType="number"/>
                 </columns>
             </table>
         </views>

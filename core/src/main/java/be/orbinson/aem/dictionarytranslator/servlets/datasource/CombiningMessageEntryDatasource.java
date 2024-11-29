@@ -46,7 +46,10 @@ public class CombiningMessageEntryDatasource extends SlingSafeMethodsServlet {
 
     @NotNull
     private static ValueMapResource getColumn(ResourceResolver resourceResolver, String key, Object value) {
-        ValueMap valueMap = new ValueMapDecorator(Map.of(key, value));
+        ValueMap valueMap = new ValueMapDecorator(Map.of(
+                key, value,
+                "sortable", true
+        ));
         return new ValueMapResource(resourceResolver, "", "", valueMap);
     }
 
