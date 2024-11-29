@@ -3,4 +3,4 @@
           jcr:primaryType="cq:ClientLibraryFolder"
           allowProxy="{Boolean}true"
           categories="[dictionary-translator.dictionary]"
-          jsProcessor="[default:none,min:gcc;languageIn=ECMASCRIPT_2018;languageOut=ECMASCRIPT_2018]"/>
+          jsProcessor="[default:none,min:gcc;languageIn=ECMASCRIPT_2020;languageOut=ECMASCRIPT_2020]"/>
