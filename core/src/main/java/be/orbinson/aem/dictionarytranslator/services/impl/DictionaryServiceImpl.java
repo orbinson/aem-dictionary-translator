@@ -21,6 +21,8 @@ import org.slf4j.LoggerFactory;
 
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
+import javax.jcr.security.AccessControlManager;
+import javax.jcr.security.Privilege;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -33,15 +35,30 @@ public class DictionaryServiceImpl implements DictionaryService {
 
     private static final Logger LOG = LoggerFactory.getLogger(DictionaryServiceImpl.class);
     private static final String SLING_BASENAME = "sling:basename";
-    private static final List<String> EDITABLE_ROOTS = List.of("/content/", "/conf/");
 
     @Reference
     private ResourceResolverFactory resourceResolverFactory;
+
     @Reference
     private Replicator replicator;
 
-    public boolean isEditableDictionary(String path) {
-        return EDITABLE_ROOTS.stream().anyMatch(path::startsWith);
+    public boolean isEditableDictionary(Resource resource) {
+        String path = resource.getPath();
+        Session session = resource.getResourceResolver().adaptTo(Session.class);
+        if (session != null) {
+            try {
+                AccessControlManager accessControlManager = session.getAccessControlManager();
+                Privilege[] privileges = new Privilege[]{
+                        accessControlManager.privilegeFromName(Privilege.JCR_ADD_CHILD_NODES),
+                        accessControlManager.privilegeFromName(Privilege.JCR_REMOVE_NODE),
+                        accessControlManager.privilegeFromName("crx:replicate")
+                };
+                return accessControlManager.hasPrivileges(path, privileges);
+            } catch (Exception e) {
+                return false;
+            }
+        }
+        return false;
     }
 
     public void addLanguage(Resource dictionary, String language, String basename) throws PersistenceException {

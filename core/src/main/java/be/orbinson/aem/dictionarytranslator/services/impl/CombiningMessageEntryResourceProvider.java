@@ -75,6 +75,7 @@ public class CombiningMessageEntryResourceProvider extends ResourceProvider<Obje
             Map<String, Object> properties = new HashMap<>();
             properties.put(KEY, key);
             properties.put("path", path);
+            properties.put("editable", dictionaryService.isEditableDictionary(dictionaryResource));
             properties.put(DICTIONARY_PATH, dictionaryPath);
             List<String> languages = dictionaryService.getLanguages(dictionaryResource);
             properties.put(LANGUAGES, languages);

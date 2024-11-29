@@ -50,20 +50,32 @@
                 <edit
                         jcr:primaryType="nt:unstructured"
                         sling:resourceType="granite/ui/components/coral/foundation/collection/action"
-                        activeSelectionCount="single"
                         action="foundation.link"
                         actionConfigName="granite/ui/shell/actions/edit"
+                        activeCondition="aem-dictionary-translator.dictionary.editable"
                         icon="edit"
                         variant="actionBar"
                         text="Edit">
                     <data jcr:primaryType="nt:unstructured"
                           href.uritemplate="/tools/translation/dictionaries/message-entries.html{+item}"/>
                 </edit>
+                <view
+                        jcr:primaryType="nt:unstructured"
+                        sling:resourceType="granite/ui/components/coral/foundation/collection/action"
+                        action="foundation.link"
+                        activeCondition="aem-dictionary-translator.dictionary.readonly"
+                        command="g"
+                        icon="book"
+                        variant="actionBar"
+                        text="View">
+                    <data jcr:primaryType="nt:unstructured"
+                          href.uritemplate="/tools/translation/dictionaries/message-entries.html{+item}"/>
+                </view>
                 <publish
                         jcr:primaryType="nt:unstructured"
                         sling:resourceType="granite/ui/components/coral/foundation/collection/action"
-                        activeSelectionCount="single"
-                        action="dictionary.publish"
+                        action="aem-dictionary-translator.dictionary.publish"
+                        activeCondition="aem-dictionary-translator.dictionary.canpublish"
                         command="p"
                         icon="publish"
                         variant="actionBar"
@@ -72,8 +84,8 @@
                 <publish-preview
                         jcr:primaryType="nt:unstructured"
                         sling:resourceType="granite/ui/components/coral/foundation/collection/action"
-                        activeSelectionCount="single"
-                        action="dictionary.publish"
+                        action="aem-dictionary-translator.dictionary.publish"
+                        activeCondition="aem-dictionary-translator.dictionary.canpublish"
                         icon="globe"
                         variant="actionBar"
                         text="Publish to Preview">
@@ -83,8 +95,8 @@
                 <create-language
                         jcr:primaryType="nt:unstructured"
                         sling:resourceType="granite/ui/components/coral/foundation/collection/action"
-                        activeSelectionCount="single"
                         action="foundation.dialog"
+                        activeCondition="aem-dictionary-translator.dictionary.editable"
                         command="c"
                         icon="book"
                         variant="actionBar"
@@ -95,8 +107,8 @@
                 <delete-language
                         jcr:primaryType="nt:unstructured"
                         sling:resourceType="granite/ui/components/coral/foundation/collection/action"
-                        activeSelectionCount="single"
                         action="foundation.dialog"
+                        activeCondition="aem-dictionary-translator.dictionary.editable"
                         icon="deleteOutline"
                         variant="actionBar"
                         text="Delete Language">
@@ -106,9 +118,9 @@
                 <import
                         jcr:primaryType="nt:unstructured"
                         sling:resourceType="granite/ui/components/coral/foundation/collection/action"
-                        activeSelectionCount="single"
                         action="foundation.dialog"
                         actionConfigName="granite/ui/shell/actions/import"
+                        activeCondition="aem-dictionary-translator.dictionary.editable"
                         command="i"
                         icon="import"
                         variant="actionBar"
@@ -119,7 +131,6 @@
                 <export
                         jcr:primaryType="nt:unstructured"
                         sling:resourceType="granite/ui/components/coral/foundation/collection/action"
-                        activeSelectionCount="single"
                         action="foundation.dialog"
                         actionConfigName="granite/ui/shell/actions/export"
                         command="x"
@@ -132,9 +143,9 @@
                 <delete
                         jcr:primaryType="nt:unstructured"
                         sling:resourceType="granite/ui/components/coral/foundation/collection/action"
-                        activeSelectionCount="multiple"
                         action="foundation.dialog"
                         actionConfigName="granite/ui/shell/actions/delete"
+                        activeCondition="aem-dictionary-translator.dictionary.editable"
                         icon="delete"
                         variant="actionBar"
                         text="Delete">
@@ -147,21 +158,19 @@
             <table
                     jcr:primaryType="nt:unstructured"
                     sling:resourceType="granite/ui/components/coral/foundation/table"
-                    modeGroup="dictionary-list"
+                    granite:id="dictionary-list"
                     granite:class="dictionary-list"
                     granite:rel="dictionary-list"
-                    limit="{Long}50"
-                    selectionMode="row">
+                    modeGroup="dictionary-list"
+                    selectionMode="row"
+                    selectionCount="single">
                 <datasource
                         jcr:primaryType="nt:unstructured"
                         sling:resourceType="aem-dictionary-translator/datasource/dictionary"
-                        itemResourceType="aem-dictionary-translator/components/dictionary"
-                        limit="${empty requestPathInfo.selectors[1] ? 50 : requestPathInfo.selectors[1]}"
-                        offset="${requestPathInfo.selectors[0]}"/>
+                        itemResourceType="aem-dictionary-translator/components/dictionary"/>
                 <columns jcr:primaryType="nt:unstructured">
                     <select
-                            jcr:primaryType="nt:unstructured"
-                            select="{Boolean}true"/>
+                            jcr:primaryType="nt:unstructured"/>
                     <dictionary
                             jcr:primaryType="nt:unstructured"
                             jcr:title="Dictionary"

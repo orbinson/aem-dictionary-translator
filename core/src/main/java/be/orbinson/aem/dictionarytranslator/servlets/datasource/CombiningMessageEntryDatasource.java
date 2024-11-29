@@ -21,7 +21,6 @@ import org.osgi.service.component.annotations.Reference;
 
 import javax.servlet.Servlet;
 import javax.servlet.ServletException;
-
 import java.io.IOException;
 import java.text.Collator;
 import java.util.ArrayList;
@@ -86,28 +85,6 @@ public class CombiningMessageEntryDatasource extends SlingSafeMethodsServlet {
         return new ValueMapResource(resourceResolver, "", "granite/ui/components/coral/foundation/form/hidden", valueMap);
     }
 
-    @Override
-    protected void doGet(@NotNull SlingHttpServletRequest request, @NotNull SlingHttpServletResponse response) throws ServletException, IOException {
-        List<Resource> resourceList = new ArrayList<>();
-        ResourceResolver resourceResolver = request.getResourceResolver();
-
-        String dictionaryPath = request.getRequestPathInfo().getSuffix();
-        if (dictionaryPath != null) {
-            createDictionaryDataSource(request, resourceResolver, dictionaryPath, resourceList);
-        }
-
-        Map<String, String> languageMap = LanguageDatasource.getAllAvailableLanguages(request, response);
-        String combiningMessageEntryPath = request.getParameter("item");
-        if (combiningMessageEntryPath != null) {
-            createCombiningMessageEntryDataSource(request.getLocale(), languageMap, resourceResolver, combiningMessageEntryPath, resourceList);
-           
-        }
-
-        DataSource dataSource = new SimpleDataSource(resourceList.iterator());
-        request.setAttribute(DataSource.class.getName(), dataSource);
-    }
-
-    
     private static void sortResourcesByProperty(String propertyName, Locale locale, List<Resource> resources) {
         Collator collator = Collator.getInstance(locale);
         resources.sort((o1, o2) -> {
@@ -137,6 +114,27 @@ public class CombiningMessageEntryDatasource extends SlingSafeMethodsServlet {
             resourceList.add(0, createTextFieldResource(resourceResolver, "Key", key, key, false, true));
             resourceList.add(1, createHiddenFieldResource(resourceResolver, "key", key));
         }
+    }
+
+    @Override
+    protected void doGet(@NotNull SlingHttpServletRequest request, @NotNull SlingHttpServletResponse response) throws ServletException, IOException {
+        List<Resource> resourceList = new ArrayList<>();
+        ResourceResolver resourceResolver = request.getResourceResolver();
+
+        String dictionaryPath = request.getRequestPathInfo().getSuffix();
+        if (dictionaryPath != null) {
+            createDictionaryDataSource(request, resourceResolver, dictionaryPath, resourceList);
+        }
+
+        Map<String, String> languageMap = LanguageDatasource.getAllAvailableLanguages(request, response);
+        String combiningMessageEntryPath = request.getParameter("item");
+        if (combiningMessageEntryPath != null) {
+            createCombiningMessageEntryDataSource(request.getLocale(), languageMap, resourceResolver, combiningMessageEntryPath, resourceList);
+
+        }
+
+        DataSource dataSource = new SimpleDataSource(resourceList.iterator());
+        request.setAttribute(DataSource.class.getName(), dataSource);
     }
 
     private void createDictionaryDataSource(@NotNull SlingHttpServletRequest request, ResourceResolver resourceResolver, String dictionaryPath, List<Resource> resourceList) {

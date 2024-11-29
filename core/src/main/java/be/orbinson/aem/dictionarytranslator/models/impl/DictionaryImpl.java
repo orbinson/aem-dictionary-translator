@@ -13,6 +13,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.inject.Named;
+import javax.jcr.Session;
 import java.text.DateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -68,7 +69,7 @@ public class DictionaryImpl implements Dictionary {
 
     @Override
     public boolean isEditable() {
-        return dictionaryService.isEditableDictionary(resource.getPath());
+        return dictionaryService.isEditableDictionary(resource);
     }
 
     @Override

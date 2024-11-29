@@ -83,21 +83,6 @@ class DictionaryImplTest {
     }
 
     @Test
-    void testContentIsEditable() {
-        final Resource testResource = context.currentResource("/content/dictionaries/languages");
-        if (testResource != null) {
-            final Dictionary dictionary = context.request().adaptTo(Dictionary.class);
-            if (dictionary != null) {
-                Assert.assertTrue(dictionary.isEditable());
-            } else {
-                Assert.fail("could not adapt resource to dictionary");
-            }
-        } else {
-            Assert.fail("No resource available");
-        }
-    }
-
-    @Test
     void testAppsIsNotEditable() {
         context.load().json("/i18nTestDictionaries.json", "/apps/dictionaries");
         final Resource testResource = context.currentResource("/apps/dictionaries/languages");
