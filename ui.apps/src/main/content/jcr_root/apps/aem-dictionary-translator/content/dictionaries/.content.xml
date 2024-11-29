@@ -80,6 +80,10 @@
                         icon="publish"
                         variant="actionBar"
                         text="Publish">
+                    <granite:rendercondition
+                            jcr:primaryType="nt:unstructured"
+                            sling:resourceType="aem-dictionary-translator/components/rendercondition/has-replication-agent"
+                            agentId="publish"/>
                 </publish>
                 <publish-preview
                         jcr:primaryType="nt:unstructured"
@@ -91,6 +95,10 @@
                         text="Publish to Preview">
                     <data jcr:primaryType="nt:unstructured"
                           agentId="preview"/>
+                    <granite:rendercondition
+                            jcr:primaryType="nt:unstructured"
+                            sling:resourceType="aem-dictionary-translator/components/rendercondition/has-replication-agent"
+                            agentId="preview"/>
                 </publish-preview>
                 <create-language
                         jcr:primaryType="nt:unstructured"
