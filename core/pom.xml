@@ -117,12 +117,6 @@ Import-Package: javax.annotation;version=0.0.0,*
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>com.adobe.cq</groupId>
-            <artifactId>core.wcm.components.testing.aem-mock-plugin</artifactId>
-            <version>2.22.0</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>uk.org.lidalia</groupId>
             <artifactId>slf4j-test</artifactId>
             <version>1.2.0</version>
