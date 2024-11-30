@@ -10,7 +10,14 @@ import com.day.cq.replication.ReplicationException;
 import com.day.cq.replication.Replicator;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jackrabbit.util.Text;
-import org.apache.sling.api.resource.*;
+import org.apache.sling.api.resource.LoginException;
+import org.apache.sling.api.resource.ModifiableValueMap;
+import org.apache.sling.api.resource.PersistenceException;
+import org.apache.sling.api.resource.Resource;
+import org.apache.sling.api.resource.ResourceResolver;
+import org.apache.sling.api.resource.ResourceResolverFactory;
+import org.apache.sling.api.resource.ResourceUtil;
+import org.apache.sling.api.resource.ValueMap;
 import org.apache.sling.jcr.resource.api.JcrResourceConstants;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -23,10 +30,19 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.security.AccessControlManager;
 import javax.jcr.security.Privilege;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants.*;
+import static be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants.SLING_KEY;
+import static be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants.SLING_MESSAGE;
+import static be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants.SLING_MESSAGEENTRY;
 import static org.apache.jackrabbit.JcrConstants.JCR_LANGUAGE;
 import static org.apache.jackrabbit.JcrConstants.JCR_PRIMARYTYPE;
 
@@ -195,8 +211,10 @@ public class DictionaryServiceImpl implements DictionaryService {
             Resource languageResource = getLanguageResource(dictionaryResource, language);
             if (languageResource != null) {
                 for (Resource messageEntryResource : languageResource.getChildren()) {
-                    if (messageEntryResource.isResourceType(SLING_MESSAGEENTRY) && messageEntryResource.getValueMap().containsKey(SLING_KEY)) {
-                        keys.add(messageEntryResource.getValueMap().get(SLING_KEY, String.class));
+                    if (messageEntryResource.isResourceType(SLING_MESSAGEENTRY)) {
+                        String key = Optional.ofNullable(messageEntryResource.getValueMap().get(SLING_KEY, String.class))
+                                .orElse(messageEntryResource.getName());
+                        keys.add(key);
                     }
                 }
             }
@@ -266,6 +284,7 @@ public class DictionaryServiceImpl implements DictionaryService {
                 return resource;
             }
         }
+
         return null;
     }
 

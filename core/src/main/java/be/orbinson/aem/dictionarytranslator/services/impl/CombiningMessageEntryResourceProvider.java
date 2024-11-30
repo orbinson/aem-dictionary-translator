@@ -50,6 +50,8 @@ public class CombiningMessageEntryResourceProvider extends ResourceProvider<Obje
                 if (messageEntryResource != null && messageEntryResource.isResourceType(DictionaryConstants.SLING_MESSAGEENTRY)) {
                     properties.put(language, messageEntryResource.getValueMap().get(DictionaryConstants.SLING_MESSAGE, ""));
                     messageEntryPaths.add(messageEntryResource.getPath());
+                } else {
+                    properties.put(language, "");
                 }
             }
         }
