@@ -30,13 +30,30 @@
                     <data jcr:primaryType="nt:unstructured"
                           src.uritemplate="/apps/aem-dictionary-translator/content/granite/dialog/dictionary/create.html"/>
                 </add-dictionary>
-                <open-aem-translator
+            </primary>
+            <secondary jcr:primaryType="nt:unstructured">
+                <aem-translator
                         jcr:primaryType="nt:unstructured"
                         sling:resourceType="granite/ui/components/coral/foundation/collection/action"
                         action="foundation.link"
                         icon="adobeExperienceManager"
                         variant="quiet"
-                        text="Open Default AEM Translator">
+                        text="AEM Translator">
+                    <data jcr:primaryType="nt:unstructured"
+                          href.uritemplate="/libs/cq/i18n/translator.html"/>
+                    <granite:rendercondition
+                            jcr:primaryType="nt:unstructured"
+                            sling:resourceType="granite/ui/components/coral/foundation/renderconditions/privilege"
+                            path="/libs/cq/i18n/translator"
+                            privileges="jcr:read" />
+                </aem-translator>
+                <xliff-translator
+                        jcr:primaryType="nt:unstructured"
+                        sling:resourceType="granite/ui/components/coral/foundation/collection/action"
+                        action="foundation.link"
+                        icon="adobeExperienceManager"
+                        variant="quiet"
+                        text="XLIFF Translator">
                     <data jcr:primaryType="nt:unstructured"
                           href.uritemplate="/libs/cq/i18n/gui/translator.html"/>
                     <granite:rendercondition
@@ -44,8 +61,8 @@
                           sling:resourceType="granite/ui/components/coral/foundation/renderconditions/privilege"
                           path="/libs/cq/i18n/gui/translator"
                           privileges="jcr:read" />
-                </open-aem-translator>
-            </primary>
+                </xliff-translator>
+            </secondary>
             <selection jcr:primaryType="nt:unstructured">
                 <edit
                         jcr:primaryType="nt:unstructured"
