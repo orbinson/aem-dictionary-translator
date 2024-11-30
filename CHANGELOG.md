@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - AEM 6.5 support [#62](https://github.com/orbinson/aem-dictionary-translator/issues/62)
 - Prerequisites for AEM and Java added in README.md [#65](https://github.com/orbinson/aem-dictionary-translator/issues/65)
+- Make dictionary keys sortable [#62](https://github.com/orbinson/aem-dictionary-translator/issues/62)
 
 ### Fixed
 
