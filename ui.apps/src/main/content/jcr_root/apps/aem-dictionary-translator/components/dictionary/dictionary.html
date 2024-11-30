@@ -1,6 +1,7 @@
 <tr data-sly-use.model="be.orbinson.aem.dictionarytranslator.models.Dictionary"
     is="coral-table-row"
     data-foundation-collection-item-id="${resource.path}"
+    data-dictionary-item-editable="${model.editable ? 'true' : 'false'}"
     data-foundation-collection-navigator-href="/tools/translation/dictionaries/message-entries.html${resource.path}"
     class="foundation-collection-item foundation-collection-navigator">
     <td is="coral-table-cell" coral-table-rowselect></td>
@@ -11,7 +12,7 @@
     <td is="coral-table-cell">
         <coral-icon
                 class="icon--${model.editable ? 'success' : 'warning'}"
-                icon="${model.editable ? 'CheckmarkCircle' : 'CloseCircle'}"
+                icon="${model.editable ? 'checkmarkCircle' : 'closeCircle'}"
                 size="M">
         </coral-icon>
     </td>

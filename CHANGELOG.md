@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- AEM 6.5 support [#62](https://github.com/orbinson/aem-dictionary-translator/issues/62)
+- Prerequisites for AEM and Java added in README.md [#65](https://github.com/orbinson/aem-dictionary-translator/issues/65)
+- Make dictionary keys sortable [#62](https://github.com/orbinson/aem-dictionary-translator/issues/62)
+- Support sling:key being optional [#62](https://github.com/orbinson/aem-dictionary-translator/issues/62)
+- Render entries when not all languages are present [#62](https://github.com/orbinson/aem-dictionary-translator/issues/62)
+
+### Fixed
+
+- Compilation of dictionary clientlib [#61](https://github.com/orbinson/aem-dictionary-translator/issues/61)
+- Action bar for read only dictionaries shows only valid actions [#42](https://github.com/orbinson/aem-dictionary-translator/issues/42)
+- Publish buttons are only visible for enabled agents [#62](https://github.com/orbinson/aem-dictionary-translator/issues/62)
+
+### Changed
+
+- Only single dictionary can be selected [#62](https://github.com/orbinson/aem-dictionary-translator/issues/62)
+
 ## [1.2.1] - 2024-11-26
 
 ### Fixed

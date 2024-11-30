@@ -21,7 +21,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Component(service = Servlet.class)
 @SlingServletResourceTypes(

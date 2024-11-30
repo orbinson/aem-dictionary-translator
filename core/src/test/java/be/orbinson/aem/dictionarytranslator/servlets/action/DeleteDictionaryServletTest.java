@@ -1,7 +1,6 @@
 package be.orbinson.aem.dictionarytranslator.servlets.action;
 
 import be.orbinson.aem.dictionarytranslator.services.impl.DictionaryServiceImpl;
-import com.adobe.granite.translation.api.TranslationConfig;
 import com.day.cq.replication.ReplicationActionType;
 import com.day.cq.replication.ReplicationException;
 import com.day.cq.replication.Replicator;
@@ -37,7 +36,6 @@ class DeleteDictionaryServletTest {
     @BeforeEach
     void beforeEach() {
         replicator = context.registerService(Replicator.class, replicator);
-        context.registerService(TranslationConfig.class, mock(TranslationConfig.class));
         context.registerInjectActivateService(new DictionaryServiceImpl());
         servlet = context.registerInjectActivateService(new DeleteDictionaryServlet());
     }

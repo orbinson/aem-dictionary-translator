@@ -21,7 +21,6 @@ import org.osgi.service.component.annotations.Reference;
 
 import javax.servlet.Servlet;
 import javax.servlet.ServletException;
-
 import java.io.IOException;
 import java.text.Collator;
 import java.util.ArrayList;
@@ -38,16 +37,23 @@ public class CombiningMessageEntryDatasource extends SlingSafeMethodsServlet {
     @Reference
     private transient ModelFactory modelFactory;
 
-    private static void setColumnsDataSource(ResourceResolver resourceResolver, List<Resource> resourceList, Dictionary dictionary) {
+    private static void setColumnsDataSource(ResourceResolver resourceResolver, List<Resource> resourceList, Dictionary dictionary, Map<String, String> languageMap) {
         resourceList.add(getColumn(resourceResolver, "select", true));
-        resourceList.add(getColumn(resourceResolver, "jcr:title", "key"));
+        resourceList.add(getColumn(resourceResolver, "jcr:title", "Key"));
 
-        dictionary.getLanguages().forEach(language -> resourceList.add(getColumn(resourceResolver, "jcr:title", language)));
+        dictionary.getLanguages().forEach(language -> {
+                    String title = languageMap.getOrDefault(language, language);
+                    resourceList.add(getColumn(resourceResolver, "jcr:title", title));
+                }
+        );
     }
 
     @NotNull
     private static ValueMapResource getColumn(ResourceResolver resourceResolver, String key, Object value) {
-        ValueMap valueMap = new ValueMapDecorator(Map.of(key, value));
+        ValueMap valueMap = new ValueMapDecorator(Map.of(
+                key, value,
+                "sortable", true
+        ));
         return new ValueMapResource(resourceResolver, "", "", valueMap);
     }
 
@@ -86,28 +92,6 @@ public class CombiningMessageEntryDatasource extends SlingSafeMethodsServlet {
         return new ValueMapResource(resourceResolver, "", "granite/ui/components/coral/foundation/form/hidden", valueMap);
     }
 
-    @Override
-    protected void doGet(@NotNull SlingHttpServletRequest request, @NotNull SlingHttpServletResponse response) throws ServletException, IOException {
-        List<Resource> resourceList = new ArrayList<>();
-        ResourceResolver resourceResolver = request.getResourceResolver();
-
-        String dictionaryPath = request.getRequestPathInfo().getSuffix();
-        if (dictionaryPath != null) {
-            createDictionaryDataSource(request, resourceResolver, dictionaryPath, resourceList);
-        }
-
-        Map<String, String> languageMap = LanguageDatasource.getAllAvailableLanguages(request, response);
-        String combiningMessageEntryPath = request.getParameter("item");
-        if (combiningMessageEntryPath != null) {
-            createCombiningMessageEntryDataSource(request.getLocale(), languageMap, resourceResolver, combiningMessageEntryPath, resourceList);
-           
-        }
-
-        DataSource dataSource = new SimpleDataSource(resourceList.iterator());
-        request.setAttribute(DataSource.class.getName(), dataSource);
-    }
-
-    
     private static void sortResourcesByProperty(String propertyName, Locale locale, List<Resource> resources) {
         Collator collator = Collator.getInstance(locale);
         resources.sort((o1, o2) -> {
@@ -139,13 +123,34 @@ public class CombiningMessageEntryDatasource extends SlingSafeMethodsServlet {
         }
     }
 
-    private void createDictionaryDataSource(@NotNull SlingHttpServletRequest request, ResourceResolver resourceResolver, String dictionaryPath, List<Resource> resourceList) {
+    @Override
+    protected void doGet(@NotNull SlingHttpServletRequest request, @NotNull SlingHttpServletResponse response) throws ServletException, IOException {
+        List<Resource> resourceList = new ArrayList<>();
+        ResourceResolver resourceResolver = request.getResourceResolver();
+        Map<String, String> languageMap = LanguageDatasource.getAllAvailableLanguages(request, response);
+
+        String dictionaryPath = request.getRequestPathInfo().getSuffix();
+        if (dictionaryPath != null) {
+            createDictionaryDataSource(request, resourceResolver, dictionaryPath, resourceList, languageMap);
+        }
+
+        String combiningMessageEntryPath = request.getParameter("item");
+        if (combiningMessageEntryPath != null) {
+            createCombiningMessageEntryDataSource(request.getLocale(), languageMap, resourceResolver, combiningMessageEntryPath, resourceList);
+
+        }
+
+        DataSource dataSource = new SimpleDataSource(resourceList.iterator());
+        request.setAttribute(DataSource.class.getName(), dataSource);
+    }
+
+    private void createDictionaryDataSource(@NotNull SlingHttpServletRequest request, ResourceResolver resourceResolver, String dictionaryPath, List<Resource> resourceList, Map<String, String> languageMap) {
         Resource dictionaryResource = resourceResolver.getResource(dictionaryPath);
         if (dictionaryResource != null) {
             Dictionary dictionary = modelFactory.getModelFromWrappedRequest(request, dictionaryResource, Dictionary.class);
             if (dictionary != null) {
                 if ("columnsdatasource".equals(request.getResource().getName())) {
-                    setColumnsDataSource(resourceResolver, resourceList, dictionary);
+                    setColumnsDataSource(resourceResolver, resourceList, dictionary, languageMap);
                 } else {
                     setDataSource(resourceResolver, resourceList, dictionary);
                 }

@@ -12,7 +12,7 @@ import java.util.Map;
 
 public interface DictionaryService {
 
-    boolean isEditableDictionary(String path);
+    boolean isEditableDictionary(Resource resource);
 
     List<Resource> getDictionaries(ResourceResolver resourceResolver);
 

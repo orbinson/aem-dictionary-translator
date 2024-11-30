@@ -18,6 +18,19 @@ The [AEM Dictionary Translator](http://localhost:4502/tools/translation/dictiona
 
 ## Installation
 
+### System requirements
+
+The minimal required AEM versions are:
+
+| type    | version                       |
+|---------|-------------------------------|
+| AEM 6.5 | 6.5.17                        |
+| AEMaaCS | 2023.1.10912.20230130T173736Z |
+
+The minimal required Java version is `11`.
+
+### Package installation
+
 To deploy the AEM Dictionary Translator as an embedded package you need to update your `pom.xml`
 
 1. Add the `aem-dictionary-translator.all` to the `<dependencies>` section

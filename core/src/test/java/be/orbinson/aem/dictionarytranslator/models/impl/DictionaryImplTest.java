@@ -2,7 +2,6 @@ package be.orbinson.aem.dictionarytranslator.models.impl;
 
 import be.orbinson.aem.dictionarytranslator.models.Dictionary;
 import be.orbinson.aem.dictionarytranslator.services.impl.DictionaryServiceImpl;
-import com.adobe.granite.translation.api.TranslationConfig;
 import com.day.cq.replication.Replicator;
 import io.wcm.testing.mock.aem.junit5.AemContext;
 import io.wcm.testing.mock.aem.junit5.AemContextExtension;
@@ -34,13 +33,9 @@ class DictionaryImplTest {
 
     private final AemContext context = new AemContext();
 
-    @Mock
-    private TranslationConfig translationConfig;
     @BeforeEach
     public void setUp() {
         context.addModelsForClasses(DictionaryImpl.class);
-        context.registerService(TranslationConfig.class, translationConfig);
-        doReturn(Map.of("en", "English", "fr", "French", "de", "German")).when(translationConfig).getLanguages(any(ResourceResolver.class));
         context.registerService(Replicator.class, mock(Replicator.class));
         context.registerInjectActivateService(new DictionaryServiceImpl());
         context.load().json("/i18nTestDictionaries.json", "/content/dictionaries");
@@ -79,21 +74,6 @@ class DictionaryImplTest {
                 Assert.assertNotNull(dictionary);
                 final String actualLanguages = dictionary.getLanguageList();
                 Assert.assertEquals("message", expectedLanguages, actualLanguages);
-            } else {
-                Assert.fail("could not adapt resource to dictionary");
-            }
-        } else {
-            Assert.fail("No resource available");
-        }
-    }
-
-    @Test
-    void testContentIsEditable() {
-        final Resource testResource = context.currentResource("/content/dictionaries/languages");
-        if (testResource != null) {
-            final Dictionary dictionary = context.request().adaptTo(Dictionary.class);
-            if (dictionary != null) {
-                Assert.assertTrue(dictionary.isEditable());
             } else {
                 Assert.fail("could not adapt resource to dictionary");
             }

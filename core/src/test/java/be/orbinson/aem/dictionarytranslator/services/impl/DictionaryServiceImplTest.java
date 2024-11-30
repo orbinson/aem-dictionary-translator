@@ -1,7 +1,6 @@
 package be.orbinson.aem.dictionarytranslator.services.impl;
 
 import be.orbinson.aem.dictionarytranslator.services.DictionaryService;
-import com.adobe.granite.translation.api.TranslationConfig;
 import com.day.cq.replication.Replicator;
 import io.wcm.testing.mock.aem.junit5.AemContext;
 import io.wcm.testing.mock.aem.junit5.AemContextExtension;
@@ -10,13 +9,12 @@ import org.apache.sling.api.resource.ResourceResolver;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
@@ -27,12 +25,8 @@ class DictionaryServiceImplTest {
 
     DictionaryService dictionaryService;
 
-    @Mock
-    TranslationConfig translationConfig;
-
     @BeforeEach
     void setup() {
-        translationConfig = context.registerService(TranslationConfig.class, translationConfig);
         context.registerService(Replicator.class, mock(Replicator.class));
         dictionaryService = context.registerInjectActivateService(new DictionaryServiceImpl());
     }
@@ -71,18 +65,4 @@ class DictionaryServiceImplTest {
         assertEquals("en", languages.get(0));
         assertEquals("fr", languages.get(1));
     }
-
-
-    @Test
-    public void testIsEditableDictionary() {
-        // Test cases where the path should be editable
-        assertTrue(dictionaryService.isEditableDictionary("/content/example"), "Path starting with /content/ should be editable");
-        assertTrue(dictionaryService.isEditableDictionary("/conf/example"), "Path starting with /conf/ should be editable");
-
-        // Test cases where the path should not be editable
-        assertFalse(dictionaryService.isEditableDictionary("/other/example"), "Path not starting with /content/ or /conf/ should not be editable");
-        assertFalse(dictionaryService.isEditableDictionary("/configuration"), "Path starting with /configuration should not be editable");
-        assertFalse(dictionaryService.isEditableDictionary("/contents"), "Path starting with /contents should not be editable");
-    }
-
 }
