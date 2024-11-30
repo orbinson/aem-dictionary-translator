@@ -37,11 +37,15 @@ public class CombiningMessageEntryDatasource extends SlingSafeMethodsServlet {
     @Reference
     private transient ModelFactory modelFactory;
 
-    private static void setColumnsDataSource(ResourceResolver resourceResolver, List<Resource> resourceList, Dictionary dictionary) {
+    private static void setColumnsDataSource(ResourceResolver resourceResolver, List<Resource> resourceList, Dictionary dictionary, Map<String, String> languageMap) {
         resourceList.add(getColumn(resourceResolver, "select", true));
-        resourceList.add(getColumn(resourceResolver, "jcr:title", "key"));
+        resourceList.add(getColumn(resourceResolver, "jcr:title", "Key"));
 
-        dictionary.getLanguages().forEach(language -> resourceList.add(getColumn(resourceResolver, "jcr:title", language)));
+        dictionary.getLanguages().forEach(language -> {
+                    String title = languageMap.getOrDefault(language, language);
+                    resourceList.add(getColumn(resourceResolver, "jcr:title", title));
+                }
+        );
     }
 
     @NotNull
@@ -123,13 +127,13 @@ public class CombiningMessageEntryDatasource extends SlingSafeMethodsServlet {
     protected void doGet(@NotNull SlingHttpServletRequest request, @NotNull SlingHttpServletResponse response) throws ServletException, IOException {
         List<Resource> resourceList = new ArrayList<>();
         ResourceResolver resourceResolver = request.getResourceResolver();
+        Map<String, String> languageMap = LanguageDatasource.getAllAvailableLanguages(request, response);
 
         String dictionaryPath = request.getRequestPathInfo().getSuffix();
         if (dictionaryPath != null) {
-            createDictionaryDataSource(request, resourceResolver, dictionaryPath, resourceList);
+            createDictionaryDataSource(request, resourceResolver, dictionaryPath, resourceList, languageMap);
         }
 
-        Map<String, String> languageMap = LanguageDatasource.getAllAvailableLanguages(request, response);
         String combiningMessageEntryPath = request.getParameter("item");
         if (combiningMessageEntryPath != null) {
             createCombiningMessageEntryDataSource(request.getLocale(), languageMap, resourceResolver, combiningMessageEntryPath, resourceList);
@@ -140,13 +144,13 @@ public class CombiningMessageEntryDatasource extends SlingSafeMethodsServlet {
         request.setAttribute(DataSource.class.getName(), dataSource);
     }
 
-    private void createDictionaryDataSource(@NotNull SlingHttpServletRequest request, ResourceResolver resourceResolver, String dictionaryPath, List<Resource> resourceList) {
+    private void createDictionaryDataSource(@NotNull SlingHttpServletRequest request, ResourceResolver resourceResolver, String dictionaryPath, List<Resource> resourceList, Map<String, String> languageMap) {
         Resource dictionaryResource = resourceResolver.getResource(dictionaryPath);
         if (dictionaryResource != null) {
             Dictionary dictionary = modelFactory.getModelFromWrappedRequest(request, dictionaryResource, Dictionary.class);
             if (dictionary != null) {
                 if ("columnsdatasource".equals(request.getResource().getName())) {
-                    setColumnsDataSource(resourceResolver, resourceList, dictionary);
+                    setColumnsDataSource(resourceResolver, resourceList, dictionary, languageMap);
                 } else {
                     setDataSource(resourceResolver, resourceList, dictionary);
                 }
