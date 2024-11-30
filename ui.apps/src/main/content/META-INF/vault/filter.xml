@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <workspaceFilter version="1.0">
-    <filter root="/apps/cq/core/content/nav/tools/translation"/>
     <filter root="/apps/aem-dictionary-translator/clientlibs"/>
     <filter root="/apps/aem-dictionary-translator/components"/>
     <filter root="/apps/aem-dictionary-translator/content"/>
-    <filter root="/apps/aem-dictionary-translator/endpoints"/>
+    <filter root="/apps/cq/core/content/nav/tools/translation"/>
 </workspaceFilter>
