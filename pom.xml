@@ -80,7 +80,7 @@
         <componentName>Dictionary Translator</componentName>
         <componentGroupName>Orbinson Tools</componentGroupName>
 
-        <aem.sdk.api.version>2023.6.12255.20230608T053118Z-230400</aem.sdk.api.version>
+        <aem.sdk.api.version>2024.11.18598.20241113T125352Z-241000.0000</aem.sdk.api.version>
         <aemanalyser.version>1.6.4</aemanalyser.version>
 
         <sonar.organization>orbinson</sonar.organization>
@@ -562,7 +562,7 @@ Bundle-DocURL:
             <dependency>
                 <groupId>io.wcm.maven</groupId>
                 <artifactId>io.wcm.maven.aem-cloud-dependencies</artifactId>
-                <version>${aem.sdk.api.version}.0000</version>
+                <version>${aem.sdk.api.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
