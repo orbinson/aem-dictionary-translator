@@ -317,9 +317,6 @@ Bundle-DocURL:
                     <artifactId>aemanalyser-maven-plugin</artifactId>
                     <version>${aemanalyser.version}</version>
                     <extensions>true</extensions>
-                    <configuration>
-                        <skip>true</skip>
-                    </configuration>
                 </plugin>
                 <plugin>
                     <groupId>io.wcm.maven.plugins</groupId>
