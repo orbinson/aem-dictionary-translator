@@ -81,7 +81,7 @@
         <componentGroupName>Orbinson Tools</componentGroupName>
 
         <aem.sdk.api.version>2023.6.12255.20230608T053118Z-230400</aem.sdk.api.version>
-        <aemanalyser.version>1.6.4</aemanalyser.version>
+        <aemanalyser.version>1.6.6</aemanalyser.version>
 
         <sonar.organization>orbinson</sonar.organization>
         <sonar.projectKey>${sonar.organization}_${project.artifactId}</sonar.projectKey>
