@@ -74,7 +74,7 @@
         <vault.user>admin</vault.user>
         <vault.password>admin</vault.password>
 
-        <bnd.version>6.4.0</bnd.version>
+        <bnd.version>7.1.0</bnd.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <componentName>Dictionary Translator</componentName>
