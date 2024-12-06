@@ -3,4 +3,9 @@ updates:
   - package-ecosystem: "maven"
     directory: "/" # Location of package manifests
     schedule:
-      interval: "weekly"
+      interval: "daily"
+    ignore:
+      - dependency-name: "io.wcm.maven:io.wcm.maven.aem-dependencies"
+        versions: [ "[6.5.17.*,)" ]
+      - dependency-name: "biz.aQute.bnd:bnd-maven-plugin"
+        update-types: [ "version-update:major" ]
