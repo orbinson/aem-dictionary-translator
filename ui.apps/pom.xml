@@ -17,6 +17,7 @@
 
     <build>
         <sourceDirectory>src/main/content/jcr_root</sourceDirectory>
+
         <plugins>
             <plugin>
                 <groupId>org.apache.jackrabbit</groupId>
@@ -38,6 +39,7 @@
                     </dependencies>
                 </configuration>
             </plugin>
+
             <plugin>
                 <groupId>io.wcm.maven.plugins</groupId>
                 <artifactId>wcmio-content-package-maven-plugin</artifactId>

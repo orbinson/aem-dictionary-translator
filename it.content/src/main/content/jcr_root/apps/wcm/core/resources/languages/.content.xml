@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jcr:root xmlns:jcr="http://www.jcp.org/jcr/1.0" xmlns:nt="http://www.jcp.org/jcr/nt/1.0"
+          jcr:primaryType="nt:unstructured">
+    <de
+            jcr:primaryType="nt:unstructured"
+            country="*"
+            defaultCountry="de_de"
+            language="German"/>
+    <de_at
+            jcr:primaryType="nt:unstructured"
+            country="Austria"
+            language="German"/>
+    <de_ch
+            jcr:primaryType="nt:unstructured"
+            country="Switzerland"
+            language="German"/>
+    <de_de
+            jcr:primaryType="nt:unstructured"
+            country="Germany"
+            language="German"/>
+    <en
+            jcr:primaryType="nt:unstructured"
+            country="*"
+            defaultCountry="en_gb"
+            language="English"/>
+    <en_gb
+            jcr:primaryType="nt:unstructured"
+            country="United Kingdom"
+            language="English"/>
+    <en_us
+            jcr:primaryType="nt:unstructured"
+            country="United States"
+            language="English"/>
+    <fr
+            jcr:primaryType="nt:unstructured"
+            country="*"
+            defaultCountry="fr_fr"
+            language="French"/>
+    <fr_be
+            jcr:primaryType="nt:unstructured"
+            country="Belgium"
+            language="French"/>
+    <fr_fr
+            jcr:primaryType="nt:unstructured"
+            country="France"
+            language="French"/>
+    <nl
+            jcr:primaryType="nt:unstructured"
+            country="*"
+            defaultCountry="nl_nl"
+            language="Dutch"/>
+    <nl_be
+            jcr:primaryType="nt:unstructured"
+            country="Belgium"
+            language="Dutch"/>
+    <nl_nl
+            jcr:primaryType="nt:unstructured"
+            country="Netherlands"
+            language="Dutch"/>
+</jcr:root>
