@@ -1,8 +1,9 @@
 import { expect, test } from "@playwright/test";
-import { resetITContent } from "./lib/reset";
+import { clearReplicationQueue, resetITContent } from "./lib/reset";
 
-test.beforeEach(async ({ page }) => {
-    await resetITContent();
+test.beforeEach(async ({ page, baseURL, httpCredentials }) => {
+    await resetITContent(baseURL, httpCredentials);
+    await clearReplicationQueue(baseURL, httpCredentials);
     await page.goto("/tools/translation/dictionaries.html");
 });
 
@@ -28,22 +29,8 @@ test("Create new dictionary", async ({ page }) => {
     await expect(page.getByRole("gridcell", { name: "new-dictionary-basename", exact: true })).toBeVisible();
 });
 
-test("Delete existing dictionary", async ({ page }) => {
-    const row = await page.getByRole("row", { name: "/content/dictionaries/fruit/i18n" });
-    // select the existing dictionary
-    await row.getByRole("checkbox").click();
-
-    // click delete and confirm
-    await page.getByRole("button", { name: "Delete(backspace)" }).click();
-
-    await page.getByRole("button", { name: "Delete", exact: true }).click();
-
-    // check if the dictionary is gone
-    await expect(row).toHaveCount(0);
-});
-
 test("Add language to dictionary", async ({ page }) => {
-    const row = await page.getByRole("row", { name: "/content/dictionaries/fruit/i18n" });
+    const row = page.getByRole("row", { name: "/content/dictionaries/fruit/i18n" });
 
     await row.getByRole("checkbox").click();
 
@@ -58,7 +45,7 @@ test("Add language to dictionary", async ({ page }) => {
 });
 
 test("Remove language from dictionary", async ({ page }) => {
-    const row = await page.getByRole("row", { name: "/content/dictionaries/fruit/i18n" });
+    const row = page.getByRole("row", { name: "/content/dictionaries/fruit/i18n" });
 
     await row.getByRole("checkbox").click();
 
@@ -70,16 +57,16 @@ test("Remove language from dictionary", async ({ page }) => {
     await expect(row.getByRole("gridcell", { name: "en", exact: true })).toHaveCount(1)
 });
 
-// test("Dictionaries", async ({ page }) => {
-//     // publish the dictionary
-//     await page.getByLabel("/content/dictionaries/new-dictionary").getByLabel("").check();
-//     await page.getByRole("button", { name: "Publish(p)" }).click();
-//     await page.getByRole("button", { name: "publish" }).click();
-//     // expect(page.locator("coral-toast")).toHaveText("The item has been published");
-//
-//     // publish the dictionary to preview
-//     await page.getByLabel("/content/dictionaries/new-dictionary").getByLabel("").check();
-//     await page.getByRole("button", { name: "Publish to Preview" }).click();
-//     await page.getByRole("button", { name: "publish" }).click();
-//     expect(page.locator("coral-toast")).toHaveText("The item has been published");
-// });
+test("Delete existing dictionary", async ({ page }) => {
+    const row = page.getByRole("row", { name: "/content/dictionaries/fruit/i18n" });
+    // select the existing dictionary
+    await row.getByRole("checkbox").click();
+
+    // click delete and confirm
+    await page.getByRole("button", { name: "Delete(backspace)" }).click();
+
+    await page.getByRole("button", { name: "Delete", exact: true }).click();
+
+    // check if the dictionary is gone
+    await expect(row).toHaveCount(0);
+});

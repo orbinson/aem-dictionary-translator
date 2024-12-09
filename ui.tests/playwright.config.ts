@@ -3,27 +3,27 @@ import { defineConfig, devices } from "@playwright/test";
 export default defineConfig({
     testDir: "./tests",
     timeout: 5 * 1000,
-    fullyParallel: true,
+    fullyParallel: false,
     forbidOnly: !!process.env.CI,
-    retries: process.env.CI ? 2 : 0,
+    retries: 1,
     workers: 1,
     reporter: "html",
     use: {
         baseURL: "http://localhost:4502",
-        trace: "on-first-retry",
+        trace: "on",
+        httpCredentials: {
+            username: "admin",
+            password: "admin",
+            send: "unauthorized"
+        }
     },
     projects: [
-        {
-            name: "setup",
-            testMatch: /setup\/.*\.ts/
-        },
         {
             name: "chromium",
             use: {
                 ...devices["Desktop Chrome"],
                 storageState: "playwright/.auth/user.json"
-            },
-            dependencies: ["setup"]
+            }
         }
     ]
 });
