@@ -3,7 +3,7 @@ import * as path from "path";
 
 const authFile = path.join(__dirname, "../../playwright/.auth/user.json");
 
-setup("AEM Login", async ({ page, httpCredentials }) => {
+setup("Login to session", async ({ page, httpCredentials }) => {
     await page.goto("/");
 
     await page.getByPlaceholder("User name").fill(httpCredentials.username);
