@@ -10,20 +10,24 @@ export default defineConfig({
     reporter: "html",
     use: {
         baseURL: "http://localhost:4502",
-        trace: "on",
+        trace: "on-first-retry",
         httpCredentials: {
             username: "admin",
-            password: "admin",
-            send: "unauthorized"
+            password: "admin"
         }
     },
     projects: [
+        {
+            name: "setup",
+            testMatch: /setup\/.*\.ts/
+        },
         {
             name: "chromium",
             use: {
                 ...devices["Desktop Chrome"],
                 storageState: "playwright/.auth/user.json"
-            }
+            },
+            dependencies: ["setup"]
         }
     ]
 });
