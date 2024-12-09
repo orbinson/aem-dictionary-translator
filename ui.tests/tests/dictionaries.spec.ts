@@ -8,10 +8,10 @@ test.beforeEach(async ({ page, baseURL, httpCredentials }) => {
 });
 
 test("Create new dictionary", async ({ page }) => {
-    // click the "Create Dictionary" button
+    // click the "Create Dictionary" button in the action bar
     await page.getByRole("button", { name: "Create Dictionary" }).click();
 
-    // fill in the form
+    // fill in the form in the modal
     await page.getByLabel("Name *").fill("new-dictionary");
     await page.getByLabel("Add").click();
     await page.getByLabel("Dutch (Belgium) (nl_be)", { exact: true }).click();
@@ -31,7 +31,6 @@ test("Create new dictionary", async ({ page }) => {
 
 test("Add language to dictionary", async ({ page }) => {
     const row = page.getByRole("row", { name: "/content/dictionaries/fruit/i18n" });
-
     await row.getByRole("checkbox").click();
 
     await page.getByRole("button", { name: "Add Language(a)" }).click();
@@ -58,15 +57,16 @@ test("Remove language from dictionary", async ({ page }) => {
 });
 
 test("Delete existing dictionary", async ({ page }) => {
+    // select the existing dictionary from it content
     const row = page.getByRole("row", { name: "/content/dictionaries/fruit/i18n" });
-    // select the existing dictionary
     await row.getByRole("checkbox").click();
 
-    // click delete and confirm
+    // click delete button in action bar
     await page.getByRole("button", { name: "Delete(backspace)" }).click();
 
+    // confirm the deletion in modal
     await page.getByRole("button", { name: "Delete", exact: true }).click();
 
-    // check if the dictionary is gone
+    // make sure entry is gone in overview table
     await expect(row).toHaveCount(0);
 });
