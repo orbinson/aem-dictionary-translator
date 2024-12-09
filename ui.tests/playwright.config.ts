@@ -2,7 +2,7 @@ import { defineConfig, devices } from "@playwright/test";
 
 export default defineConfig({
     testDir: "./tests",
-    timeout: 30 * 1000,
+    timeout: 5 * 1000,
     fullyParallel: false,
     forbidOnly: !!process.env.CI,
     retries: 1,
@@ -22,8 +22,8 @@ export default defineConfig({
             testMatch: /setup\/login\.ts/
         },
         {
-            name: "profile",
-            testMatch: /setup\/profile\.ts/
+            name: "preferences",
+            testMatch: /setup\/preferences\.ts/
         },
         {
             name: "chromium",
@@ -31,7 +31,7 @@ export default defineConfig({
                 ...devices["Desktop Chrome"],
                 storageState: "playwright/.auth/user.json"
             },
-            dependencies: ["login", "profile"]
+            dependencies: ["login", "preferences"]
         }
     ]
 });
