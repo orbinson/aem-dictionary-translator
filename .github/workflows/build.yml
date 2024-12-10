@@ -4,6 +4,7 @@ on: [ push, pull_request ]
 
 jobs:
   aem-maven-build:
+    name: Call Workflow
     uses: orbinson/workflows/.github/workflows/aem-maven-build.yml@main
     with:
       java-version: 11
