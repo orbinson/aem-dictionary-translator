@@ -17,6 +17,8 @@ jobs:
         image: ghcr.io/orbinson/aem-sdk:author-2024.10.18459.20241031T210302Z-241000
         ports:
           - 4502:4502
+        volumes:
+          - /logs:/opt/aem/home/var/instance/author/crx-quickstart/logs
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -44,4 +46,8 @@ jobs:
         with:
           name: playwright-report
           path: ui.tests/playwright-report/
-          retention-days: 30
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: logs
+          path: logs
