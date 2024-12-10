@@ -4,13 +4,13 @@ on: [ push, pull_request ]
 
 jobs:
   aem-maven-build:
-    name: Call Workflow
+    name: Call workflow
     uses: orbinson/workflows/.github/workflows/aem-maven-build.yml@main
     with:
       java-version: 11
 
   ui-tests:
-    name: UI Tests
+    name: Run UI tests
     runs-on: ubuntu-latest
     needs: aem-maven-build
     services:
@@ -34,9 +34,9 @@ jobs:
         with:
           path: ~/.cache/ms-playwright
           key: ${{ runner.os }}-playwright-${{ env.PLAYWRIGHT_VERSION }}
-      - name: Install package
+      - name: Install all package
         run: mvn install -B -U -PautoInstallSinglePackage
-      - name: Install it.content
+      - name: Install it.content package
         run: mvn install -B -U -PautoInstallPackage -pl it.content
       - name: Run ui.tests
         run: mvn test -B -pl ui.tests -DskipTests=false
@@ -45,4 +45,4 @@ jobs:
         if: ${{ !cancelled() }}
         with:
           name: playwright-report
-          path: ui.tests/playwright-report/
+          path: ui.tests/playwright-report
