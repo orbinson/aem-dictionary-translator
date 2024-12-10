@@ -41,13 +41,15 @@ jobs:
         run: mvn install -B -U -PautoInstallPackage -pl it.content
       - name: Run ui.tests
         run: mvn test -B -pl ui.tests -DskipTests=false
-      - uses: actions/upload-artifact@v4
+      - name: "Upload Playwright Report"
+        uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:
           name: playwright-report
           path: ui.tests/playwright-report/
-      - uses: actions/upload-artifact@v4
+      - name: "Upload AEM logs"
+        uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:
           name: logs
-          path: logs
+          path: /logs
