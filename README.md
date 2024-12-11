@@ -18,14 +18,14 @@ The [AEM Dictionary Translator](http://localhost:4502/tools/translation/dictiona
 
 ## Installation
 
-### System requirements
+### Compatibility matrix
 
-The minimal required AEM versions are:
+The minimal required AEM and AEM Dictionary Translator versions are:
 
-| type    | version                       |
-|---------|-------------------------------|
-| AEM 6.5 | 6.5.17                        |
-| AEMaaCS | 2023.1.10912.20230130T173736Z |
+| AEM Type | AEM version                     | AEM Dictionary Translator |
+|----------|---------------------------------|----------------------|
+| AEM 6.5  | `6.5.17`                        | `1.3.0`              |
+| AEMaaCS  | `2023.1.10912.20230130T173736Z` | `1.0.0`              |
 
 The minimal required Java version is `11`.
 
