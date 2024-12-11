@@ -22,7 +22,7 @@ export async function clearReplicationQueue(baseURL: string, httpCredentials: { 
 
 export async function resetITContent(baseURL: string, httpCredentials: { username: string, password: string }) {
     const version = await readVersionFromPom();
-    const filePath = path.resolve(`../it.content/target/aem-dictionary-translator.it.content-${version}.zip`);
+    const filePath = path.resolve(`target/dependency/aem-dictionary-translator.it.content-${version}.zip`);
     const fileData = await fs.readFile(filePath);
     const blob = new Blob([fileData]);
 

@@ -22,11 +22,31 @@
     <build>
         <plugins>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-it-content</id>
+                        <phase>generate-test-resources</phase>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>be.orbinson.aem</groupId>
+                                    <artifactId>aem-dictionary-translator.it.content</artifactId>
+                                    <version>${project.version}</version>
+                                    <type>zip</type>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>com.github.eirslett</groupId>
                 <artifactId>frontend-maven-plugin</artifactId>
-                <configuration>
-                    <skip>${skipTests}</skip>
-                </configuration>
                 <executions>
                     <execution>
                         <id>install-node-and-npm</id>
@@ -44,15 +64,6 @@
                         </configuration>
                     </execution>
                     <execution>
-                        <id>npx-playwright-install</id>
-                        <goals>
-                            <goal>npx</goal>
-                        </goals>
-                        <configuration>
-                            <arguments>playwright install --with-deps chromium</arguments>
-                        </configuration>
-                    </execution>
-                    <execution>
                         <id>npm-run-lint</id>
                         <goals>
                             <goal>npm</goal>
@@ -62,12 +73,23 @@
                         </configuration>
                     </execution>
                     <execution>
+                        <id>npx-playwright-install</id>
+                        <goals>
+                            <goal>npx</goal>
+                        </goals>
+                        <configuration>
+                            <skip>${skipTests}</skip>
+                            <arguments>playwright install --with-deps chromium</arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
                         <id>npm-test</id>
                         <goals>
                             <goal>npm</goal>
                         </goals>
                         <phase>test</phase>
                         <configuration>
+                            <skip>${skipTests}</skip>
                             <arguments>test</arguments>
                         </configuration>
                     </execution>
