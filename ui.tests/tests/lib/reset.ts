@@ -4,7 +4,7 @@ import { authenticationHeader } from "./http";
 import { readVersionFromPom } from "./maven";
 import { urls } from "./aem";
 
-export async function clearReplicationQueue(baseURL: string, httpCredentials: { username: string, password: string }) {
+export async function clearReplicationQueue(baseURL: string) {
     const formData = new FormData();
     formData.append("cmd", "clear");
     formData.append("agent", "publish");
@@ -13,7 +13,7 @@ export async function clearReplicationQueue(baseURL: string, httpCredentials: { 
         const response = await fetch(`${baseURL}${urls.replicationQueue}`, {
             method: "POST",
             body: formData,
-            headers: authenticationHeader(httpCredentials)
+            headers: authenticationHeader({ username: "admin", password: "admin" })
         });
         await response.text();
     } catch (error) {
@@ -21,7 +21,7 @@ export async function clearReplicationQueue(baseURL: string, httpCredentials: { 
     }
 }
 
-export async function resetITContent(baseURL: string, httpCredentials: { username: string, password: string }) {
+export async function resetITContent(baseURL: string) {
     const version = await readVersionFromPom();
     const filePath = path.resolve(`target/dependency/aem-dictionary-translator.it.content-${version}.zip`);
     const fileData = await fs.readFile(filePath);
@@ -36,7 +36,7 @@ export async function resetITContent(baseURL: string, httpCredentials: { usernam
         const response = await fetch(`${baseURL}${urls.packMgr}`, {
             method: "POST",
             body: formData,
-            headers: authenticationHeader(httpCredentials)
+            headers: authenticationHeader({ username: "admin", password: "admin" })
         });
         await response.text();
     } catch (error) {

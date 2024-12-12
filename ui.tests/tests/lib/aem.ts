@@ -6,10 +6,10 @@ export const urls = {
     packMgr: "/crx/packmgr/service.jsp",
     start: "/aem/start.html"
 }
-export async function replicationQueueState(baseURL: string, httpCredentials: { username: string, password: string }) {
+export async function replicationQueueState(baseURL: string) {
     try {
         const response = await fetch(`${baseURL}${urls.replicationQueue}`, {
-            headers: authenticationHeader(httpCredentials)
+            headers: authenticationHeader({ username: "admin", password: "admin" })
         });
         if (response.ok) {
             return await response.json();

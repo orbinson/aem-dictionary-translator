@@ -1,14 +1,14 @@
 import { expect, test } from "@playwright/test";
 import { clearReplicationQueue, resetITContent } from "./lib/reset";
 
-test.beforeEach(async ({ page, baseURL, httpCredentials }) => {
-    await resetITContent(baseURL, httpCredentials);
-    await clearReplicationQueue(baseURL, httpCredentials);
+test.beforeEach(async ({ page, baseURL }) => {
+    await resetITContent(baseURL);
+    await clearReplicationQueue(baseURL);
     await page.goto("/tools/translation/dictionaries/message-entries.html/content/dictionaries/fruit/i18n");
 });
 
-test.afterAll(async ({ baseURL, httpCredentials }) => {
-    clearReplicationQueue(baseURL, httpCredentials);
+test.afterAll(async ({ baseURL }) => {
+    clearReplicationQueue(baseURL);
 });
 
 test("Dictionary menu navigation", async ({ page }) => {

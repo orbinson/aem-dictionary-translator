@@ -12,8 +12,8 @@ export default defineConfig({
         baseURL: "http://localhost:4502",
         trace: "on-first-retry",
         httpCredentials: {
-            username: "admin",
-            password: "admin"
+            username: "test-dictionary-user",
+            password: "test-dictionary-user-password"
         }
     },
     projects: [

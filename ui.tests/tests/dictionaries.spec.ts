@@ -2,14 +2,14 @@ import { expect, test } from "@playwright/test";
 import { clearReplicationQueue, resetITContent } from "./lib/reset";
 import { replicationQueueState } from "./lib/aem";
 
-test.beforeEach(async ({ page, baseURL, httpCredentials }) => {
-    await resetITContent(baseURL, httpCredentials);
-    await clearReplicationQueue(baseURL, httpCredentials);
+test.beforeEach(async ({ page, baseURL }) => {
+    await resetITContent(baseURL);
+    await clearReplicationQueue(baseURL);
     await page.goto("/tools/translation/dictionaries.html");
 });
 
-test.afterAll(async ({ baseURL, httpCredentials }) => {
-    clearReplicationQueue(baseURL, httpCredentials);
+test.afterAll(async ({ baseURL }) => {
+    clearReplicationQueue(baseURL);
 });
 
 test("Dictionary is visible", async ({ page }) => {
@@ -65,7 +65,7 @@ test("Remove language from dictionary", async ({ page }) => {
     await expect(row.getByRole("gridcell", { name: "en", exact: true })).toHaveCount(1)
 });
 
-test("Publish dictionary", async ({ page, baseURL, httpCredentials }) => {
+test("Publish dictionary", async ({ page, baseURL }) => {
     // select the existing dictionary from it content
     const row = page.getByRole("row", { name: "/content/dictionaries/fruit/i18n" });
     await row.getByRole("checkbox").click();
@@ -82,7 +82,7 @@ test("Publish dictionary", async ({ page, baseURL, httpCredentials }) => {
     });
 
     // get items in the replication queue
-    const state = await replicationQueueState(baseURL, httpCredentials);
+    const state = await replicationQueueState(baseURL);
 
     expect(state.queue[0].path).toBe("/content/dictionaries/fruit/i18n");
     expect(state.queue[0].type).toBe("Activate");
