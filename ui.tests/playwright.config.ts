@@ -7,7 +7,11 @@ export default defineConfig({
     forbidOnly: !!process.env.CI,
     retries: 1,
     workers: 1,
-    reporter: [ ["html", { open: "never" }] ],
+    reporter: [
+        ["line"],
+        ["html", { open: "never" }],
+        ["playwright-ctrf-json-reporter", {}]
+    ],
     use: {
         baseURL: "http://localhost:4502",
         trace: "on-first-retry",

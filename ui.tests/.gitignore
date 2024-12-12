@@ -5,3 +5,4 @@ playwright-report/
 playwright/.auth/
 playwright/.cache/
 test-results/
+ctrf/
