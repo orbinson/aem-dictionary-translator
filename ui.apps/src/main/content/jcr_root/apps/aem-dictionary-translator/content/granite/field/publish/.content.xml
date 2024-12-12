@@ -11,9 +11,7 @@
         command="p"
         icon="publish"
         variant="actionBar"
-        text="Publish"
-        trackingFeature="aem-dictionary-translator"
-        trackingElement="publish">
+        text="Publish">
     <granite:rendercondition
             jcr:primaryType="nt:unstructured"
             sling:resourceType="aem-dictionary-translator/components/rendercondition/replication-agent-enabled"

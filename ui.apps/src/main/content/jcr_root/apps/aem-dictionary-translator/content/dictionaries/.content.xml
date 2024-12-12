@@ -26,9 +26,7 @@
                         action="foundation.dialog"
                         icon="add"
                         variant="primary"
-                        text="Create Dictionary"
-                        trackingFeature="aem-dictionary-translator"
-                        trackingElement="create-dictionary">
+                        text="Create Dictionary">
                     <data jcr:primaryType="nt:unstructured"
                           src.uritemplate="/apps/aem-dictionary-translator/content/granite/dialog/dictionary/create.html"/>
                 </add-dictionary>
@@ -74,9 +72,7 @@
                         activeCondition="aem-dictionary-translator.dictionary.editable"
                         icon="edit"
                         variant="actionBar"
-                        text="Edit"
-                        trackingFeature="aem-dictionary-translator"
-                        trackingElement="edit-dictionary">
+                        text="Edit">
                     <data jcr:primaryType="nt:unstructured"
                           href.uritemplate="/tools/translation/dictionaries/message-entries.html{+item}"/>
                 </edit>
@@ -88,9 +84,7 @@
                         command="g"
                         icon="book"
                         variant="actionBar"
-                        text="View"
-                        trackingFeature="aem-dictionary-translator"
-                        trackingElement="view-dictionary">
+                        text="View">
                     <data jcr:primaryType="nt:unstructured"
                           href.uritemplate="/tools/translation/dictionaries/message-entries.html{+item}"/>
                 </view>
@@ -110,9 +104,7 @@
                         command="a"
                         icon="book"
                         variant="actionBar"
-                        text="Add Language"
-                        trackingFeature="aem-dictionary-translator"
-                        trackingElement="add-language">
+                        text="Add Language">
                     <data jcr:primaryType="nt:unstructured"
                           src.uritemplate="/apps/aem-dictionary-translator/content/granite/dialog/dictionary/language/create.html{+item}"/>
                 </create-language>
@@ -124,9 +116,7 @@
                         icon="deleteOutline"
                         variant="actionBar"
                         text="Remove Language"
-                        command="r"
-                        trackingFeature="aem-dictionary-translator"
-                        trackingElement="remove-language">
+                        command="r">
                     <data jcr:primaryType="nt:unstructured"
                           src.uritemplate="/apps/aem-dictionary-translator/content/granite/dialog/dictionary/language/delete.html{+item}"/>
                 </delete-language>
@@ -138,9 +128,7 @@
                         activeCondition="aem-dictionary-translator.dictionary.editable"
                         icon="delete"
                         variant="actionBar"
-                        text="Delete"
-                        trackingFeature="aem-dictionary-translator"
-                        trackingElement="delete-dictionary">
+                        text="Delete">
                     <data jcr:primaryType="nt:unstructured"
                           src.uritemplate="/apps/aem-dictionary-translator/content/granite/dialog/dictionary/delete.html{?item*}"/>
                 </delete>
