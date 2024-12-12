@@ -6,57 +6,57 @@
           jcr:primaryType="sling:Folder"
           sling:basename="/content/dictionaries/fruit/i18n"
           sling:resourceType="sling:Folder">
-    <apple jcr:primaryType="sling:MessageEntry" sling:key="apple" sling:message="Apple"/>
-    <banana jcr:primaryType="sling:MessageEntry" sling:key="banana" sling:message="Banana"/>
-    <cherry jcr:primaryType="sling:MessageEntry" sling:key="cherry" sling:message="Cherry"/>
-    <date jcr:primaryType="sling:MessageEntry" sling:key="date" sling:message="Date"/>
-    <grape jcr:primaryType="sling:MessageEntry" sling:key="grape" sling:message="Grape"/>
+    <apple jcr:primaryType="sling:MessageEntry" sling:key="apple" sling:message="Appel"/>
+    <banana jcr:primaryType="sling:MessageEntry" sling:key="banana" sling:message="Banaan"/>
+    <cherry jcr:primaryType="sling:MessageEntry" sling:key="cherry" sling:message="Kers"/>
+    <date jcr:primaryType="sling:MessageEntry" sling:key="date" sling:message="Dadel"/>
+    <grape jcr:primaryType="sling:MessageEntry" sling:key="grape" sling:message="Druif"/>
     <kiwi jcr:primaryType="sling:MessageEntry" sling:key="kiwi" sling:message="Kiwi"/>
-    <lemon jcr:primaryType="sling:MessageEntry" sling:key="lemon" sling:message="Lemon"/>
+    <lemon jcr:primaryType="sling:MessageEntry" sling:key="lemon" sling:message="Citroen"/>
     <mango jcr:primaryType="sling:MessageEntry" sling:key="mango" sling:message="Mango"/>
-    <orange jcr:primaryType="sling:MessageEntry" sling:key="orange" sling:message="Orange"/>
-    <pear jcr:primaryType="sling:MessageEntry" sling:key="pear" sling:message="Pear"/>
-    <pineapple jcr:primaryType="sling:MessageEntry" sling:key="pineapple" sling:message="Pineapple"/>
-    <strawberry jcr:primaryType="sling:MessageEntry" sling:key="strawberry" sling:message="Strawberry"/>
-    <watermelon jcr:primaryType="sling:MessageEntry" sling:key="watermelon" sling:message="Watermelon"/>
-    <blackberry jcr:primaryType="sling:MessageEntry" sling:key="blackberry" sling:message="Blackberry"/>
-    <blueberry jcr:primaryType="sling:MessageEntry" sling:key="blueberry" sling:message="Blueberry"/>
-    <raspberry jcr:primaryType="sling:MessageEntry" sling:key="raspberry" sling:message="Raspberry"/>
-    <fig jcr:primaryType="sling:MessageEntry" sling:key="fig" sling:message="Fig"/>
-    <pomegranate jcr:primaryType="sling:MessageEntry" sling:key="pomegranate" sling:message="Pomegranate"/>
-    <lime jcr:primaryType="sling:MessageEntry" sling:key="lime" sling:message="Lime"/>
-    <plum jcr:primaryType="sling:MessageEntry" sling:key="plum" sling:message="Plum"/>
-    <apricot jcr:primaryType="sling:MessageEntry" sling:key="apricot" sling:message="Apricot"/>
+    <orange jcr:primaryType="sling:MessageEntry" sling:key="orange" sling:message="Sinaasappel"/>
+    <pear jcr:primaryType="sling:MessageEntry" sling:key="pear" sling:message="Peer"/>
+    <pineapple jcr:primaryType="sling:MessageEntry" sling:key="pineapple" sling:message="Ananas"/>
+    <strawberry jcr:primaryType="sling:MessageEntry" sling:key="strawberry" sling:message="Aardbei"/>
+    <watermelon jcr:primaryType="sling:MessageEntry" sling:key="watermelon" sling:message="Watermeloen"/>
+    <blackberry jcr:primaryType="sling:MessageEntry" sling:key="blackberry" sling:message="Braam"/>
+    <blueberry jcr:primaryType="sling:MessageEntry" sling:key="blueberry" sling:message="Blauwe bes"/>
+    <raspberry jcr:primaryType="sling:MessageEntry" sling:key="raspberry" sling:message="Framboos"/>
+    <fig jcr:primaryType="sling:MessageEntry" sling:key="fig" sling:message="Vijg"/>
+    <pomegranate jcr:primaryType="sling:MessageEntry" sling:key="pomegranate" sling:message="Granaatappel"/>
+    <lime jcr:primaryType="sling:MessageEntry" sling:key="lime" sling:message="Limoen"/>
+    <plum jcr:primaryType="sling:MessageEntry" sling:key="plum" sling:message="Pruim"/>
+    <apricot jcr:primaryType="sling:MessageEntry" sling:key="apricot" sling:message="Abrikoos"/>
     <nectarine jcr:primaryType="sling:MessageEntry" sling:key="nectarine" sling:message="Nectarine"/>
-    <peach jcr:primaryType="sling:MessageEntry" sling:key="peach" sling:message="Peach"/>
+    <peach jcr:primaryType="sling:MessageEntry" sling:key="peach" sling:message="Perzik"/>
     <cantaloupe jcr:primaryType="sling:MessageEntry" sling:key="cantaloupe" sling:message="Cantaloupe"/>
-    <honeydew jcr:primaryType="sling:MessageEntry" sling:key="honeydew" sling:message="Honeydew"/>
-    <passionfruit jcr:primaryType="sling:MessageEntry" sling:key="passionfruit" sling:message="Passionfruit"/>
-    <papaya jcr:primaryType="sling:MessageEntry" sling:key="papaya" sling:message="Papaya"/>
-    <guava jcr:primaryType="sling:MessageEntry" sling:key="guava" sling:message="Guava"/>
+    <honeydew jcr:primaryType="sling:MessageEntry" sling:key="honeydew" sling:message="Honingmeloen"/>
+    <passionfruit jcr:primaryType="sling:MessageEntry" sling:key="passionfruit" sling:message="Passievrucht"/>
+    <papaya jcr:primaryType="sling:MessageEntry" sling:key="papaya" sling:message="Papaja"/>
+    <guava jcr:primaryType="sling:MessageEntry" sling:key="guava" sling:message="Guave"/>
     <lychee jcr:primaryType="sling:MessageEntry" sling:key="lychee" sling:message="Lychee"/>
-    <tangerine jcr:primaryType="sling:MessageEntry" sling:key="tangerine" sling:message="Tangerine"/>
-    <cranberry jcr:primaryType="sling:MessageEntry" sling:key="cranberry" sling:message="Cranberry"/>
-    <starfruit jcr:primaryType="sling:MessageEntry" sling:key="starfruit" sling:message="Starfruit"/>
-    <gooseberry jcr:primaryType="sling:MessageEntry" sling:key="gooseberry" sling:message="Gooseberry"/>
-    <blackcurrant jcr:primaryType="sling:MessageEntry" sling:key="blackcurrant" sling:message="Blackcurrant"/>
-    <redcurrant jcr:primaryType="sling:MessageEntry" sling:key="redcurrant" sling:message="Redcurrant"/>
-    <mulberry jcr:primaryType="sling:MessageEntry" sling:key="mulberry" sling:message="Mulberry"/>
-    <persimmon jcr:primaryType="sling:MessageEntry" sling:key="persimmon" sling:message="Persimmon"/>
-    <quince jcr:primaryType="sling:MessageEntry" sling:key="quince" sling:message="Quince"/>
+    <tangerine jcr:primaryType="sling:MessageEntry" sling:key="tangerine" sling:message="Mandarijn"/>
+    <cranberry jcr:primaryType="sling:MessageEntry" sling:key="cranberry" sling:message="Veenbes"/>
+    <starfruit jcr:primaryType="sling:MessageEntry" sling:key="starfruit" sling:message="Stervrucht"/>
+    <gooseberry jcr:primaryType="sling:MessageEntry" sling:key="gooseberry" sling:message="Kruisbes"/>
+    <blackcurrant jcr:primaryType="sling:MessageEntry" sling:key="blackcurrant" sling:message="Zwarte bes"/>
+    <redcurrant jcr:primaryType="sling:MessageEntry" sling:key="redcurrant" sling:message="Rode bes"/>
+    <mulberry jcr:primaryType="sling:MessageEntry" sling:key="mulberry" sling:message="Moerbei"/>
+    <persimmon jcr:primaryType="sling:MessageEntry" sling:key="persimmon" sling:message="Kaki"/>
+    <quince jcr:primaryType="sling:MessageEntry" sling:key="quince" sling:message="Kweepeer"/>
     <jackfruit jcr:primaryType="sling:MessageEntry" sling:key="jackfruit" sling:message="Jackfruit"/>
     <rambutan jcr:primaryType="sling:MessageEntry" sling:key="rambutan" sling:message="Rambutan"/>
     <durian jcr:primaryType="sling:MessageEntry" sling:key="durian" sling:message="Durian"/>
-    <dragonfruit jcr:primaryType="sling:MessageEntry" sling:key="dragonfruit" sling:message="Dragonfruit"/>
-    <soursop jcr:primaryType="sling:MessageEntry" sling:key="soursop" sling:message="Soursop"/>
+    <dragonfruit jcr:primaryType="sling:MessageEntry" sling:key="dragonfruit" sling:message="Pitaja"/>
+    <soursop jcr:primaryType="sling:MessageEntry" sling:key="soursop" sling:message="Zuurzak"/>
     <clementine jcr:primaryType="sling:MessageEntry" sling:key="clementine" sling:message="Clementine"/>
-    <elderberry jcr:primaryType="sling:MessageEntry" sling:key="elderberry" sling:message="Elderberry"/>
+    <elderberry jcr:primaryType="sling:MessageEntry" sling:key="elderberry" sling:message="Vlierbes"/>
     <longan jcr:primaryType="sling:MessageEntry" sling:key="longan" sling:message="Longan"/>
     <mirabelle jcr:primaryType="sling:MessageEntry" sling:key="mirabelle" sling:message="Mirabelle"/>
-    <salak jcr:primaryType="sling:MessageEntry" sling:key="salak" sling:message="Snakefruit"/>
-    <olive jcr:primaryType="sling:MessageEntry" sling:key="olive" sling:message="Olive"/>
+    <salak jcr:primaryType="sling:MessageEntry" sling:key="salak" sling:message="Slangenfruit"/>
+    <olive jcr:primaryType="sling:MessageEntry" sling:key="olive" sling:message="Olijf"/>
     <kumquat jcr:primaryType="sling:MessageEntry" sling:key="kumquat" sling:message="Kumquat"/>
-    <boysenberry jcr:primaryType="sling:MessageEntry" sling:key="boysenberry" sling:message="Boysenberry"/>
-    <saskatoonberry jcr:primaryType="sling:MessageEntry" sling:key="saskatoonberry" sling:message="Saskatoonberry"/>
-    <loquat jcr:primaryType="sling:MessageEntry" sling:key="loquat" sling:message="Loquat"/>
+    <boysenberry jcr:primaryType="sling:MessageEntry" sling:key="boysenberry" sling:message="Boysenbes"/>
+    <saskatoonberry jcr:primaryType="sling:MessageEntry" sling:key="saskatoonberry" sling:message="Saskatoonbes"/>
+    <loquat jcr:primaryType="sling:MessageEntry" sling:key="loquat" sling:message="Japanse mispel"/>
 </jcr:root>
