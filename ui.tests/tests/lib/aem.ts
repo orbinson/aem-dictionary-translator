@@ -1,4 +1,5 @@
 import { authenticationHeader } from "./http";
+import { retry } from "./util";
 
 export const urls = {
     replicationQueue: "/etc/replication/agents.author/publish/jcr:content.queue.json",
@@ -6,7 +7,12 @@ export const urls = {
     packMgr: "/crx/packmgr/service.jsp",
     start: "/aem/start.html"
 }
+
 export async function replicationQueueState(baseURL: string) {
+    return await retry(getReplicationQueueState, (result) => result?.queue?.length > 0, 5, 250, baseURL);
+}
+
+async function getReplicationQueueState(baseURL: string) {
     try {
         const response = await fetch(`${baseURL}${urls.replicationQueue}`, {
             headers: authenticationHeader({ username: "admin", password: "admin" })
