@@ -1,10 +1,19 @@
 import { expect, test } from "@playwright/test";
 import { clearReplicationQueue, resetITContent } from "./lib/reset";
+import { replicationQueueState } from "./lib/aem";
 
 test.beforeEach(async ({ page, baseURL, httpCredentials }) => {
     await resetITContent(baseURL, httpCredentials);
     await clearReplicationQueue(baseURL, httpCredentials);
     await page.goto("/tools/translation/dictionaries.html");
+});
+
+test.afterAll(async ({ baseURL, httpCredentials }) => {
+    clearReplicationQueue(baseURL, httpCredentials);
+});
+
+test("Dictionary is visible", async ({ page }) => {
+    await expect(page.getByRole("row", { name: "/content/dictionaries/fruit/i18n" })).toBeVisible();
 });
 
 test("Create new dictionary", async ({ page }) => {
@@ -54,6 +63,29 @@ test("Remove language from dictionary", async ({ page }) => {
     await page.getByRole("button", { name: "Delete" }).click();
 
     await expect(row.getByRole("gridcell", { name: "en", exact: true })).toHaveCount(1)
+});
+
+test("Publish dictionary", async ({ page, baseURL, httpCredentials }) => {
+    // select the existing dictionary from it content
+    const row = page.getByRole("row", { name: "/content/dictionaries/fruit/i18n" });
+    await row.getByRole("checkbox").click();
+
+    // click publish button in action bar
+    await page.getByRole("button", { name: "Publish(p)" }).click();
+
+    // confirm publication in modal
+    await page.getByRole("button", { name: "Publish" }).click();
+
+    // wait until the async replication is handled
+    await page.waitForEvent("requestfinished", {
+        predicate: request => request.url().endsWith("/bin/replicate")
+    });
+
+    // get items in the replication queue
+    const state = await replicationQueueState(baseURL, httpCredentials);
+
+    expect(state.queue[0].path).toBe("/content/dictionaries/fruit/i18n");
+    expect(state.queue[0].type).toBe("Activate");
 });
 
 test("Delete existing dictionary", async ({ page }) => {
