@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "scripts": {
     "codegen": "playwright codegen",
-    "lint": "eslint . --ignore-pattern playwright-report/*",
-    "lint:fix": "eslint --fix . --ignore-pattern playwright-report/*",
+    "lint": "eslint . --ignore-pattern 'playwright-report/*'",
+    "lint:fix": "eslint --fix . --ignore-pattern 'playwright-report/*'",
     "test": "playwright test",
     "test:ui": "playwright test --ui",
     "test:debug": "playwright test --debug",
