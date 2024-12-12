@@ -1,5 +1,6 @@
 import { test as setup } from "@playwright/test";
 import * as path from "path";
+import { urls } from "../lib/aem";
 
 const authFile = path.join(__dirname, "../../playwright/.auth/user.json");
 
@@ -13,7 +14,7 @@ setup("Login to session", async ({ page, httpCredentials }) => {
     await page.getByPlaceholder("Password", { exact: true }).fill(httpCredentials.password);
     await page.getByRole("button", { name: "Sign In" }).click();
 
-    await page.waitForURL("/aem/start.html");
+    await page.waitForURL(urls.start);
 
     await page.context().storageState({ path: authFile });
 });

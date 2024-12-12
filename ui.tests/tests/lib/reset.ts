@@ -2,6 +2,7 @@ import * as fs from "fs/promises";
 import * as path from "path";
 import { authenticationHeader } from "./http";
 import { readVersionFromPom } from "./maven";
+import { urls } from "./aem";
 
 export async function clearReplicationQueue(baseURL: string, httpCredentials: { username: string, password: string }) {
     const formData = new FormData();
@@ -9,7 +10,7 @@ export async function clearReplicationQueue(baseURL: string, httpCredentials: { 
     formData.append("agent", "publish");
 
     try {
-        const response = await fetch(`${baseURL}/etc/replication/agents.author/publish/jcr:content.queue.json`, {
+        const response = await fetch(`${baseURL}${urls.replicationQueue}`, {
             method: "POST",
             body: formData,
             headers: authenticationHeader(httpCredentials)
@@ -32,7 +33,7 @@ export async function resetITContent(baseURL: string, httpCredentials: { usernam
     formData.append("install", "true");
 
     try {
-        const response = await fetch(`${baseURL}/crx/packmgr/service.jsp`, {
+        const response = await fetch(`${baseURL}${urls.packMgr}`, {
             method: "POST",
             body: formData,
             headers: authenticationHeader(httpCredentials)

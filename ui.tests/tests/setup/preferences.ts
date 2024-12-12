@@ -1,8 +1,9 @@
 import { test as setup } from "@playwright/test";
 import { authenticationHeader } from "../lib/http";
+import { urls } from "../lib/aem";
 
 setup("Set user preferences", async ({ baseURL, httpCredentials }) => {
-    const user = await fetch(`${baseURL}/libs/granite/security/currentuser.json`, {
+    const user = await fetch(`${baseURL}${urls.currentUser}`, {
         headers: authenticationHeader(httpCredentials)
     })
     const userinfo = await user.json();

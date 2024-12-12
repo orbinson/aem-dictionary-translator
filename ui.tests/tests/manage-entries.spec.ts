@@ -19,7 +19,7 @@ test("Dictionary menu navigation", async ({ page }) => {
     await page.getByRole("option", { name: "Dictionaries" }).click();
 
     // make sure we are back on the overview page
-    await page.waitForURL("/apps/aem-dictionary-translator/content/dictionaries.html");
+    await page.waitForURL("/tools/translation/dictionaries.html");
 });
 
 test("Create new key", async ({ page }) => {
