@@ -50,6 +50,8 @@ public class CombiningMessageEntryResourceProvider extends ResourceProvider<Obje
                 if (messageEntryResource != null && messageEntryResource.isResourceType(DictionaryConstants.SLING_MESSAGEENTRY)) {
                     properties.put(language, messageEntryResource.getValueMap().get(DictionaryConstants.SLING_MESSAGE, ""));
                     messageEntryPaths.add(messageEntryResource.getPath());
+                } else {
+                    properties.put(language, "");
                 }
             }
         }
@@ -75,6 +77,7 @@ public class CombiningMessageEntryResourceProvider extends ResourceProvider<Obje
             Map<String, Object> properties = new HashMap<>();
             properties.put(KEY, key);
             properties.put("path", path);
+            properties.put("editable", dictionaryService.isEditableDictionary(dictionaryResource));
             properties.put(DICTIONARY_PATH, dictionaryPath);
             List<String> languages = dictionaryService.getLanguages(dictionaryResource);
             properties.put(LANGUAGES, languages);

@@ -1,9 +1,13 @@
 <tr is="coral-table-row"
     data-foundation-collection-item-id="${resource.path}"
+    data-dictionary-item-editable="${properties.editable ? 'true' : 'false'}"
     class="foundation-collection-item">
     <td is="coral-table-cell" coral-table-rowselect></td>
     <td is="coral-table-cell">${properties.key}</td>
     <sly data-sly-repeat.language="${properties.languages}">
-        <td is="coral-table-cell">${properties[language]}</td>
+        <td is="coral-table-cell"
+            data-publish-path="${properties.messageEntryPaths[languageList.index]}">
+            ${properties[language]}
+        </td>
     </sly>
 </tr>

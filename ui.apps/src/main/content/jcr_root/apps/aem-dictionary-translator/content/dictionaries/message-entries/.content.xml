@@ -10,14 +10,14 @@
             sling:vanityPath="/tools/translation/dictionaries/message-entries.html"
             jcr:title="Translate Dictionary"
             backHref="/tools/translation/dictionaries.html"
-            modeGroup="language-list"
+            modeGroup="key-list"
             consoleId="translation"
-            targetCollection=".language-list">
+            targetCollection=".key-list">
         <head jcr:primaryType="nt:unstructured">
             <clientlibs
                     jcr:primaryType="nt:unstructured"
                     sling:resourceType="granite/ui/components/coral/foundation/includeclientlibs"
-                    categories="[coralui3,granite.ui.coral.foundation]"/>
+                    categories="[coralui3,granite.ui.coral.foundation,dictionary-translator.dictionary]"/>
         </head>
         <breadcrumbs
                 jcr:primaryType="nt:unstructured"
@@ -28,7 +28,7 @@
                         jcr:primaryType="nt:unstructured"
                         sling:resourceType="granite/ui/components/coral/foundation/collection/action"
                         action="foundation.dialog"
-                        target="#translation-listview"
+                        target="#key-list"
                         icon="add"
                         variant="primary"
                         text="Create Key">
@@ -36,8 +36,8 @@
                           src.uritemplate="/apps/aem-dictionary-translator/content/granite/dialog/dictionary/key/create.html${requestPathInfo.suffix}"/>
                     <granite:rendercondition
                             jcr:primaryType="nt:unstructured"
-                            sling:resourceType="granite/ui/components/coral/foundation/renderconditions/simple"
-                            expression="${granite:contains(granite:relativeParent(requestPathInfo.suffix, 0), '/content')}"/>
+                            sling:resourceType="aem-dictionary-translator/components/rendercondition/editable-dictionary"
+                            path="${requestPathInfo.suffix}"/>
                 </create-key>
             </primary>
             <selection jcr:primaryType="nt:unstructured">
@@ -47,68 +47,52 @@
                         activeSelectionCount="single"
                         action="foundation.dialog"
                         actionConfigName="granite/ui/shell/actions/edit"
-                        target="#translation-listview"
+                        activeCondition="aem-dictionary-translator.dictionary.editable"
+                        target="#key-list"
                         icon="edit"
                         variant="actionBar"
                         text="Edit">
                     <data jcr:primaryType="nt:unstructured"
                           src.uritemplate="/apps/aem-dictionary-translator/content/granite/dialog/dictionary/key/update.html{?item*}"/>
-                    <granite:rendercondition
-                            jcr:primaryType="nt:unstructured"
-                            sling:resourceType="granite/ui/components/coral/foundation/renderconditions/simple"
-                            expression="${granite:contains(granite:relativeParent(requestPathInfo.suffix, 0), '/content')}"/>
                 </edit>
                 <delete
                         jcr:primaryType="nt:unstructured"
                         sling:resourceType="granite/ui/components/coral/foundation/collection/action"
                         action="foundation.dialog"
                         actionConfigName="granite/ui/shell/actions/delete"
-                        target="#translation-listview"
+                        activeCondition="aem-dictionary-translator.dictionary.editable"
+                        target="#key-list"
                         icon="delete"
                         variant="actionBar"
                         text="Delete">
                     <data jcr:primaryType="nt:unstructured"
                           src.uritemplate="/apps/aem-dictionary-translator/content/granite/dialog/dictionary/key/delete.html{?item*}"/>
-                    <granite:rendercondition
-                            jcr:primaryType="nt:unstructured"
-                            sling:resourceType="granite/ui/components/coral/foundation/renderconditions/simple"
-                            expression="${granite:contains(granite:relativeParent(requestPathInfo.suffix, 0), '/content')}"/>
                 </delete>
                 <publish
                         jcr:primaryType="nt:unstructured"
-                        sling:resourceType="granite/ui/components/coral/foundation/collection/action"
-                        action="foundation.dialog"
-                        target="#translation-listview"
-                        icon="publish"
-                        command="p"
-                        variant="actionBar"
-                        text="Publish">
-                    <data jcr:primaryType="nt:unstructured"
-                          src.uritemplate="/apps/aem-dictionary-translator/content/granite/dialog/dictionary/key/publish.html{?item*}"/>
-                    <granite:rendercondition
-                            jcr:primaryType="nt:unstructured"
-                            sling:resourceType="granite/ui/components/coral/foundation/renderconditions/simple"
-                            expression="${granite:contains(granite:relativeParent(requestPathInfo.suffix, 0), '/content')}"/>
-                </publish>
+                        sling:resourceType="granite/ui/components/foundation/include"
+                        path="/apps/aem-dictionary-translator/content/granite/field/publish"/>
+                <publish-preview
+                        jcr:primaryType="nt:unstructured"
+                        sling:resourceType="granite/ui/components/foundation/include"
+                        path="/apps/aem-dictionary-translator/content/granite/field/publish-preview"/>
             </selection>
         </actions>
         <views jcr:primaryType="nt:unstructured">
             <table
                     jcr:primaryType="nt:unstructured"
                     sling:resourceType="granite/ui/components/coral/foundation/table"
-                    modeGroup="language-list"
-                    granite:class="language-list"
-                    granite:rel="language-list"
-                    granite:id="translation-listview"
+                    granite:class="key-list"
+                    granite:rel="key-list"
+                    granite:id="key-list"
+                    modeGroup="key-list"
                     layoutId="list"
-                    limit="{Long}50"
-                    selectionMode="${granite:contains(granite:relativeParent(requestPathInfo.suffix, 0), '/content') ? 'row' : 'none'}">
+                    selectionMode="row"
+                    path="${requestPathInfo.suffix}">
                 <datasource
                         jcr:primaryType="nt:unstructured"
                         sling:resourceType="aem-dictionary-translator/datasource/combining-message-entry"
-                        itemResourceType="aem-dictionary-translator/components/combining-message-entry"
-                        limit="${empty requestPathInfo.selectors[1] ? 50 : requestPathInfo.selectors[1]}"
-                        offset="${requestPathInfo.selectors[0]}"/>
+                        itemResourceType="aem-dictionary-translator/components/combining-message-entry"/>
                 <columnsdatasource
                         jcr:primaryType="nt:unstructured"
                         sling:resourceType="aem-dictionary-translator/datasource/combining-message-entry"/>

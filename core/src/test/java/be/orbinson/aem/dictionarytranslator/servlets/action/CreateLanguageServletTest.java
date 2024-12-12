@@ -2,7 +2,6 @@ package be.orbinson.aem.dictionarytranslator.servlets.action;
 
 import be.orbinson.aem.dictionarytranslator.services.DictionaryService;
 import be.orbinson.aem.dictionarytranslator.services.impl.DictionaryServiceImpl;
-import com.adobe.granite.translation.api.TranslationConfig;
 import com.day.cq.replication.Replicator;
 import io.wcm.testing.mock.aem.junit5.AemContext;
 import io.wcm.testing.mock.aem.junit5.AemContextExtension;
@@ -32,12 +31,8 @@ class CreateLanguageServletTest {
 
     DictionaryService dictionaryService;
 
-    @Mock
-    TranslationConfig translationConfig;
-
     @BeforeEach
     void beforeEach() {
-        translationConfig = context.registerService(TranslationConfig.class, translationConfig);
         context.registerService(Replicator.class, mock(Replicator.class));
         dictionaryService = context.registerInjectActivateService(new DictionaryServiceImpl());
 

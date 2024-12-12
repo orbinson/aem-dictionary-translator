@@ -9,13 +9,27 @@ AEM TouchUI tool to translate dictionaries for i18n internationalisation in AEM 
 Dictionary Translator is a replacement for the
 ClassicUI [translator](http://localhost:4502/libs/cq/i18n/translator.html) which is not available on AEMaaCS.
 
-The [AEM Dictionary Translator](http://localhost:4502/tools/translation/dictionaries.html) is available under `Tools` > `Translation` > `Dictionary`.
+The [AEM Dictionary Translator](http://localhost:4502/tools/translation/dictionaries.html) is available under `Tools` >
+`Translation` > `Dictionary`.
 
 ![Dictionaries](docs/assets/dictionaries.png)
 
 ![Key](docs/assets/key.png)
 
 ## Installation
+
+### System requirements
+
+The minimal required AEM versions are:
+
+| type    | version                       |
+|---------|-------------------------------|
+| AEM 6.5 | 6.5.17                        |
+| AEMaaCS | 2023.1.10912.20230130T173736Z |
+
+The minimal required Java version is `11`.
+
+### Package installation
 
 To deploy the AEM Dictionary Translator as an embedded package you need to update your `pom.xml`
 
@@ -25,7 +39,7 @@ To deploy the AEM Dictionary Translator as an embedded package you need to updat
    <dependency>
      <groupId>be.orbinson.aem</groupId>
      <artifactId>aem-dictionary-translator.all</artifactId>
-     <version><replace with last release version></version>
+     <version><!-- Replace with last released version on Maven Central --></version>
      <type>zip</type>
    </dependency>
    ```
@@ -40,12 +54,15 @@ To deploy the AEM Dictionary Translator as an embedded package you need to updat
       <target>/apps/vendor-packages/content/install</target>
    </embedded>
    ```
-   
-3. Currently, AEMaaCS doesn't allow loading of i18n dictionaries outside `/apps`,  `/libs`, `/content/forms/af` and `/content/dam/formsanddocuments`.
 
-To mitigate this, update the `org.apache.sling.i18n.impl.JcrResourceBundleProvider` OSGi config to allow dictionaries in other folders, for example by using `/content/dictionaries` for all your editable dictionaries.
+3. Currently, AEMaaCS doesn't allow loading of i18n dictionaries outside `/apps`,  `/libs`, `/content/forms/af` and
+   `/content/dam/formsanddocuments`.
+
+To mitigate this, update the `org.apache.sling.i18n.impl.JcrResourceBundleProvider` OSGi config to allow dictionaries in
+other folders, for example by using `/content/dictionaries` for all your editable dictionaries.
 
 Example `org.apache.sling.i18n.impl.JcrResourceBundleProvider` OSGi config:
+
 ```json
 {
   "included.paths": [
@@ -60,6 +77,8 @@ Example `org.apache.sling.i18n.impl.JcrResourceBundleProvider` OSGi config:
 ```
 
 ## Development
+
+If you want to contribute to the project make sure to check the contribution guidelines in [CONTRIBUTING.md](CONTRIBUTING.md).
 
 To build all the modules run in the project root directory the following command
 

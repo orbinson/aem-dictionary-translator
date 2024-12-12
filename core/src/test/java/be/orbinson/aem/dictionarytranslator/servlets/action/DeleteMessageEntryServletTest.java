@@ -3,7 +3,6 @@ package be.orbinson.aem.dictionarytranslator.servlets.action;
 import be.orbinson.aem.dictionarytranslator.services.impl.CombiningMessageEntryResourceProvider;
 import be.orbinson.aem.dictionarytranslator.services.DictionaryService;
 import be.orbinson.aem.dictionarytranslator.services.impl.DictionaryServiceImpl;
-import com.adobe.granite.translation.api.TranslationConfig;
 import com.day.cq.replication.ReplicationActionType;
 import com.day.cq.replication.ReplicationException;
 import com.day.cq.replication.Replicator;
@@ -39,14 +38,10 @@ class DeleteMessageEntryServletTest {
     DictionaryService dictionaryService;
 
     @Mock
-    TranslationConfig translationConfig;
-
-    @Mock
     Replicator replicator;
 
     @BeforeEach
     void beforeEach() {
-        translationConfig = context.registerService(TranslationConfig.class, translationConfig);
         replicator = context.registerService(Replicator.class, replicator);
 
         dictionaryService = context.registerInjectActivateService(new DictionaryServiceImpl());

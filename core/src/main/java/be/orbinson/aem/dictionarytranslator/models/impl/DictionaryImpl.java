@@ -68,7 +68,7 @@ public class DictionaryImpl implements Dictionary {
 
     @Override
     public boolean isEditable() {
-        return resource.getPath().startsWith("/content");
+        return dictionaryService.isEditableDictionary(resource);
     }
 
     @Override
