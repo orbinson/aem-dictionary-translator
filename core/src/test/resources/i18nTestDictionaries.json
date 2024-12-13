@@ -7,6 +7,7 @@
       "jcr:language": "en",
       "jcr:mixinTypes": "mix:language",
       "jcr:primaryType": "sling:Folder",
+      "sling:basename": "/content/dictionaries/basename",
       "hello": {
         "jcr:primaryType": "sling:MessageEntry",
         "sling:key": "hello",

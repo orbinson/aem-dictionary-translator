@@ -637,11 +637,18 @@ Bundle-DocURL:
                 <scope>test</scope>
             </dependency>
             <dependency>
+                <groupId>org.junit.jupiter</groupId>
+                <artifactId>junit-jupiter-params</artifactId>
+                <version>5.14.2</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
                 <groupId>junit-addons</groupId>
                 <artifactId>junit-addons</artifactId>
                 <version>1.4</version>
                 <scope>test</scope>
             </dependency>
+
             <dependency>
                 <groupId>io.wcm</groupId>
                 <artifactId>io.wcm.testing.aem-mock.junit5</artifactId>
