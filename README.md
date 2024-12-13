@@ -98,7 +98,12 @@ guidelines consult the available documentation.
 
 ### UI Tests
 
-First install the `it.content` module to your local AEM instance
+The project contains a set of UI tests with basic coverage for the AEM Dictionary Translator UI.
+
+To run the UI tests, first install the `it.content` module to your local AEM instance.
+Do note that the `it.content` module is not part of the `all` package and that it always needs to be installed separately.
+
+**Warning:** When installing the `it.content` module, some paths will be overwritten like `/apps/wcm/core/resources/languages` and `/etc/replication/agents.author`.
 
 ```shell
 mvn clean install -pl it.content -PautoInstallPackage

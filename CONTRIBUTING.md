@@ -8,6 +8,7 @@ To ensure a smooth collaboration, please follow these guidelines:
 Before starting any work, **create an issue** to discuss your idea or problem. This allows maintainers and the community to provide feedback and avoid duplicated efforts.
 
 ### Issue Guidelines
+
 - Provide a **clear and concise title** for the issue.
 - Include a **detailed description** of the problem or feature request.
 - Suggest a potential **solution or approach** to resolve the issue.
@@ -23,7 +24,7 @@ After your issue is approved, follow these steps to submit a pull request:
 
 1. **Fork the repository** and create a branch for your changes.
 2. **Address the issue** described and follow the coding standards of the project.
-3. **Write or update tests** to ensure your changes are properly covered.
+3. **Write or update tests** to ensure your changes are properly covered. For Java code add a test in the [core](core) module and for the UI add a test in the [ui.tests](ui.tests) module.
 4. Ensure all **quality gates pass** (e.g., linter, formatter, build, tests, etc.).
 5. **Update the [CHANGELOG.md](CHANGELOG.md)** with a brief description of your changes:
    - Include the issue number and a summary of your contribution.
