@@ -46,7 +46,7 @@ public class BreadcrumbsDataSource extends SlingSafeMethodsServlet {
     private void addDictionariesCrumb(@NotNull SlingHttpServletRequest request, List<Resource> syntheticItemResources) {
         ValueMap crumbVM = new ValueMapDecorator(new HashMap<>());
         crumbVM.put("title", "Dictionaries");
-        crumbVM.put("href", "/apps/aem-dictionary-translator/content/dictionaries.html");
+        crumbVM.put("href", "/tools/translation/dictionaries.html");
         syntheticItemResources.add(new ValueMapResource(request.getResourceResolver(), new ResourceMetadata(), "nt:unstructured", crumbVM));
     }
 }

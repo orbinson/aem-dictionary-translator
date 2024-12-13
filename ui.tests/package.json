@@ -1,0 +1,27 @@
+{
+  "name": "ui.tests",
+  "version": "1.0.0",
+  "scripts": {
+    "codegen": "playwright codegen",
+    "lint": "eslint . --ignore-pattern 'playwright-report/*'",
+    "lint:fix": "eslint --fix . --ignore-pattern 'playwright-report/*'",
+    "test": "playwright test",
+    "test:ui": "playwright test --ui",
+    "test:debug": "playwright test --debug",
+    "show-report": "playwright show-report"
+  },
+  "devDependencies": {
+    "@eslint/js": "9.16.0",
+    "@playwright/test": "1.49.0",
+    "@types/node": "22.10.1",
+    "eslint": "9.16.0",
+    "globals": "15.13.0",
+    "playwright-ctrf-json-reporter": "^0.0.18",
+    "typescript": "5.7.2",
+    "typescript-eslint": "8.18.0"
+  },
+  "engines": {
+    "npm": ">=10.9.0",
+    "node": ">=22.11.0"
+  }
+}

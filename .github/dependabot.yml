@@ -1,11 +1,19 @@
 version: 2
 updates:
   - package-ecosystem: "maven"
-    directory: "/" # Location of package manifests
+    directory: "/"
     schedule:
-      interval: "daily"
+      interval: "weekly"
     ignore:
       - dependency-name: "io.wcm.maven:io.wcm.maven.aem-dependencies"
         versions: [ "[6.5.17,)" ]
       - dependency-name: "biz.aQute.bnd:bnd-maven-plugin"
         update-types: [ "version-update:semver-major" ]
+  - package-ecosystem: "npm"
+    directory: "/ui.tests"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"

@@ -101,10 +101,10 @@
                         sling:resourceType="granite/ui/components/coral/foundation/collection/action"
                         action="foundation.dialog"
                         activeCondition="aem-dictionary-translator.dictionary.editable"
-                        command="c"
+                        command="a"
                         icon="book"
                         variant="actionBar"
-                        text="Create Language">
+                        text="Add Language">
                     <data jcr:primaryType="nt:unstructured"
                           src.uritemplate="/apps/aem-dictionary-translator/content/granite/dialog/dictionary/language/create.html{+item}"/>
                 </create-language>
@@ -115,10 +115,23 @@
                         activeCondition="aem-dictionary-translator.dictionary.editable"
                         icon="deleteOutline"
                         variant="actionBar"
-                        text="Delete Language">
+                        text="Remove Language"
+                        command="r">
                     <data jcr:primaryType="nt:unstructured"
                           src.uritemplate="/apps/aem-dictionary-translator/content/granite/dialog/dictionary/language/delete.html{+item}"/>
                 </delete-language>
+                <delete
+                        jcr:primaryType="nt:unstructured"
+                        sling:resourceType="granite/ui/components/coral/foundation/collection/action"
+                        action="foundation.dialog"
+                        actionConfigName="granite/ui/shell/actions/delete"
+                        activeCondition="aem-dictionary-translator.dictionary.editable"
+                        icon="delete"
+                        variant="actionBar"
+                        text="Delete">
+                    <data jcr:primaryType="nt:unstructured"
+                          src.uritemplate="/apps/aem-dictionary-translator/content/granite/dialog/dictionary/delete.html{?item*}"/>
+                </delete>
                 <import
                         jcr:primaryType="nt:unstructured"
                         sling:resourceType="granite/ui/components/coral/foundation/collection/action"
@@ -144,18 +157,6 @@
                     <data jcr:primaryType="nt:unstructured"
                           src.uritemplate="/apps/aem-dictionary-translator/content/granite/dialog/dictionary/export.html?dictionary={+item}"/>
                 </export>
-                <delete
-                        jcr:primaryType="nt:unstructured"
-                        sling:resourceType="granite/ui/components/coral/foundation/collection/action"
-                        action="foundation.dialog"
-                        actionConfigName="granite/ui/shell/actions/delete"
-                        activeCondition="aem-dictionary-translator.dictionary.editable"
-                        icon="delete"
-                        variant="actionBar"
-                        text="Delete">
-                    <data jcr:primaryType="nt:unstructured"
-                          src.uritemplate="/apps/aem-dictionary-translator/content/granite/dialog/dictionary/delete.html{?item*}"/>
-                </delete>
             </selection>
         </actions>
         <views jcr:primaryType="nt:unstructured">
