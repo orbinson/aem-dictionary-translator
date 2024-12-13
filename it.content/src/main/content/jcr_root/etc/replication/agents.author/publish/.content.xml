@@ -12,7 +12,7 @@
             logLevel="info"
             retryDelay="60000"
             serializationType="durbo"
-            transportUri="http://host:port/bin/receive?sling:authRequestLogin=1"
+            transportUri="http://disabled-for-it-test/bin/receive?sling:authRequestLogin=1"
             transportUser="replication-receiver"
             userId="admin"/>
 </jcr:root>
