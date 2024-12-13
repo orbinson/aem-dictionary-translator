@@ -33,12 +33,12 @@ test("Create new key", async ({ page }) => {
     await page.getByLabel("English (en)").fill("Another One");
 
     // submit the form and wait for the page to reload
-    await Promise.all([
-        page.getByRole("button", { name: "Create" }).click(),
-        page.waitForURL("/tools/translation/dictionaries/message-entries.html/content/dictionaries/fruit/i18n")
-    ]);
+    await page.getByRole("button", { name: "Create" }).click();
 
-    await page.waitForEvent("domcontentloaded");
+    // wait until the async replication is handled
+    await page.waitForEvent("requestfinished", {
+        predicate: request => request.url().endsWith("?dictionary=/content/dictionaries/fruit/i18n") && request.method() === "POST"
+    });
 
     // check if the new key is visible in the table
     await expect(page.getByRole("gridcell", { name: "another", exact: true })).toBeVisible();
