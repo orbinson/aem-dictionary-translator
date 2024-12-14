@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<workspaceFilter version="1.0">
+    <filter root="/apps/aem-dictionary-translator-it-content"/>
+    <filter root="/apps/wcm/core/resources/languages"/>
+    <filter root="/content/dictionaries"/>
+    <filter root="/etc/replication/agents.author/publish"/>
+    <filter root="/etc/replication/agents.author/preview"/>
+</workspaceFilter>

@@ -1,9 +1,59 @@
 name: Build
 
-on: [ push, pull_request ]
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
-  call-workflow:
+  aem-maven-build:
+    name: Call workflow
     uses: orbinson/workflows/.github/workflows/aem-maven-build.yml@main
     with:
       java-version: 11
+
+  ui-tests:
+    name: Run UI tests
+    runs-on: ubuntu-latest
+    needs: aem-maven-build
+    services:
+      aem-author:
+        image: ghcr.io/orbinson/aem-sdk:author-2024.10.18459.20241031T210302Z-241000
+        ports:
+          - 4502:4502
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: zulu
+          java-version: 11
+          cache: maven
+      - name: Get Playwright version from package-lock.json
+        run: echo "PLAYWRIGHT_VERSION=$(jq -r '.packages["node_modules/playwright-core"].version' ui.tests/package-lock.json)" >> $GITHUB_ENV
+      - name: Cache Playwright binaries
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ env.PLAYWRIGHT_VERSION }}
+      - name: Install all package
+        run: mvn install -B -U -PautoInstallSinglePackage
+      - name: Install it.content package
+        run: mvn install -B -U -PautoInstallPackage -pl it.content
+      - name: Run ui.tests
+        run: mvn test -B -pl ui.tests -DskipTests=false
+      - name: Publish Playwright test results
+        run: |
+          npx github-actions-ctrf --pull-request --annotate ui.tests/ctrf/ctrf-report.json
+        env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload Playwright HTML report
+        uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report
+          path: ui.tests/playwright-report

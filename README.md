@@ -18,14 +18,14 @@ The [AEM Dictionary Translator](http://localhost:4502/tools/translation/dictiona
 
 ## Installation
 
-### System requirements
+### Compatibility matrix
 
-The minimal required AEM versions are:
+The minimal required AEM and AEM Dictionary Translator versions are:
 
-| type    | version                       |
-|---------|-------------------------------|
-| AEM 6.5 | 6.5.17                        |
-| AEMaaCS | 2023.1.10912.20230130T173736Z |
+| AEM Type | AEM version                     | AEM Dictionary Translator |
+|----------|---------------------------------|----------------------|
+| AEM 6.5  | `6.5.17`                        | `1.3.0`              |
+| AEMaaCS  | `2023.1.10912.20230130T173736Z` | `1.0.0`              |
 
 The minimal required Java version is `11`.
 
@@ -61,7 +61,7 @@ To deploy the AEM Dictionary Translator as an embedded package you need to updat
 To mitigate this, update the `org.apache.sling.i18n.impl.JcrResourceBundleProvider` OSGi config to allow dictionaries in
 other folders, for example by using `/content/dictionaries` for all your editable dictionaries.
 
-Example `org.apache.sling.i18n.impl.JcrResourceBundleProvider` OSGi config:
+Example `org.apache.sling.i18n.impl.JcrResourceBundleProvider` OSGi config
 
 ```json
 {
@@ -95,3 +95,22 @@ mvn clean install -PautoInstallSinglePackage
 
 This project follows the [AEM Archetype](https://github.com/adobe/aem-project-archetype) conventions so for further
 guidelines consult the available documentation.
+
+### UI Tests
+
+The project contains a set of UI tests with basic coverage for the AEM Dictionary Translator UI.
+
+To run the UI tests, first install the `it.content` module to your local AEM instance.
+Do note that the `it.content` module is not part of the `all` package and that it always needs to be installed separately.
+
+**Warning:** When installing the `it.content` module, some paths will be overwritten like `/apps/wcm/core/resources/languages` and `/etc/replication/agents.author`.
+
+```shell
+mvn clean install -pl it.content -PautoInstallPackage
+```
+
+Afterward run the UI tests with the following command
+
+```shell
+mvn clean test -pl ui.tests -DskipTests=false
+```
