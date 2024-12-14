@@ -23,20 +23,11 @@ import java.util.List;
         adapters = be.orbinson.aem.dictionarytranslator.models.Dictionary.class
 )
 public class DictionaryImpl implements Dictionary {
-
     @SlingObject
     private SlingHttpServletRequest request;
 
     @SlingObject
     private Resource resource;
-
-    @ValueMapValue(injectionStrategy = InjectionStrategy.OPTIONAL)
-    @Named("jcr:created")
-    private Calendar created;
-
-    @ValueMapValue(injectionStrategy = InjectionStrategy.OPTIONAL)
-    @Named("jcr:lastModified")
-    private Calendar lastModified;
 
     @OSGiService
     private DictionaryService dictionaryService;
@@ -44,21 +35,6 @@ public class DictionaryImpl implements Dictionary {
     @Override
     public String getLanguageList() {
         return String.join(", ", this.getLanguages());
-    }
-
-    private String getDateString(Date date) {
-        DateFormat formatter = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.MEDIUM, request.getLocale());
-        return formatter.format(date);
-    }
-
-    @Override
-    public String getLastModifiedFormatted() {
-        return getDateString(getLastModified().getTime());
-    }
-
-    @Override
-    public Calendar getLastModified() {
-        return lastModified == null ? getCreated() : lastModified;
     }
 
     @Override
@@ -74,11 +50,6 @@ public class DictionaryImpl implements Dictionary {
     @Override
     public @NotNull Resource getResource() {
         return resource;
-    }
-
-    @Override
-    public @Nullable Calendar getCreated() {
-        return created;
     }
 
     @Override

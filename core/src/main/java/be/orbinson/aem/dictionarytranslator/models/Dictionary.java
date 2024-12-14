@@ -8,15 +8,9 @@ import java.util.List;
 public interface Dictionary {
     Resource getResource();
 
-    Calendar getCreated();
-
     String getLanguageList();
 
-    String getLastModifiedFormatted();
-
     String getBasename();
-
-    Calendar getLastModified();
 
     List<String> getLanguages();
 
