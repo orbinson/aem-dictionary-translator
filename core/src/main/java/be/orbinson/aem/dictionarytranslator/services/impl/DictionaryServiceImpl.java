@@ -26,7 +26,6 @@ import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.security.AccessControlManager;
 import javax.jcr.security.Privilege;
@@ -95,11 +94,6 @@ public class DictionaryServiceImpl implements DictionaryService {
         LOG.debug("Add language '{}' to dictionary '{}' with properties '{}'", language, dictionary, properties);
         resourceResolver.create(dictionary, language, properties);
         resourceResolver.commit();
-    }
-
-    private ResourceResolver getServiceResourceResolver() throws LoginException {
-        Map<String, Object> authenticationInfo = Map.of(ResourceResolverFactory.SUBSERVICE, "dictionary-service");
-        return resourceResolverFactory.getServiceResourceResolver(authenticationInfo);
     }
 
     public @NotNull List<Resource> getDictionaries(ResourceResolver resourceResolver) {
@@ -248,7 +242,7 @@ public class DictionaryServiceImpl implements DictionaryService {
     }
 
     @Override
-    public void updateMessageEntry(ResourceResolver resourceResolver, Resource dictionaryResource, String language, String key, String message) throws PersistenceException, RepositoryException {
+    public void updateMessageEntry(ResourceResolver resourceResolver, Resource dictionaryResource, String language, String key, String message) throws PersistenceException {
         Resource languageResource = getLanguageResource(dictionaryResource, language);
         if (languageResource != null) {
             Resource messageEntryResource = getOrCreateMessageEntryResource(resourceResolver, languageResource, key);
@@ -301,17 +295,15 @@ public class DictionaryServiceImpl implements DictionaryService {
             }
             resourceResolver.commit();
         }
-
     }
 
-    private Resource getOrCreateMessageEntryResource(ResourceResolver resourceResolver, Resource languageResource, String key) throws RepositoryException {
+    private Resource getOrCreateMessageEntryResource(ResourceResolver resourceResolver, Resource languageResource, String key) throws PersistenceException {
         Resource messageEntryResource = getMessageEntryResource(languageResource, key);
         if (messageEntryResource != null) {
             return messageEntryResource;
         }
-        Session session = resourceResolver.adaptTo(Session.class);
-        JcrUtil.createPath(languageResource.getPath() + "/" + Text.escapeIllegalJcrChars(key), SLING_MESSAGEENTRY, session);
-        session.save();
+        resourceResolver.create(languageResource, Text.escapeIllegalJcrChars(key), Map.of("jcr:primaryType", SLING_MESSAGEENTRY));
+        resourceResolver.commit();
         return languageResource.getChild(Text.escapeIllegalJcrChars(key));
     }
 
