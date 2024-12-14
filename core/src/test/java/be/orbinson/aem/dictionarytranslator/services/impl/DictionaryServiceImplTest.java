@@ -44,9 +44,6 @@ class DictionaryServiceImplTest {
     @Mock
     Replicator replicator;
 
-    @Mock
-    Session session;
-
     @BeforeEach
     void setup() {
         replicator = context.registerService(Replicator.class, replicator);
