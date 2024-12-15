@@ -48,7 +48,7 @@ jobs:
         run: mvn test -B -pl ui.tests -DskipTests=false
       - name: Publish Playwright test results
         run: |
-          npx github-actions-ctrf --pull-request --annotate ui.tests/ctrf/ctrf-report.json
+          npx github-actions-ctrf --pull-request --annotate --on-fail-only ui.tests/ctrf/ctrf-report.json
         env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Upload Playwright HTML report
