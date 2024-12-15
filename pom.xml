@@ -122,12 +122,12 @@
                         <configuration>
                             <rules>
                                 <requireMavenVersion>
-                                    <message>Maven version should be 3.3.9+</message>
+                                    <message>Maven version must be 3.3.9 or higher</message>
                                     <version>[3.3.9,)</version>
                                 </requireMavenVersion>
                                 <requireJavaVersion>
-                                    <message>Maven must be executed with a JDK 11</message>
-                                    <version>[11,18)</version>
+                                    <message>Maven must be executed with JDK 11, 17 or 21</message>
+                                    <version>[11,22)</version>
                                 </requireJavaVersion>
                             </rules>
                         </configuration>
