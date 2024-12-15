@@ -74,7 +74,7 @@ public class ImportDictionaryServlet extends SlingAllMethodsServlet {
         try (CSVParser csvParser = CSVParser.parse(result, format)) {
             Map<String, Integer> headers = csvParser.getHeaderMap();
 
-            validateCsvHeaders(response, headers);
+            validateCsvHeaders(headers);
 
             headers.remove(KEY_HEADER);
             Resource dictionaryResource = resourceResolver.getResource(dictionaryPath);
@@ -82,8 +82,8 @@ public class ImportDictionaryServlet extends SlingAllMethodsServlet {
                 List<String> knownLanguages = dictionaryService.getLanguages(dictionaryResource);
                 initializeLanguageData(headers, languages, translations, knownLanguages);
 
-                for (CSVRecord record : csvParser) {
-                    processCsvRecord(dictionaryResource, languages, resourceResolver, keys, translations, record);
+                for (CSVRecord csvRecord : csvParser) {
+                    processCsvRecord(dictionaryResource, languages, resourceResolver, keys, translations, csvRecord);
                 }
 
                 resourceResolver.commit();
@@ -101,7 +101,7 @@ public class ImportDictionaryServlet extends SlingAllMethodsServlet {
         }
     }
 
-    private void validateCsvHeaders(SlingHttpServletResponse response, Map<String, Integer> headers) throws IOException {
+    private void validateCsvHeaders(Map<String, Integer> headers) throws IOException {
         if (!headers.containsKey(KEY_HEADER) || headers.get(KEY_HEADER) != 0) {
             throw new IOException(MessageFormat.format("Invalid CSV file. The first column must be {0}. The Delimiter should be ',' or ';'.", KEY_HEADER));
         }
@@ -125,17 +125,17 @@ public class ImportDictionaryServlet extends SlingAllMethodsServlet {
         }
     }
 
-    private void processCsvRecord(Resource dictionaryResource, List<String> languages, ResourceResolver resourceResolver, List<String> keys, List<List<String>> translations, CSVRecord record) throws IOException, RepositoryException {
-        if (record.size() != languages.size() + 1) {
-            throw new IOException("Record has an incorrect number of translations: " + record);
+    private void processCsvRecord(Resource dictionaryResource, List<String> languages, ResourceResolver resourceResolver, List<String> keys, List<List<String>> translations, CSVRecord csvRecord) throws IOException, RepositoryException {
+        if (csvRecord.size() != languages.size() + 1) {
+            throw new IOException("Record has an incorrect number of translations: " + csvRecord);
         }
 
-        String key = record.get(KEY_HEADER);
+        String key = csvRecord.get(KEY_HEADER);
         keys.add(key);
 
         for (String language : languages) {
             int index = languages.indexOf(language);
-            String translation = record.get(language);
+            String translation = csvRecord.get(language);
             translations.get(index).add(translation);
 
             createOrUpdateMessageEntryResource(dictionaryResource, resourceResolver, language, key, translation);
