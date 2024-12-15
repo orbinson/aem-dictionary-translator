@@ -28,7 +28,7 @@ class ImportDictionaryServletTest {
 
     private ImportDictionaryServlet importTranslation;
 
-    private AemContext context = new AemContext();
+    private final AemContext context = new AemContext();
 
     @BeforeEach
     void setUp() {

@@ -1,7 +1,7 @@
 package be.orbinson.aem.dictionarytranslator.servlets.action;
 
-import be.orbinson.aem.dictionarytranslator.services.impl.CombiningMessageEntryResourceProvider;
 import be.orbinson.aem.dictionarytranslator.services.DictionaryService;
+import be.orbinson.aem.dictionarytranslator.services.impl.CombiningMessageEntryResourceProvider;
 import be.orbinson.aem.dictionarytranslator.services.impl.DictionaryServiceImpl;
 import com.day.cq.replication.ReplicationActionType;
 import com.day.cq.replication.ReplicationException;
@@ -21,7 +21,9 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
@@ -76,17 +78,17 @@ class DeleteMessageEntryServletTest {
         context.create().resource("/content/dictionaries/i18n/en/appel");
         context.create().resource("/content/dictionaries/i18n/fr/appel");
         context.create().resource("/mnt/dictionaries/content/dictionaries/i18n/appel",
-                CombiningMessageEntryResourceProvider.MESSAGE_ENTRY_PATHS, new String[] {"/content/dictionaries/i18n/en/appel", "/content/dictionaries/i18n/fr/appel"});
+                CombiningMessageEntryResourceProvider.MESSAGE_ENTRY_PATHS, new String[]{"/content/dictionaries/i18n/en/appel", "/content/dictionaries/i18n/fr/appel"});
 
         context.create().resource("/content/dictionaries/i18n/en/peer");
         context.create().resource("/content/dictionaries/i18n/fr/peer");
         context.create().resource("/mnt/dictionaries/content/dictionaries/i18n/peer",
-                CombiningMessageEntryResourceProvider.MESSAGE_ENTRY_PATHS, new String[] {"/content/dictionaries/i18n/en/peer", "/content/dictionaries/i18n/fr/peer"});
+                CombiningMessageEntryResourceProvider.MESSAGE_ENTRY_PATHS, new String[]{"/content/dictionaries/i18n/en/peer", "/content/dictionaries/i18n/fr/peer"});
 
         context.create().resource("/content/dictionaries/i18n/en/framboos");
         context.create().resource("/content/dictionaries/i18n/fr/framboos");
         context.create().resource("/mnt/dictionaries/content/dictionaries/i18n/framboos",
-                CombiningMessageEntryResourceProvider.MESSAGE_ENTRY_PATHS, new String[] {"/content/dictionaries/i18n/en/framboos", "/content/dictionaries/i18n/fr/framboos"});
+                CombiningMessageEntryResourceProvider.MESSAGE_ENTRY_PATHS, new String[]{"/content/dictionaries/i18n/en/framboos", "/content/dictionaries/i18n/fr/framboos"});
 
         context.request().setMethod("POST");
         context.request().setParameterMap(Map.of(
@@ -110,17 +112,17 @@ class DeleteMessageEntryServletTest {
         context.create().resource("/content/dictionaries/i18n/en/appel");
         context.create().resource("/content/dictionaries/i18n/fr/appel");
         context.create().resource("/mnt/dictionaries/content/dictionaries/i18n/appel",
-                CombiningMessageEntryResourceProvider.MESSAGE_ENTRY_PATHS, new String[] {"/content/dictionaries/i18n/en/appel", "/content/dictionaries/i18n/fr/appel"});
+                CombiningMessageEntryResourceProvider.MESSAGE_ENTRY_PATHS, new String[]{"/content/dictionaries/i18n/en/appel", "/content/dictionaries/i18n/fr/appel"});
 
         context.create().resource("/content/dictionaries/i18n/en/peer");
         context.create().resource("/content/dictionaries/i18n/fr/peer");
         context.create().resource("/mnt/dictionaries/content/dictionaries/i18n/peer",
-                CombiningMessageEntryResourceProvider.MESSAGE_ENTRY_PATHS, new String[] {"/content/dictionaries/i18n/en/peer", "/content/dictionaries/i18n/fr/peer"});
+                CombiningMessageEntryResourceProvider.MESSAGE_ENTRY_PATHS, new String[]{"/content/dictionaries/i18n/en/peer", "/content/dictionaries/i18n/fr/peer"});
 
         context.create().resource("/content/dictionaries/i18n/en/framboos");
         context.create().resource("/content/dictionaries/i18n/fr/framboos");
         context.create().resource("/mnt/dictionaries/content/dictionaries/i18n/framboos",
-                CombiningMessageEntryResourceProvider.MESSAGE_ENTRY_PATHS, new String[] {"/content/dictionaries/i18n/en/framboos", "/content/dictionaries/i18n/fr/framboos"});
+                CombiningMessageEntryResourceProvider.MESSAGE_ENTRY_PATHS, new String[]{"/content/dictionaries/i18n/en/framboos", "/content/dictionaries/i18n/fr/framboos"});
 
         context.request().setMethod("POST");
         context.request().setParameterMap(Map.of(
