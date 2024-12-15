@@ -2,6 +2,7 @@ package be.orbinson.aem.dictionarytranslator.services.impl;
 
 import be.orbinson.aem.dictionarytranslator.exception.DictionaryException;
 import be.orbinson.aem.dictionarytranslator.models.Dictionary;
+import be.orbinson.aem.dictionarytranslator.models.impl.DictionaryImpl;
 import be.orbinson.aem.dictionarytranslator.services.DictionaryService;
 import com.day.cq.replication.ReplicationActionType;
 import com.day.cq.replication.ReplicationException;
@@ -11,6 +12,7 @@ import io.wcm.testing.mock.aem.junit5.AemContextExtension;
 import org.apache.sling.api.resource.PersistenceException;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
+import org.apache.sling.models.factory.ModelFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,7 +20,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import javax.jcr.RepositoryException;
-import javax.jcr.Session;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -41,11 +42,15 @@ class DictionaryServiceImplTest {
 
     DictionaryService dictionaryService;
 
+    ModelFactory modelFactory;
+
     @Mock
     Replicator replicator;
 
     @BeforeEach
     void setup() {
+        context.addModelsForClasses(DictionaryImpl.class);
+
         replicator = context.registerService(Replicator.class, replicator);
         dictionaryService = context.registerInjectActivateService(new DictionaryServiceImpl());
 
@@ -87,7 +92,7 @@ class DictionaryServiceImplTest {
     }
 
     @Test
-    void dictionaryServiceShouldAddCorrectBasenameIfEmptry() throws PersistenceException {
+    void dictionaryServiceShouldAddCorrectBasenameIfEmpty() throws PersistenceException {
         Resource dictionaryResource = context.currentResource("/content/dictionaries/fruit/i18n");
 
         dictionaryService.addLanguage(dictionaryResource, "fr", "");
