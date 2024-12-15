@@ -14,7 +14,6 @@ import org.apache.sling.api.resource.ModifiableValueMap;
 import org.apache.sling.api.resource.PersistenceException;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
-import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.apache.sling.api.resource.ResourceUtil;
 import org.apache.sling.api.resource.ValueMap;
 import org.apache.sling.jcr.resource.api.JcrResourceConstants;
@@ -49,9 +48,6 @@ public class DictionaryServiceImpl implements DictionaryService {
 
     private static final Logger LOG = LoggerFactory.getLogger(DictionaryServiceImpl.class);
     private static final String SLING_BASENAME = "sling:basename";
-
-    @Reference
-    private ResourceResolverFactory resourceResolverFactory;
 
     @Reference
     private Replicator replicator;
