@@ -26,9 +26,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 @Disabled("Update to use dictionary service")
 class ImportDictionaryServletTest {
 
-    private ImportDictionaryServlet importTranslation;
-
     private final AemContext context = new AemContext();
+    private ImportDictionaryServlet importTranslation;
 
     @BeforeEach
     void setUp() {

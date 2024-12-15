@@ -42,6 +42,39 @@
             }
           }
         }
+      },
+      "dictionaries": {
+        "jcr:primaryType": "cq:Page",
+        "message-entries": {
+          "jcr:primaryType": "cq:Page",
+          "jcr:content": {
+            "jcr:primaryType": "nt:unstructured",
+            "actions": {
+              "jcr:primaryType": "nt:unstructured",
+              "primary": {
+                "jcr:primaryType": "nt:unstructured",
+                "create-key": {
+                  "jcr:primaryType": "nt:unstructured",
+                  "action": "foundation.dialog",
+                  "target": "#key-list",
+                  "icon": "add",
+                  "text": "Create Key",
+                  "variant": "primary",
+                  "sling:resourceType": "granite/ui/components/coral/foundation/collection/action",
+                  "data": {
+                    "jcr:primaryType": "nt:unstructured",
+                    "src.uritemplate": "/apps/aem-dictionary-translator/content/granite/dialog/dictionary/key/create.html${requestPathInfo.suffix}"
+                  },
+                  "granite:rendercondition": {
+                    "jcr:primaryType": "nt:unstructured",
+                    "path": "${requestPathInfo.suffix}",
+                    "sling:resourceType": "aem-dictionary-translator/components/rendercondition/editable-dictionary"
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     }
   }
