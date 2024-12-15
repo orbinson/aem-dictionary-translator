@@ -111,10 +111,8 @@ public class LanguageDatasource extends SlingSafeMethodsServlet {
                     } else {
                         return ValueTextResource.create(request.getLocale(), request.getResourceResolver(), e.getKey(), e.getValue());
                     }
-                })
-                .collect(Collectors.toList());
+                }).sorted().collect(Collectors.toList());
         // sort by display names
-        Collections.sort(resourceList);
         // create data source (only accepts iterator over Resource, not of subclasses so we need to transform)
         DataSource dataSource = new SimpleDataSource(new TransformIterator<>(resourceList.iterator(), r -> (Resource) r));
         request.setAttribute(DataSource.class.getName(), dataSource);
