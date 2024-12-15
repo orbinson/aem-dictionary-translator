@@ -13,7 +13,7 @@ jobs:
     name: Call workflow
     uses: orbinson/workflows/.github/workflows/aem-maven-build.yml@main
     with:
-      java-version: 11
+      java-version: 17
 
   ui-tests:
     name: Run UI tests
@@ -31,7 +31,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: zulu
-          java-version: 11
+          java-version: 17
           cache: maven
       - name: Get Playwright version from package-lock.json
         run: echo "PLAYWRIGHT_VERSION=$(jq -r '.packages["node_modules/playwright-core"].version' ui.tests/package-lock.json)" >> $GITHUB_ENV

@@ -89,7 +89,7 @@
         <sonar.projectKey>${sonar.organization}_${project.artifactId}</sonar.projectKey>
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
         <sonar.coverage.jacoco.xmlReportPaths>
-            ${project.basedir}/report-aggregate/target/site/jacoco-aggregate/jacoco.xml
+            ${project.basedir}/target/site/jacoco-aggregate/jacoco.xml
         </sonar.coverage.jacoco.xmlReportPaths>
     </properties>
 
@@ -127,7 +127,7 @@
                                 </requireMavenVersion>
                                 <requireJavaVersion>
                                     <message>Maven must be executed with a JDK 11</message>
-                                    <version>[11,12)</version>
+                                    <version>[11,18)</version>
                                 </requireJavaVersion>
                             </rules>
                         </configuration>
