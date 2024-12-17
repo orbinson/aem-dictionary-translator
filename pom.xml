@@ -686,7 +686,8 @@ Bundle-DocURL:
             <dependency>
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-csv</artifactId>
-                <version>1.12.0</version>
+                <!-- Highest version compatible with commons-io 2.11.0 in uber-jar -->
+                <version>1.10.0</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
