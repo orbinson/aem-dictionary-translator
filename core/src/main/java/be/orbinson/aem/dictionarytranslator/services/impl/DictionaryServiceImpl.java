@@ -243,20 +243,24 @@ public class DictionaryServiceImpl implements DictionaryService {
         if (languageResource != null) {
             Resource messageEntryResource = getOrCreateMessageEntryResource(resourceResolver, languageResource, key);
             if (messageEntryResource != null) {
-                ValueMap valueMap = messageEntryResource.adaptTo(ModifiableValueMap.class);
-                if (valueMap != null) {
-                    if (message.isBlank()) {
-                        valueMap.remove(SLING_MESSAGE);
-                    } else {
-                        valueMap.put(SLING_MESSAGE, message);
-                        if (StringUtils.isNotBlank(key)) {
-                            valueMap.putIfAbsent(SLING_KEY, key);
-                        }
-                        LOG.trace("Updated message entry with name '{}' and message '{}' on path '{}'", messageEntryResource.getName(), message, messageEntryResource.getPath());
-                    }
-                }
+                updateMessage(key, message, messageEntryResource);
             }
             resourceResolver.commit();
+        }
+    }
+
+    private static void updateMessage(String key, String message, Resource messageEntryResource) {
+        ValueMap valueMap = messageEntryResource.adaptTo(ModifiableValueMap.class);
+        if (valueMap != null) {
+            if (message.isBlank()) {
+                valueMap.remove(SLING_MESSAGE);
+            } else {
+                valueMap.put(SLING_MESSAGE, message);
+                if (StringUtils.isNotBlank(key)) {
+                    valueMap.putIfAbsent(SLING_KEY, key);
+                }
+                LOG.trace("Updated message entry with name '{}' and message '{}' on path '{}'", messageEntryResource.getName(), message, messageEntryResource.getPath());
+            }
         }
     }
 
