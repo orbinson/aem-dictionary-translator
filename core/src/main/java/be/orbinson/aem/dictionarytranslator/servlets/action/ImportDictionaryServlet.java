@@ -14,6 +14,7 @@ import org.apache.sling.api.servlets.SlingAllMethodsServlet;
 import org.apache.sling.servlets.annotations.SlingServletResourceTypes;
 import org.apache.sling.servlets.post.HtmlResponse;
 import org.apache.tika.io.IOUtils;
+import org.jetbrains.annotations.NotNull;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
@@ -42,13 +43,13 @@ public class ImportDictionaryServlet extends SlingAllMethodsServlet {
     private DictionaryService dictionaryService;
 
     @Override
-    public void doPost(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
+    public void doPost(SlingHttpServletRequest request, @NotNull SlingHttpServletResponse response) throws IOException {
         String dictionaryPath = request.getParameter("dictionary");
         RequestParameter csvfile = request.getRequestParameter("csvfile");
 
         if (csvfile != null) {
             try {
-                processCsvFile(request, response, dictionaryPath, csvfile.getInputStream());
+                processCsvFile(request, dictionaryPath, csvfile.getInputStream());
             } catch (IOException | RepositoryException e) {
                 HtmlResponse htmlResponse = new HtmlResponse();
                 htmlResponse.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error while importing CSV file: " + e.getMessage());
@@ -57,7 +58,7 @@ public class ImportDictionaryServlet extends SlingAllMethodsServlet {
         }
     }
 
-    private void processCsvFile(SlingHttpServletRequest request, SlingHttpServletResponse response, String dictionaryPath, InputStream csvContent) throws IOException, RepositoryException {
+    private void processCsvFile(SlingHttpServletRequest request, String dictionaryPath, InputStream csvContent) throws IOException, RepositoryException {
         List<String> languages = new ArrayList<>();
         List<String> keys = new ArrayList<>();
         List<List<String>> translations = new ArrayList<>();

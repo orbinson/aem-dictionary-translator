@@ -24,9 +24,6 @@ import java.util.List;
 )
 public class DictionaryImpl implements Dictionary {
     @SlingObject
-    private SlingHttpServletRequest request;
-
-    @SlingObject
     private Resource resource;
 
     @OSGiService

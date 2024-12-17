@@ -12,14 +12,19 @@ import io.wcm.testing.mock.aem.junit5.AemContextExtension;
 import org.apache.sling.api.resource.PersistenceException;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
-import org.apache.sling.models.factory.ModelFactory;
+import org.apache.sling.testing.mock.jcr.MockJcr;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import javax.jcr.RepositoryException;
+import javax.jcr.Session;
+import javax.jcr.security.AccessControlManager;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -31,9 +36,11 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith({AemContextExtension.class, MockitoExtension.class})
 class DictionaryServiceImplTest {
@@ -41,8 +48,6 @@ class DictionaryServiceImplTest {
     private final AemContext context = new AemContext();
 
     DictionaryService dictionaryService;
-
-    ModelFactory modelFactory;
 
     @Mock
     Replicator replicator;
@@ -73,6 +78,34 @@ class DictionaryServiceImplTest {
         assertEquals(2, dictionaries.size());
         assertEquals("/content/dictionaries/fruit/i18n", dictionaries.get(0).getPath());
         assertEquals("/content/dictionaries/vegetables/i18n", dictionaries.get(1).getPath());
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void dictionaryShouldBeEditableWhenPriviledgesAreFullfilled(boolean hasPrivileges) throws RepositoryException {
+        Session session = MockJcr.newSession();
+        context.registerAdapter(ResourceResolver.class, Session.class, session);
+        AccessControlManager acm = Mockito.mock(AccessControlManager.class);
+        MockJcr.setAccessControlManager(session, acm);
+        when(acm.hasPrivileges(anyString(), any())).thenReturn(hasPrivileges);
+
+        context.currentResource("/content/dictionaries/fruit/i18n");
+
+        assertEquals(hasPrivileges, dictionaryService.isEditableDictionary(context.currentResource()));
+    }
+
+    @Test
+    void dictionaryShouldNotBeEditableWhenPrivilegesCanNotBeDetermined() throws RepositoryException {
+        Session session = MockJcr.newSession();
+        context.registerAdapter(ResourceResolver.class, Session.class, session);
+        AccessControlManager acm = Mockito.mock(AccessControlManager.class);
+        MockJcr.setAccessControlManager(session, acm);
+
+        doThrow(new RepositoryException("Failed to determine privileges")).when(acm).hasPrivileges(anyString(), any());
+
+        context.currentResource("/content/dictionaries/fruit/i18n");
+
+        assertFalse(dictionaryService.isEditableDictionary(context.currentResource()));
     }
 
     @Test
@@ -122,6 +155,15 @@ class DictionaryServiceImplTest {
         dictionaryService.deleteDictionary(context.resourceResolver(), "/content/dictionaries/fruit/i18n");
 
         assertNull(context.resourceResolver().getResource("/content/dictionaries/fruit/i18n"));
+    }
+
+    @Test
+    void replicationExceptionOnDeletingDictionaryShouldThrowNewException() throws ReplicationException {
+        doThrow(new ReplicationException("Replication failed")).when(replicator).replicate(any(), any(), any());
+
+        assertThrows(DictionaryException.class, () -> {
+            dictionaryService.deleteDictionary(context.resourceResolver(), "/content/dictionaries/fruit/i18n");
+        });
     }
 
     @Test

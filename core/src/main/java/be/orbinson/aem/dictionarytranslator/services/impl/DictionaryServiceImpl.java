@@ -24,6 +24,7 @@ import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.security.AccessControlManager;
 import javax.jcr.security.Privilege;
@@ -64,7 +65,7 @@ public class DictionaryServiceImpl implements DictionaryService {
                         accessControlManager.privilegeFromName("crx:replicate")
                 };
                 return accessControlManager.hasPrivileges(path, privileges);
-            } catch (Exception e) {
+            } catch (RepositoryException e) {
                 return false;
             }
         }
@@ -125,7 +126,7 @@ public class DictionaryServiceImpl implements DictionaryService {
                 throw new DictionaryException("Dictionary '" + dictionaryPath + "' not found");
             }
         } catch (PersistenceException | ReplicationException e) {
-            throw new DictionaryException("Could not delete dictionary: " + e.getMessage(), e);
+            throw new DictionaryException("Could not delete dictionary", e);
         }
     }
 
@@ -154,7 +155,7 @@ public class DictionaryServiceImpl implements DictionaryService {
                 resourceResolver.delete(languageResource);
                 resourceResolver.commit();
             } catch (PersistenceException | ReplicationException e) {
-                throw new DictionaryException("Could not delete language: " + e.getMessage(), e);
+                throw new DictionaryException("Could not delete language", e);
             }
         } else {
             throw new DictionaryException("Language does not exist: " + language);

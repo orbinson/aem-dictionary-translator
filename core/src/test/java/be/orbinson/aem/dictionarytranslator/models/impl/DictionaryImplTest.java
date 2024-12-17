@@ -5,14 +5,25 @@ import be.orbinson.aem.dictionarytranslator.services.impl.DictionaryServiceImpl;
 import com.day.cq.replication.Replicator;
 import io.wcm.testing.mock.aem.junit5.AemContext;
 import io.wcm.testing.mock.aem.junit5.AemContextExtension;
+import org.apache.sling.api.resource.ResourceResolver;
+import org.apache.sling.testing.mock.jcr.MockJcr;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.Mockito;
 
+import javax.jcr.RepositoryException;
+import javax.jcr.Session;
+import javax.jcr.security.AccessControlManager;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(AemContextExtension.class)
 class DictionaryImplTest {
@@ -45,6 +56,22 @@ class DictionaryImplTest {
         Dictionary dictionary = context.request().adaptTo(Dictionary.class);
 
         assertEquals(3, dictionary.getKeyCount());
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void dictionaryShouldBeEditable(boolean hasPrivileges) throws RepositoryException {
+        Session session = MockJcr.newSession();
+        context.registerAdapter(ResourceResolver.class, Session.class, session);
+        AccessControlManager acm = Mockito.mock(AccessControlManager.class);
+        MockJcr.setAccessControlManager(session, acm);
+        when(acm.hasPrivileges(anyString(), any())).thenReturn(hasPrivileges);
+
+        context.currentResource("/content/dictionaries/fruit/i18n");
+
+        Dictionary dictionary = context.request().adaptTo(Dictionary.class);
+
+        assertEquals(hasPrivileges, dictionary.isEditable());
     }
 
     @Test
