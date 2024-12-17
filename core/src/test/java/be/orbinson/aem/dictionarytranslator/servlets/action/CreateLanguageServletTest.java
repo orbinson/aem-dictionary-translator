@@ -39,57 +39,57 @@ class CreateLanguageServletTest {
 
     @Test
     void doPostWithoutParams() throws ServletException, IOException {
-        context.request().setMethod("POST");
-        context.request().setParameterMap(Map.of());
-
-        servlet.service(context.request(), context.response());
+        servlet.doPost(context.request(), context.response());
 
         assertEquals(HttpServletResponse.SC_BAD_REQUEST, context.response().getStatus());
     }
 
     @Test
     void doPostWithInvalidParams() throws ServletException, IOException {
-        context.request().setMethod("POST");
-        context.request().setParameterMap(Map.of("dictionary", "/content/dictionaries/i18n", "language", "en"));
+        context.request().setParameterMap(Map.of(
+                "dictionary", "/content/dictionaries/i18n",
+                "language", "en")
+        );
 
-        servlet.service(context.request(), context.response());
+        servlet.doPost(context.request(), context.response());
 
         assertEquals(HttpServletResponse.SC_BAD_REQUEST, context.response().getStatus());
     }
 
     @Test
     void doPostWithValidParams() throws ServletException, IOException {
-        context.create().resource("/content/dictionaries/i18n");
+        context.create().resource("/content/dictionaries/fruit/i18n");
 
-        context.request().setMethod("POST");
-        context.request().setParameterMap(Map.of("dictionary", "/content/dictionaries/i18n", "language", "en"));
+        context.request().setParameterMap(Map.of(
+                "dictionary", "/content/dictionaries/fruit/i18n",
+                "language", "en")
+        );
 
-        servlet.service(context.request(), context.response());
+        servlet.doPost(context.request(), context.response());
 
         assertEquals(HttpServletResponse.SC_OK, context.response().getStatus());
 
-        Resource resource = context.resourceResolver().getResource("/content/dictionaries/i18n/en");
+        Resource resource = context.resourceResolver().getResource("/content/dictionaries/fruit/i18n/en");
         ValueMap properties = resource.getValueMap();
         assertNotNull(resource);
         assertEquals("en", properties.get("jcr:language"));
         assertEquals("mix:language", properties.get("jcr:mixinTypes"));
-        assertEquals("/content/dictionaries/i18n", properties.get("sling:basename"));
+        assertEquals("/content/dictionaries/fruit/i18n", properties.get("sling:basename"));
     }
 
     @Test
     void doPostWithAllValidParams() throws ServletException, IOException {
-        context.create().resource("/content/dictionaries/i18n");
+        context.create().resource("/content/dictionaries/fruit/i18n");
 
-        context.request().setMethod("POST");
         context.request().setParameterMap(Map.of(
-                "dictionary", "/content/dictionaries/i18n",
+                "dictionary", "/content/dictionaries/fruit/i18n",
                 "language", "en",
                 "basename", "namespace"
         ));
 
-        servlet.service(context.request(), context.response());
+        servlet.doPost(context.request(), context.response());
 
-        Resource resource = context.resourceResolver().getResource("/content/dictionaries/i18n/en");
+        Resource resource = context.resourceResolver().getResource("/content/dictionaries/fruit/i18n/en");
         ValueMap properties = resource.getValueMap();
 
         assertNotNull(resource);

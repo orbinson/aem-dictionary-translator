@@ -5,12 +5,16 @@ import be.orbinson.aem.dictionarytranslator.services.impl.DictionaryServiceImpl;
 import com.day.cq.replication.Replicator;
 import io.wcm.testing.mock.aem.junit5.AemContext;
 import io.wcm.testing.mock.aem.junit5.AemContextExtension;
+import org.apache.sling.api.resource.PersistenceException;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ValueMap;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.Spy;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
@@ -19,14 +23,18 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
-@ExtendWith(AemContextExtension.class)
+@ExtendWith({AemContextExtension.class, MockitoExtension.class})
 class CreateDictionaryServletTest {
     private final AemContext context = new AemContext();
 
     CreateDictionaryServlet servlet;
 
+    @Spy
     DictionaryService dictionaryService;
 
     @BeforeEach
@@ -38,88 +46,47 @@ class CreateDictionaryServletTest {
     }
 
     @Test
-    void doPostWithoutParams() throws ServletException, IOException {
-        context.request().setMethod("POST");
-        context.request().setParameterMap(Map.of());
-
-        servlet.service(context.request(), context.response());
+    void doPostWithoutParams() throws IOException {
+        servlet.doPost(context.request(), context.response());
 
         assertEquals(HttpServletResponse.SC_BAD_REQUEST, context.response().getStatus());
     }
 
     @Test
-    void doPostInvalidParams() throws ServletException, IOException {
-        context.request().setMethod("POST");
+    void doPostInvalidParams() throws IOException {
         context.request().setParameterMap(Map.of(
-                "name", "/content/dictionaries",
+                "name", "dictionaries",
                 "path", "/nonexistent/path",
-                "language", new String[]{"nonexistent-language"},
-                "basename", new String[]{"nonexistent-basename"}
+                "language", "nl"
         ));
 
-        servlet.service(context.request(), context.response());
+        servlet.doPost(context.request(), context.response());
 
         assertEquals(HttpServletResponse.SC_BAD_REQUEST, context.response().getStatus());
     }
 
     @Test
-    void doPostValidParams() throws ServletException, IOException {
-        context.create().resource("/content/dictionaries/site");
-        context.request().setMethod("POST");
+    void doPostValidParams() throws IOException {
+        String[] languages = new String[]{"en", "fr"};
+        context.create().resource("/content/dictionaries");
         context.request().setParameterMap(Map.of(
-                "name", new String[]{"i18n"},
-                "path", new String[]{"/content/dictionaries/site"},
-                "language", new String[]{"en", "fr"},
-                "basename", new String[]{"/content/dictionaries/site", "/content/dictionaries/site"}
+                "name", "fruit",
+                "path", "/content/dictionaries",
+                "language", languages,
+                "basename", "/content/dictionaries/fruit"
         ));
 
-        servlet.service(context.request(), context.response());
+        servlet.doPost(context.request(), context.response());
 
         assertEquals(HttpServletResponse.SC_OK, context.response().getStatus());
-    }
-
-    @Test
-    @Disabled("Temporary disabled to test CI")
-    void checkDictionaryIsCreated() throws ServletException, IOException {
-        context.create().resource("/content/dictionaries/site");
-        context.request().setMethod("POST");
-        context.request().setParameterMap(Map.of(
-                "name", new String[]{"i18n"},
-                "path", new String[]{"/content/dictionaries/site"},
-                "language", new String[]{"en"},
-                "basename", new String[]{"/content/dictionaries/site"}
-        ));
-
-        servlet.service(context.request(), context.response());
-
-        Resource resource = context.resourceResolver().getResource("/content/dictionaries/site/i18n");
-        assertNotNull(resource);
-        ValueMap properties = resource.getChild("en").getValueMap();
-        assertEquals("en", properties.get("jcr:language", String.class));
-        assertEquals("mix:language", properties.get("jcr:mixinTypes", String.class));
-        assertEquals("/content/dictionaries/site", properties.get("sling:basename", String.class));
-        assertEquals("sling:Folder", properties.get("sling:resourceType", String.class));
-    }
-
-    @Test
-    @Disabled("Temporary disabled to test CI")
-    void checkDictionaryIsCreatedWithoutBasenames() throws ServletException, IOException {
-        context.create().resource("/content/dictionaries/site");
-        context.request().setMethod("POST");
-        context.request().setParameterMap(Map.of(
-                "name", new String[]{"i18n"},
-                "path", new String[]{"/content/dictionaries/site"},
-                "language", new String[]{"en"}
-        ));
-
-        servlet.service(context.request(), context.response());
-
-        Resource resource = context.resourceResolver().getResource("/content/dictionaries/site/i18n");
-        assertNotNull(resource);
-        ValueMap properties = resource.getChild("en").getValueMap();
-        assertEquals("en", properties.get("jcr:language", String.class));
-        assertEquals("mix:language", properties.get("jcr:mixinTypes", String.class));
-        assertEquals("/content/dictionaries/site", properties.get("sling:basename", String.class));
-        assertEquals("sling:Folder", properties.get("sling:resourceType", String.class));
+        for (String language : languages) {
+            Resource resource = context.resourceResolver().getResource("/content/dictionaries/fruit/i18n/" + language);
+            assertNotNull(resource);
+            ValueMap properties = resource.getValueMap();
+            assertEquals(language, properties.get("jcr:language"));
+            assertEquals("mix:language", properties.get("jcr:mixinTypes"));
+            assertEquals(language, properties.get("jcr:language"));
+            assertEquals("/content/dictionaries/fruit", properties.get("sling:basename"));
+        }
     }
 }

@@ -31,7 +31,6 @@ class ExportDictionaryServletTest {
 
         servlet = context.registerInjectActivateService(new ExportDictionaryServlet());
 
-        context.request().setMethod("POST");
         context.response().setCharacterEncoding("UTF-8");
     }
 
