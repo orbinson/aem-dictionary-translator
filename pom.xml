@@ -84,13 +84,6 @@
 
         <aem.version>6.5.17</aem.version>
         <aemanalyser.version>1.6.6</aemanalyser.version>
-
-        <sonar.organization>orbinson</sonar.organization>
-        <sonar.projectKey>${sonar.organization}_${project.artifactId}</sonar.projectKey>
-        <sonar.host.url>https://sonarcloud.io</sonar.host.url>
-        <sonar.coverage.exclusions></sonar.coverage.exclusions>
-        <sonar.coverage.jacoco.xmlReportPaths>${project.basedir}/target/site/jacoco-aggregate/jacoco.xml
-        </sonar.coverage.jacoco.xmlReportPaths>
     </properties>
 
     <build>
