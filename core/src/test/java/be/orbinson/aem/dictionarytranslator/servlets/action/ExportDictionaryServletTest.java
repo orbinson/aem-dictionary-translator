@@ -1,158 +1,66 @@
 package be.orbinson.aem.dictionarytranslator.servlets.action;
 
+import be.orbinson.aem.dictionarytranslator.services.impl.DictionaryServiceImpl;
+import com.day.cq.replication.Replicator;
 import io.wcm.testing.mock.aem.junit5.AemContext;
 import io.wcm.testing.mock.aem.junit5.AemContextExtension;
-import org.apache.sling.api.resource.Resource;
-import org.apache.sling.api.resource.ResourceResolver;
-import org.junit.Ignore;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mockito;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
-import javax.jcr.Session;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Map;
-import java.util.function.Function;
 
-import static be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants.*;
-import static org.apache.jackrabbit.JcrConstants.*;
-import static org.apache.sling.jcr.resource.api.JcrResourceConstants.NT_SLING_FOLDER;
-import static org.apache.sling.jcr.resource.api.JcrResourceConstants.SLING_RESOURCE_TYPE_PROPERTY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
 
-// TODO: should be recreated with the dictionary service in mind
 @ExtendWith(AemContextExtension.class)
-@Disabled("TODO: should be recreated with the dictionary service in mind")
 class ExportDictionaryServletTest {
 
     private final AemContext context = new AemContext();
-    private ExportDictionaryServlet exportDictionaryServlet;
+    private ExportDictionaryServlet servlet;
 
     @BeforeEach
     void setUp() {
-        exportDictionaryServlet = new ExportDictionaryServlet();
+        context.registerService(Replicator.class, mock(Replicator.class));
+        context.registerInjectActivateService(new DictionaryServiceImpl());
 
-        context.request().setMethod("POST");
+        context.load().json("/content.json", "/content");
+
+        servlet = context.registerInjectActivateService(new ExportDictionaryServlet());
+
         context.response().setCharacterEncoding("UTF-8");
-        context.create().resource("/test/path");
-        context.registerAdapter(ResourceResolver.class, Session.class, new Function<ResourceResolver, Session>() {
-            @Override
-            public Session apply(ResourceResolver resolver) {
-                return Mockito.mock(Session.class);
-            }
-        });
     }
 
-    @Test
-    void doPostWithSemiColon() throws Exception {
-        createLanguageResource("en", "champion", "champion");
-        createLanguageResource("nl", "champion", "kampioen");
-        createLanguageResource("it", "champion", "campione");
+    @ParameterizedTest
+    @ValueSource(strings = {";", ","})
+    void doPostWithSemiColon(String delimiter) throws Exception {
         context.request().setParameterMap(Map.of(
-                "dictionary", "/test/path",
-                "delimiter", ";"
+                "dictionary", "/content/dictionaries/fruit/i18n",
+                "delimiter", delimiter
         ));
-        exportDictionaryServlet.doPost(context.request(), context.response());
+
+        servlet.doPost(context.request(), context.response());
 
         String csvContent = context.response().getOutputAsString();
-        String expectedContent = "KEY;en;nl;it\n" +
-                "champion;champion;kampioen;campione\n";
-        assertEquals(expectedContent, csvContent);
-    }
-
-    @Test
-    void doPostWithMultipleMessageEntries() throws Exception {
-        createLanguageResource("en", "champion", "champion");
-        createLanguageResource("nl", "champion", "kampioen");
-        createLanguageResource("it", "champion", "campione");
-        createLanguageResource("en", "apple", "apple");
-        createLanguageResource("nl", "apple", "appel");
-        createLanguageResource("it", "apple", "pomme");
-        context.request().setParameterMap(Map.of(
-                "dictionary", "/test/path",
-                "delimiter", ";"
-        ));
-        exportDictionaryServlet.doPost(context.request(), context.response());
-
-        String csvContent = context.response().getOutputAsString();
-        String expectedContent = "KEY;en;nl;it\n" +
-                "champion;champion;kampioen;campione\n" +
-                "apple;apple;appel;pomme\n";
-        assertEquals(expectedContent, csvContent);
-    }
-
-    @Test
-    void doPostNoMessageEntries() throws Exception {
-        createLanguageResource("en", "", "");
-        createLanguageResource("nl", "", "");
-        createLanguageResource("it", "", "");
-        context.request().setParameterMap(Map.of(
-                "dictionary", "/test/path",
-                "delimiter", ";"
-        ));
-        exportDictionaryServlet.doPost(context.request(), context.response());
-
-        String csvContent = context.response().getOutputAsString();
-        String expectedContent = "KEY;en;nl;it\n";
+        String expectedContent = "KEY" + delimiter + "en" + delimiter + "nl_BE\n" +
+                "apple" + delimiter + "Apple" + delimiter + "Appel\n" +
+                "banana" + delimiter + "Banana" + delimiter + "Banaan\n" +
+                "cherry" + delimiter + "Cherry" + delimiter + "Kers\n";
         assertEquals(expectedContent, csvContent);
     }
 
     @Test
     void doPostResourceNotFound() throws Exception {
-        createLanguageResource("en", "champion", "champion");
-        createLanguageResource("nl", "champion", "kampioen");
-        createLanguageResource("it", "champion", "campione");
         context.request().setParameterMap(Map.of(
-                "dictionary", "/no/such/resource",
+                "dictionary", "/content/dictionaries/non-existing/i18n",
                 "delimiter", ";"
         ));
-        exportDictionaryServlet.doPost(context.request(), context.response());
+
+        servlet.doPost(context.request(), context.response());
 
         assertEquals(HttpServletResponse.SC_BAD_REQUEST, context.response().getStatus());
-    }
-
-    @Test
-    void doPostWithComma() throws Exception {
-        createLanguageResource("en", "champion", "champion");
-        createLanguageResource("nl", "champion", "kampioen");
-        createLanguageResource("it", "champion", "campione");
-        context.request().setParameterMap(Map.of(
-                "dictionary", "/test/path",
-                "delimiter", ","
-        ));
-        exportDictionaryServlet.doPost(context.request(), context.response());
-
-        String csvContent = context.response().getOutputAsString();
-        String expectedContent = "KEY,en,nl,it\n" +
-                "champion,champion,kampioen,campione\n";
-        assertEquals(expectedContent, csvContent);
-    }
-
-    private void createLanguageResource(String language, String key, String translation) throws Exception {
-        ResourceResolver resourceResolver = context.resourceResolver();
-        Session session = resourceResolver.adaptTo(Session.class);
-        if (session != null) {
-            String path = "/test/path";
-            Resource languageResource;
-            if (resourceResolver.getResource(path + "/" + language) == null) {
-                languageResource = resourceResolver.create(resourceResolver.getResource(path), language, Map.of(
-                        JCR_PRIMARYTYPE, NT_SLING_FOLDER,
-                        JCR_LANGUAGE, language,
-                        JCR_BASENAME, language,
-                        SLING_RESOURCE_TYPE_PROPERTY, NT_SLING_FOLDER,
-                        JCR_MIXINTYPES, new String[]{MIX_LANGUAGE}
-                ));
-            } else {
-                languageResource = resourceResolver.getResource(path + "/" + language);
-            }
-            resourceResolver.create(languageResource, key, Map.of(
-                    JCR_PRIMARYTYPE, SLING_MESSAGEENTRY,
-                    SLING_KEY, key,
-                    SLING_MESSAGE, translation
-            ));
-        }
-        context.resourceResolver().commit();
     }
 }

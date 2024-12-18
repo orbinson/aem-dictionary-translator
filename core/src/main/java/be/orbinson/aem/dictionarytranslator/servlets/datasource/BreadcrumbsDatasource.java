@@ -24,7 +24,7 @@ import java.util.List;
         resourceTypes = "aem-dictionary-translator/datasource/breadcrumbs",
         methods = "GET"
 )
-public class BreadcrumbsDataSource extends SlingSafeMethodsServlet {
+public class BreadcrumbsDatasource extends SlingSafeMethodsServlet {
 
     @Override
     protected void doGet(@NotNull SlingHttpServletRequest request, @NotNull SlingHttpServletResponse response) {

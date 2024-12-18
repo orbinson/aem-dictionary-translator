@@ -79,7 +79,7 @@ public class ExportDictionaryServlet extends SlingAllMethodsServlet {
         }
 
         writer.println(csvHeader);
-        LOG.debug("CSV header: " + csvHeader);
+        LOG.debug("CSV header: {}", csvHeader);
     }
 
     private void writeCsvRows(PrintWriter writer, RequestParameter delimiter, Resource dictionaryResource, List<String> languages) {
@@ -101,7 +101,7 @@ public class ExportDictionaryServlet extends SlingAllMethodsServlet {
                     csvRow.append(delimiter);
                 }
             }
-            LOG.debug("CSV row: " + csvRow);
+            LOG.debug("CSV row: {}", csvRow);
             writer.println(csvRow);
         }
     }

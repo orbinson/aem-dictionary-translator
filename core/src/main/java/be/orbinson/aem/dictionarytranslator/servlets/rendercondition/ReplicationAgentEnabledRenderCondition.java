@@ -14,8 +14,6 @@ import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
 import javax.servlet.Servlet;
-import javax.servlet.ServletException;
-import java.io.IOException;
 
 @Component(service = Servlet.class)
 @SlingServletResourceTypes(resourceTypes = "aem-dictionary-translator/components/rendercondition/replication-agent-enabled")
@@ -25,7 +23,7 @@ public class ReplicationAgentEnabledRenderCondition extends SlingSafeMethodsServ
     private AgentManager agentManager;
 
     @Override
-    protected void doGet(@NotNull SlingHttpServletRequest request, @NotNull SlingHttpServletResponse response) throws ServletException, IOException {
+    protected void doGet(@NotNull SlingHttpServletRequest request, @NotNull SlingHttpServletResponse response) {
         String agentId = new Config(request.getResource()).get("agentId");
         boolean isEnabled = false;
         Agent agent = agentManager.getAgents().get(agentId);

@@ -34,6 +34,7 @@ import java.util.Map;
         methods = "GET"
 )
 public class CombiningMessageEntryDatasource extends SlingSafeMethodsServlet {
+    public static final String FIELD_LABEL = "fieldLabel";
     @Reference
     private transient ModelFactory modelFactory;
 
@@ -74,7 +75,7 @@ public class CombiningMessageEntryDatasource extends SlingSafeMethodsServlet {
 
     private static Resource createTextFieldResource(ResourceResolver resourceResolver, String label, String name, String value, boolean required, boolean disabled) {
         ValueMap valueMap = new ValueMapDecorator(Map.of(
-                "fieldLabel", label,
+                FIELD_LABEL, label,
                 "name", name,
                 "value", value,
                 "disabled", disabled,
@@ -85,7 +86,7 @@ public class CombiningMessageEntryDatasource extends SlingSafeMethodsServlet {
 
     private static Resource createHiddenFieldResource(ResourceResolver resourceResolver, String key, String value) {
         ValueMap valueMap = new ValueMapDecorator(Map.of(
-                "fieldLabel", key,
+                FIELD_LABEL, key,
                 "name", key,
                 "value", value)
         );
@@ -115,7 +116,7 @@ public class CombiningMessageEntryDatasource extends SlingSafeMethodsServlet {
                     resourceList.add(createTextFieldResource(resourceResolver, label, language, message));
                 }
                 // sort by fieldLabel
-                sortResourcesByProperty("fieldLabel", locale, resourceList);
+                sortResourcesByProperty(FIELD_LABEL, locale, resourceList);
             }
             // make sure that key is always at the top
             resourceList.add(0, createTextFieldResource(resourceResolver, "Key", key, key, false, true));

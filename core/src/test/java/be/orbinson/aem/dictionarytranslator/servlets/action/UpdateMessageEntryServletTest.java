@@ -1,20 +1,18 @@
 package be.orbinson.aem.dictionarytranslator.servlets.action;
 
 import be.orbinson.aem.dictionarytranslator.services.DictionaryService;
+import be.orbinson.aem.dictionarytranslator.services.impl.CombiningMessageEntryResourceProvider;
 import be.orbinson.aem.dictionarytranslator.services.impl.DictionaryServiceImpl;
 import com.day.cq.replication.Replicator;
 import io.wcm.testing.mock.aem.junit5.AemContext;
 import io.wcm.testing.mock.aem.junit5.AemContextExtension;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ValueMap;
+import org.apache.sling.testing.mock.sling.ResourceResolverType;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Map;
@@ -27,10 +25,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.mock;
 
-@ExtendWith({AemContextExtension.class, MockitoExtension.class})
+@ExtendWith(AemContextExtension.class)
 class UpdateMessageEntryServletTest {
 
-    private final AemContext context = new AemContext();
+    private final AemContext context = new AemContext(ResourceResolverType.RESOURCEPROVIDER_MOCK);
 
     UpdateMessageEntryServlet servlet;
 
@@ -40,65 +38,58 @@ class UpdateMessageEntryServletTest {
     void beforeEach() {
         context.registerService(Replicator.class, mock(Replicator.class));
         dictionaryService = context.registerInjectActivateService(new DictionaryServiceImpl());
+        context.registerInjectActivateService(new CombiningMessageEntryResourceProvider());
 
         servlet = context.registerInjectActivateService(new UpdateMessageEntryServlet());
     }
 
     @Test
-    void doPostWithoutParams() throws ServletException, IOException {
-        context.request().setMethod("POST");
-        context.request().setParameterMap(Map.of());
-
-        servlet.service(context.request(), context.response());
+    void doPostWithoutParams() throws IOException {
+        servlet.doPost(context.request(), context.response());
 
         assertEquals(HttpServletResponse.SC_BAD_REQUEST, context.response().getStatus());
     }
 
     @Test
-    void updateCombiningMessageEntryInNonExistingDictionary() throws ServletException, IOException {
-        context.request().setMethod("POST");
+    void updateCombiningMessageEntryInNonExistingDictionary() throws IOException {
         context.request().setParameterMap(Map.of(
-                "dictionary", "/content/dictionaries/i18n",
+                "item", "/mnt/dictionary/content/dictionaries/non-existing/i18",
                 "key", "greeting",
                 "en", "Hello"
         ));
 
-        servlet.service(context.request(), context.response());
+        servlet.doPost(context.request(), context.response());
 
-        assertEquals(HttpServletResponse.SC_BAD_REQUEST, context.response().getStatus());
+        assertEquals(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, context.response().getStatus());
     }
 
     @Test
-    @Disabled("Testing CI")
-    void doPostWithValidParams() throws ServletException, IOException {
-        context.create().resource("/content/dictionaries/i18n/en", Map.of("jcr:language", "en"));
-        context.create().resource("/content/dictionaries/i18n/en/appel", Map.of(
-                "dictionary", "/content/dictionaries/i18n", "key", "appel",
-                "en", "apple", SLING_MESSAGEENTRY, JCR_PRIMARYTYPE)
-        );
-        context.create().resource("/content/dictionaries/i18n/fr", Map.of("jcr:language", "fr"));
-        context.create().resource("/content/dictionaries/i18n/en/appel", Map.of(
-                "dictionary", "/content/dictionaries/i18n", "key", "appel",
-                "fr", "pomme", SLING_MESSAGEENTRY, JCR_PRIMARYTYPE)
-        );
+    void doPostWithValidParams() throws IOException {
+        context.load().json("/content.json", "/content");
 
-        context.request().setMethod("POST");
         context.request().setParameterMap(Map.of(
-                "dictionary", "/content/dictionaries/i18n",
+                "item", "/mnt/dictionary/content/dictionaries/fruit/i18n/apple",
                 "key", "appel",
-                "en", "Hello",
-                "fr", "Bonjour"
+                "en", "New Apple",
+                "nl_BE", "Nieuwe Appel"
         ));
 
-        servlet.service(context.request(), context.response());
+        servlet.doPost(context.request(), context.response());
 
         assertEquals(HttpServletResponse.SC_OK, context.response().getStatus());
 
-        Resource resource = context.resourceResolver().getResource("/content/dictionaries/i18n/en/appel");
+        Resource resource = context.resourceResolver().getResource("/content/dictionaries/fruit/i18n/en/appel");
         ValueMap properties = resource.getValueMap();
         assertNotNull(resource);
         assertEquals(SLING_MESSAGEENTRY, properties.get(JCR_PRIMARYTYPE));
         assertEquals("appel", properties.get(SLING_KEY));
-        assertEquals("Hello", properties.get(SLING_MESSAGE));
+        assertEquals("New Apple", properties.get(SLING_MESSAGE));
+
+        resource = context.resourceResolver().getResource("/content/dictionaries/fruit/i18n/nl_be/appel");
+        properties = resource.getValueMap();
+        assertNotNull(resource);
+        assertEquals(SLING_MESSAGEENTRY, properties.get(JCR_PRIMARYTYPE));
+        assertEquals("appel", properties.get(SLING_KEY));
+        assertEquals("Nieuwe Appel", properties.get(SLING_MESSAGE));
     }
 }
