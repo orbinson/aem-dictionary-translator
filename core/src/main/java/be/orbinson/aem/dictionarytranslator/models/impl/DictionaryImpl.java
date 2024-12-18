@@ -5,17 +5,10 @@ import be.orbinson.aem.dictionarytranslator.services.DictionaryService;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.models.annotations.Model;
-import org.apache.sling.models.annotations.injectorspecific.InjectionStrategy;
 import org.apache.sling.models.annotations.injectorspecific.OSGiService;
 import org.apache.sling.models.annotations.injectorspecific.SlingObject;
-import org.apache.sling.models.annotations.injectorspecific.ValueMapValue;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
-import javax.inject.Named;
-import java.text.DateFormat;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 
 @Model(
