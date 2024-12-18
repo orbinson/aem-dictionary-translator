@@ -132,6 +132,11 @@ public class LanguageDatasource extends SlingSafeMethodsServlet {
         public int compareTo(OrderedValueMapResource o) {
             return collator.compare(getLabel(), o.getLabel());
         }
+
+        @Override
+        public boolean equals(Object obj) {
+            return obj instanceof OrderedValueMapResource && collator.equals(((OrderedValueMapResource) obj).collator);
+        }
     }
 
     private static class TextFieldResource extends OrderedValueMapResource {

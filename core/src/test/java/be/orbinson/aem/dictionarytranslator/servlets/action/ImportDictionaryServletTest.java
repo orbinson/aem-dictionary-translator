@@ -103,6 +103,7 @@ class ImportDictionaryServletTest {
         );
 
         servlet.doPost(context.request(), context.response());
+
         assertEquals(200, context.response().getStatus());
 
         ResourceResolver resourceResolver = context.resourceResolver();

@@ -74,10 +74,9 @@ public class ImportDictionaryServlet extends SlingAllMethodsServlet {
 
         try (CSVParser csvParser = CSVParser.parse(result, format)) {
             Map<String, Integer> headers = csvParser.getHeaderMap();
-
             validateCsvHeaders(headers);
-
             headers.remove(KEY_HEADER);
+
             Resource dictionaryResource = resourceResolver.getResource(dictionaryPath);
             if (dictionaryResource != null) {
                 List<String> knownLanguages = dictionaryService.getLanguages(dictionaryResource);
@@ -93,13 +92,21 @@ public class ImportDictionaryServlet extends SlingAllMethodsServlet {
     }
 
     private CSVFormat determineCsvFormat(String csvContent) throws IOException {
+        CSVFormat.Builder builder = CSVFormat.Builder.create()
+                .setSkipHeaderRecord(true);
         if (csvContent.contains(";")) {
-            return CSVFormat.newFormat(';').withFirstRecordAsHeader();
+            builder
+                    .setDelimiter(';')
+                    .setHeader(csvContent.split("\n")[0].split(";"));
         } else if (csvContent.contains(",")) {
-            return CSVFormat.DEFAULT.withFirstRecordAsHeader();
+            builder
+                    .setDelimiter(',')
+                    .setHeader(csvContent.split("\n")[0].split(","));
         } else {
             throw new IOException("Invalid CSV file. The Delimiter should be ',' or ';'.");
         }
+
+        return builder.build();
     }
 
     private void validateCsvHeaders(Map<String, Integer> headers) throws IOException {
