@@ -15,7 +15,7 @@
     "@playwright/test": "1.49.1",
     "@types/node": "22.10.2",
     "eslint": "9.17.0",
-    "globals": "15.13.0",
+    "globals": "15.14.0",
     "playwright-ctrf-json-reporter": "^0.0.18",
     "typescript": "5.7.2",
     "typescript-eslint": "8.18.0"
