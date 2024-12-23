@@ -19,6 +19,10 @@ jobs:
     name: Run UI tests
     runs-on: ubuntu-latest
     needs: aem-maven-build
+    permissions:
+      contents: write
+      packages: read
+      pull-requests: write
     services:
       aem-author:
         image: ghcr.io/orbinson/aem-sdk:author-2024.10.18459.20241031T210302Z-241000
