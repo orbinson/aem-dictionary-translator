@@ -1,14 +1,12 @@
 package be.orbinson.aem.dictionarytranslator.servlets.action;
 
+import be.orbinson.aem.dictionarytranslator.services.impl.DictionaryServiceImpl;
 import io.wcm.testing.mock.aem.junit5.AemContext;
 import io.wcm.testing.mock.aem.junit5.AemContextExtension;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ValueMap;
-import org.apache.sling.testing.mock.sling.servlet.MockSlingHttpServletRequest;
-import org.apache.sling.testing.mock.sling.servlet.MockSlingHttpServletResponse;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -17,166 +15,157 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
 import static be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants.SLING_MESSAGE;
-import static org.junit.Assert.assertNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
-// TODO update to use dicationary service
 @ExtendWith(AemContextExtension.class)
-@Disabled("Update to use dictionary service")
 class ImportDictionaryServletTest {
 
-    private ImportDictionaryServlet importTranslation;
+    private final AemContext context = new AemContext();
 
-    private AemContext context = new AemContext();
+    ImportDictionaryServlet servlet;
 
     @BeforeEach
     void setUp() {
-        importTranslation = context.registerInjectActivateService(new ImportDictionaryServlet());
-        context.create().resource("/content");
-        context.create().resource("/content/en");
-        context.create().resource("/content/nl");
+        context.registerService(new DictionaryServiceImpl());
+        servlet = context.registerInjectActivateService(new ImportDictionaryServlet());
+
+        context.load().json("/content.json", "/content");
     }
 
     @Test
     void doPostOneMessageEntry() throws Exception {
-        MockSlingHttpServletRequest request = context.request();
-        MockSlingHttpServletResponse response = context.response();
-
-        request.addRequestParameter("dictionary", "/content");
-        String csvData = "KEY,en,nl\nhello,Hello,Hallo\n";
+        context.request().addRequestParameter("dictionary", "/content/dictionaries/fruit/i18n");
+        String csvData = "KEY,en,nl_BE\ngrape,Grape,Druif\n";
         InputStream csvStream = new ByteArrayInputStream(csvData.getBytes());
-        request.addRequestParameter("csvfile", csvStream.readAllBytes(), "text/csv", "translations.csv");
+        context.request().addRequestParameter(
+                "csvfile",
+                csvStream.readAllBytes(),
+                "text/csv",
+                "translations.csv"
+        );
 
-        importTranslation.doPost(request, response);
+        servlet.doPost(context.request(), context.response());
 
-        assertEquals(200, response.getStatus());
+        assertEquals(200, context.response().getStatus());
 
         ResourceResolver resourceResolver = context.resourceResolver();
-        Resource enHelloResource = resourceResolver.getResource("/content/en/hello");
-        assertNotNull(enHelloResource);
-
-        ValueMap properties = enHelloResource.getValueMap();
+        Resource resource = resourceResolver.getResource("/content/dictionaries/fruit/i18n/en/grape");
+        assertNotNull(resource);
+        ValueMap properties = resource.getValueMap();
         String message = properties.get(SLING_MESSAGE, String.class);
-        assertEquals("Hello", message);
+        assertEquals("Grape", message);
 
-        Resource nlHelloResource = resourceResolver.getResource("/content/nl/hello");
-        assertNotNull(nlHelloResource);
-
-        properties = nlHelloResource.getValueMap();
+        resource = resourceResolver.getResource("/content/dictionaries/fruit/i18n/nl_be/grape");
+        assertNotNull(resource);
+        properties = resource.getValueMap();
         message = properties.get(SLING_MESSAGE, String.class);
-        assertEquals("Hallo", message);
+        assertEquals("Druif", message);
     }
 
     @Test
     void doPostOneMessageEntryWrongLanguage() throws Exception {
-        MockSlingHttpServletRequest request = context.request();
-        MockSlingHttpServletResponse response = context.response();
+        context.request().addRequestParameter("dictionary", "/content/dictionaries/fruit/i18n");
 
-        request.addRequestParameter("dictionary", "/content");
-        String csvData = "KEY,en,fr\nhello,Hello,Bonjour\n";
+        String csvData = "KEY,en,nl_FR\ngrape,Grape,Druif\n";
         InputStream csvStream = new ByteArrayInputStream(csvData.getBytes());
-        request.addRequestParameter("csvfile", csvStream.readAllBytes(), "text/csv", "translations.csv");
+        context.request().addRequestParameter(
+                "csvfile",
+                csvStream.readAllBytes(),
+                "text/csv",
+                "translations.csv"
+        );
 
-        importTranslation.doPost(request, response);
+        servlet.doPost(context.request(), context.response());
 
-        assertEquals(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, response.getStatus());
+        assertEquals(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, context.response().getStatus());
 
         ResourceResolver resourceResolver = context.resourceResolver();
-        Resource enHelloResource = resourceResolver.getResource("/content/en/hello");
-        assertNull(enHelloResource);
+        Resource resource = resourceResolver.getResource("/content/dictionaries/fruit/i18n/en/grape");
+        assertNull(resource);
 
-        Resource nlHelloResource = resourceResolver.getResource("/content/fr/hello");
-        assertNull(nlHelloResource);
+        resource = resourceResolver.getResource("/content/dictionaries/fruit/i18n/nl_fr/grape");
+        assertNull(resource);
     }
 
     @Test
     void doPostMultipleMessageEntries() throws Exception {
-        MockSlingHttpServletRequest request = context.request();
-        MockSlingHttpServletResponse response = context.response();
+        context.request().addRequestParameter("dictionary", "/content/dictionaries/fruit/i18n");
 
-        request.addRequestParameter("dictionary", "/content");
-        String csvData = "KEY,en,nl\nhello,Hello,Hallo\nday,Day,Dag\n";
+        String csvData = "KEY,en,nl_BE\ngrape,Grape,Druif\npineapple,Pineapple,Ananas";
         InputStream csvStream = new ByteArrayInputStream(csvData.getBytes());
-        request.addRequestParameter("csvfile", csvStream.readAllBytes(), "text/csv", "translations.csv");
+        context.request().addRequestParameter(
+                "csvfile",
+                csvStream.readAllBytes(),
+                "text/csv",
+                "translations.csv"
+        );
 
-        importTranslation.doPost(request, response);
+        servlet.doPost(context.request(), context.response());
 
-        assertEquals(200, response.getStatus());
+        assertEquals(200, context.response().getStatus());
 
         ResourceResolver resourceResolver = context.resourceResolver();
-        Resource enHelloResource = resourceResolver.getResource("/content/en/hello");
-        assertNotNull(enHelloResource);
+        Resource resource = resourceResolver.getResource("/content/dictionaries/fruit/i18n/en/grape");
+        assertNotNull(resource);
+        ValueMap properties = resource.getValueMap();
+        String message = properties.get(SLING_MESSAGE, String.class);
+        assertEquals("Grape", message);
 
-        ValueMap helloProperties = enHelloResource.getValueMap();
-        String message = helloProperties.get(SLING_MESSAGE, String.class);
-        assertEquals("Hello", message);
+        resource = resourceResolver.getResource("/content/dictionaries/fruit/i18n/nl_be/grape");
+        assertNotNull(resource);
+        properties = resource.getValueMap();
+        message = properties.get(SLING_MESSAGE, String.class);
+        assertEquals("Druif", message);
 
-        Resource nlHelloResource = resourceResolver.getResource("/content/nl/hello");
-        assertNotNull(nlHelloResource);
+        resource = resourceResolver.getResource("/content/dictionaries/fruit/i18n/en/pineapple");
+        assertNotNull(resource);
+        properties = resource.getValueMap();
+        message = properties.get(SLING_MESSAGE, String.class);
+        assertEquals("Pineapple", message);
 
-        helloProperties = nlHelloResource.getValueMap();
-        message = helloProperties.get(SLING_MESSAGE, String.class);
-        assertEquals("Hallo", message);
-
-        Resource enDayResource = resourceResolver.getResource("/content/en/day");
-        assertNotNull(enDayResource);
-
-        ValueMap dayProperties = enDayResource.getValueMap();
-        String dayMessage = dayProperties.get(SLING_MESSAGE, String.class);
-        assertEquals("Day", dayMessage);
-
-        Resource nlDayResource = resourceResolver.getResource("/content/nl/day");
-        assertNotNull(nlDayResource);
-
-        dayProperties = nlDayResource.getValueMap();
-        dayMessage = dayProperties.get(SLING_MESSAGE, String.class);
-        assertEquals("Dag", dayMessage);
+        resource = resourceResolver.getResource("/content/dictionaries/fruit/i18n/nl_be/pineapple");
+        assertNotNull(resource);
+        properties = resource.getValueMap();
+        message = properties.get(SLING_MESSAGE, String.class);
+        assertEquals("Ananas", message);
     }
 
     @Test
     void doPostWrongHeader() throws Exception {
-        MockSlingHttpServletRequest request = context.request();
-        MockSlingHttpServletResponse response = context.response();
-
-        request.addRequestParameter("dictionary", "/content");
+        context.request().addRequestParameter("dictionary", "/content/dictionaries/fruit/i18n");
         String csvData = "WRONGHEADER,en,nl\nhello,Hello,Hallo\n";
         InputStream csvStream = new ByteArrayInputStream(csvData.getBytes());
-        request.addRequestParameter("csvfile", csvStream.readAllBytes(), "text/csv", "translations.csv");
+        context.request().addRequestParameter("csvfile", csvStream.readAllBytes(), "text/csv", "translations.csv");
 
-        importTranslation.doPost(request, response);
+        servlet.doPost(context.request(), context.response());
 
-        assertEquals(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, response.getStatus());
+        assertEquals(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, context.response().getStatus());
     }
 
     @Test
     void doPostNoMessageEntries() throws Exception {
-        MockSlingHttpServletRequest request = context.request();
-        MockSlingHttpServletResponse response = context.response();
-
-        request.addRequestParameter("dictionary", "/content");
-        String csvData = "KEY,en,nl\n";
+        context.request().addRequestParameter("dictionary", "/content/dictionaries/fruit/i18n");
+        String csvData = "KEY,en,nl_BE\n";
         InputStream csvStream = new ByteArrayInputStream(csvData.getBytes());
-        request.addRequestParameter("csvfile", csvStream.readAllBytes(), "text/csv", "translations.csv");
+        context.request().addRequestParameter("csvfile", csvStream.readAllBytes(), "text/csv", "translations.csv");
 
-        importTranslation.doPost(request, response);
+        servlet.doPost(context.request(), context.response());
 
-        assertEquals(200, response.getStatus());
+        assertEquals(200, context.response().getStatus());
     }
 
     @Test
     void doPostUnsupportedDelimiter() throws Exception {
-        MockSlingHttpServletRequest request = context.request();
-        MockSlingHttpServletResponse response = context.response();
-
-        request.addRequestParameter("dictionary", "/content");
+        context.request().addRequestParameter("dictionary", "/content/dictionaries/fruit/i18n");
         String csvData = "KEY-en-nl\nhello-Hello-Hallo\n";
         InputStream csvStream = new ByteArrayInputStream(csvData.getBytes());
-        request.addRequestParameter("csvfile", csvStream.readAllBytes(), "text/csv", "translations.csv");
+        context.request().addRequestParameter("csvfile", csvStream.readAllBytes(), "text/csv", "translations.csv");
 
-        importTranslation.doPost(request, response);
+        servlet.doPost(context.request(), context.response());
 
-        assertEquals(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, response.getStatus());
+        assertEquals(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, context.response().getStatus());
     }
 }
 

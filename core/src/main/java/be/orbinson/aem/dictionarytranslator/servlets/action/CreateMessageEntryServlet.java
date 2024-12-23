@@ -43,32 +43,36 @@ public class CreateMessageEntryServlet extends SlingAllMethodsServlet {
             htmlResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST, String.format("Invalid parameters to create language, 'key=%s', 'dictionary=%s', ", key, dictionary));
             htmlResponse.send(response, true);
         } else {
-            ResourceResolver resourceResolver = request.getResourceResolver();
-            Resource dictionaryResource = resourceResolver.getResource(dictionary);
-            try {
-                if (dictionaryResource != null) {
-                    for (String language : dictionaryService.getLanguages(dictionaryResource)) {
-                        // javasecurity:S5145
-                        LOG.debug("Create message entry on path '{}/{}'", dictionary, key);
-                        String message = request.getParameter(language);
-                        if (!dictionaryService.keyExists(dictionaryResource, language, key)) {
-                            dictionaryService.createMessageEntry(resourceResolver, dictionaryResource, language, key, message);
-                        } else {
-                            HtmlResponse htmlResponse = new HtmlResponse();
-                            htmlResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST, String.format("Can not create message entry %s, key already exists", key));
-                            htmlResponse.send(response, true);
-                        }
+            createMessageEntry(request, response, dictionary, key);
+        }
+    }
+
+    private void createMessageEntry(SlingHttpServletRequest request, @NotNull SlingHttpServletResponse response, String dictionary, String key) throws IOException {
+        ResourceResolver resourceResolver = request.getResourceResolver();
+        Resource dictionaryResource = resourceResolver.getResource(dictionary);
+        try {
+            if (dictionaryResource != null) {
+                for (String language : dictionaryService.getLanguages(dictionaryResource)) {
+                    // javasecurity:S5145
+                    LOG.debug("Create message entry on path '{}/{}'", dictionary, key);
+                    String message = request.getParameter(language);
+                    if (!dictionaryService.keyExists(dictionaryResource, language, key)) {
+                        dictionaryService.createMessageEntry(resourceResolver, dictionaryResource, language, key, message);
+                    } else {
+                        HtmlResponse htmlResponse = new HtmlResponse();
+                        htmlResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST, String.format("Can not create message entry %s, key already exists", key));
+                        htmlResponse.send(response, true);
                     }
-                } else {
-                    HtmlResponse htmlResponse = new HtmlResponse();
-                    htmlResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST, String.format("Unable to get dictionary '%s'", dictionary));
-                    htmlResponse.send(response, true);
                 }
-            } catch (PersistenceException e) {
+            } else {
                 HtmlResponse htmlResponse = new HtmlResponse();
-                htmlResponse.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, String.format("Unable to create key '%s' on dictionary '%s': %s", key, dictionary, e.getMessage()));
+                htmlResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST, String.format("Unable to get dictionary '%s'", dictionary));
                 htmlResponse.send(response, true);
             }
+        } catch (PersistenceException e) {
+            HtmlResponse htmlResponse = new HtmlResponse();
+            htmlResponse.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, String.format("Unable to create key '%s' on dictionary '%s': %s", key, dictionary, e.getMessage()));
+            htmlResponse.send(response, true);
         }
     }
 

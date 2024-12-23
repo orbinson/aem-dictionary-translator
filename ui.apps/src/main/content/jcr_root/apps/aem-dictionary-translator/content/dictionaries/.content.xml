@@ -184,10 +184,6 @@
                     <languages
                             jcr:primaryType="nt:unstructured"
                             jcr:title="Languages"/>
-                    <last-modified
-                            jcr:primaryType="nt:unstructured"
-                            jcr:title="Last Modified"
-                            sortable="true"/>
                     <basename
                             jcr:primaryType="nt:unstructured"
                             jcr:title="Basename"

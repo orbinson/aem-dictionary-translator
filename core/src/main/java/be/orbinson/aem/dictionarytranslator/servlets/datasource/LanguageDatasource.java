@@ -28,7 +28,6 @@ import javax.servlet.Servlet;
 import javax.servlet.ServletException;
 import java.io.IOException;
 import java.text.Collator;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -111,10 +110,8 @@ public class LanguageDatasource extends SlingSafeMethodsServlet {
                     } else {
                         return ValueTextResource.create(request.getLocale(), request.getResourceResolver(), e.getKey(), e.getValue());
                     }
-                })
-                .collect(Collectors.toList());
+                }).sorted().collect(Collectors.toList());
         // sort by display names
-        Collections.sort(resourceList);
         // create data source (only accepts iterator over Resource, not of subclasses so we need to transform)
         DataSource dataSource = new SimpleDataSource(new TransformIterator<>(resourceList.iterator(), r -> (Resource) r));
         request.setAttribute(DataSource.class.getName(), dataSource);
@@ -134,6 +131,11 @@ public class LanguageDatasource extends SlingSafeMethodsServlet {
         @Override
         public int compareTo(OrderedValueMapResource o) {
             return collator.compare(getLabel(), o.getLabel());
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            return obj instanceof OrderedValueMapResource && collator.equals(((OrderedValueMapResource) obj).collator);
         }
     }
 
