@@ -2,6 +2,9 @@ version: 2
 updates:
   - package-ecosystem: "maven"
     directory: "/"
+    reviewers:
+      - bdhoine
+      - royteeuwen
     schedule:
       interval: "weekly"
     ignore:
@@ -13,9 +16,15 @@ updates:
         versions: [ "[1.10.0,)" ]
   - package-ecosystem: "npm"
     directory: "/ui.tests"
+    reviewers:
+      - bdhoine
+      - royteeuwen
     schedule:
       interval: "weekly"
   - package-ecosystem: "github-actions"
     directory: "/"
+    reviewers:
+      - bdhoine
+      - royteeuwen
     schedule:
       interval: "weekly"
