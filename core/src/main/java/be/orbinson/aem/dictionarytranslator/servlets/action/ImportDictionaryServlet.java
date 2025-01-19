@@ -14,6 +14,7 @@ import org.apache.sling.api.servlets.SlingAllMethodsServlet;
 import org.apache.sling.servlets.annotations.SlingServletResourceTypes;
 import org.apache.sling.servlets.post.HtmlResponse;
 import org.apache.tika.io.IOUtils;
+import org.jetbrains.annotations.NotNull;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
@@ -42,13 +43,13 @@ public class ImportDictionaryServlet extends SlingAllMethodsServlet {
     private DictionaryService dictionaryService;
 
     @Override
-    public void doPost(SlingHttpServletRequest request, SlingHttpServletResponse response) throws IOException {
+    public void doPost(SlingHttpServletRequest request, @NotNull SlingHttpServletResponse response) throws IOException {
         String dictionaryPath = request.getParameter("dictionary");
         RequestParameter csvfile = request.getRequestParameter("csvfile");
 
         if (csvfile != null) {
             try {
-                processCsvFile(request, response, dictionaryPath, csvfile.getInputStream());
+                processCsvFile(request, dictionaryPath, csvfile.getInputStream());
             } catch (IOException | RepositoryException e) {
                 HtmlResponse htmlResponse = new HtmlResponse();
                 htmlResponse.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error while importing CSV file: " + e.getMessage());
@@ -57,7 +58,7 @@ public class ImportDictionaryServlet extends SlingAllMethodsServlet {
         }
     }
 
-    private void processCsvFile(SlingHttpServletRequest request, SlingHttpServletResponse response, String dictionaryPath, InputStream csvContent) throws IOException, RepositoryException {
+    private void processCsvFile(SlingHttpServletRequest request, String dictionaryPath, InputStream csvContent) throws IOException, RepositoryException {
         List<String> languages = new ArrayList<>();
         List<String> keys = new ArrayList<>();
         List<List<String>> translations = new ArrayList<>();
@@ -73,17 +74,16 @@ public class ImportDictionaryServlet extends SlingAllMethodsServlet {
 
         try (CSVParser csvParser = CSVParser.parse(result, format)) {
             Map<String, Integer> headers = csvParser.getHeaderMap();
-
-            validateCsvHeaders(response, headers);
-
+            validateCsvHeaders(headers);
             headers.remove(KEY_HEADER);
+
             Resource dictionaryResource = resourceResolver.getResource(dictionaryPath);
             if (dictionaryResource != null) {
                 List<String> knownLanguages = dictionaryService.getLanguages(dictionaryResource);
                 initializeLanguageData(headers, languages, translations, knownLanguages);
 
-                for (CSVRecord record : csvParser) {
-                    processCsvRecord(dictionaryResource, languages, resourceResolver, keys, translations, record);
+                for (CSVRecord csvRecord : csvParser) {
+                    processCsvRecord(dictionaryResource, languages, resourceResolver, keys, translations, csvRecord);
                 }
 
                 resourceResolver.commit();
@@ -92,16 +92,24 @@ public class ImportDictionaryServlet extends SlingAllMethodsServlet {
     }
 
     private CSVFormat determineCsvFormat(String csvContent) throws IOException {
+        CSVFormat.Builder builder = CSVFormat.Builder.create()
+                .setSkipHeaderRecord(true);
         if (csvContent.contains(";")) {
-            return CSVFormat.newFormat(';').withFirstRecordAsHeader();
+            builder
+                    .setDelimiter(';')
+                    .setHeader(csvContent.split("\n")[0].split(";"));
         } else if (csvContent.contains(",")) {
-            return CSVFormat.DEFAULT.withFirstRecordAsHeader();
+            builder
+                    .setDelimiter(',')
+                    .setHeader(csvContent.split("\n")[0].split(","));
         } else {
             throw new IOException("Invalid CSV file. The Delimiter should be ',' or ';'.");
         }
+
+        return builder.build();
     }
 
-    private void validateCsvHeaders(SlingHttpServletResponse response, Map<String, Integer> headers) throws IOException {
+    private void validateCsvHeaders(Map<String, Integer> headers) throws IOException {
         if (!headers.containsKey(KEY_HEADER) || headers.get(KEY_HEADER) != 0) {
             throw new IOException(MessageFormat.format("Invalid CSV file. The first column must be {0}. The Delimiter should be ',' or ';'.", KEY_HEADER));
         }
@@ -125,17 +133,17 @@ public class ImportDictionaryServlet extends SlingAllMethodsServlet {
         }
     }
 
-    private void processCsvRecord(Resource dictionaryResource, List<String> languages, ResourceResolver resourceResolver, List<String> keys, List<List<String>> translations, CSVRecord record) throws IOException, RepositoryException {
-        if (record.size() != languages.size() + 1) {
-            throw new IOException("Record has an incorrect number of translations: " + record);
+    private void processCsvRecord(Resource dictionaryResource, List<String> languages, ResourceResolver resourceResolver, List<String> keys, List<List<String>> translations, CSVRecord csvRecord) throws IOException, RepositoryException {
+        if (csvRecord.size() != languages.size() + 1) {
+            throw new IOException("Record has an incorrect number of translations: " + csvRecord);
         }
 
-        String key = record.get(KEY_HEADER);
+        String key = csvRecord.get(KEY_HEADER);
         keys.add(key);
 
         for (String language : languages) {
             int index = languages.indexOf(language);
-            String translation = record.get(language);
+            String translation = csvRecord.get(language);
             translations.get(index).add(translation);
 
             createOrUpdateMessageEntryResource(dictionaryResource, resourceResolver, language, key, translation);

@@ -10,12 +10,10 @@ import com.day.cq.replication.ReplicationException;
 import com.day.cq.replication.Replicator;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jackrabbit.util.Text;
-import org.apache.sling.api.resource.LoginException;
 import org.apache.sling.api.resource.ModifiableValueMap;
 import org.apache.sling.api.resource.PersistenceException;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
-import org.apache.sling.api.resource.ResourceResolverFactory;
 import org.apache.sling.api.resource.ResourceUtil;
 import org.apache.sling.api.resource.ValueMap;
 import org.apache.sling.jcr.resource.api.JcrResourceConstants;
@@ -28,6 +26,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
+
 import javax.jcr.security.AccessControlManager;
 import javax.jcr.security.Privilege;
 import java.util.ArrayList;
@@ -53,9 +52,6 @@ public class DictionaryServiceImpl implements DictionaryService {
     private static final String SLING_BASENAME = "sling:basename";
 
     @Reference
-    private ResourceResolverFactory resourceResolverFactory;
-
-    @Reference
     private Replicator replicator;
 
     public boolean isEditableDictionary(Resource resource) {
@@ -70,7 +66,7 @@ public class DictionaryServiceImpl implements DictionaryService {
                         accessControlManager.privilegeFromName("crx:replicate")
                 };
                 return accessControlManager.hasPrivileges(path, privileges);
-            } catch (Exception e) {
+            } catch (RepositoryException e) {
                 return false;
             }
         }
@@ -95,11 +91,6 @@ public class DictionaryServiceImpl implements DictionaryService {
         LOG.debug("Add language '{}' to dictionary '{}' with properties '{}'", language, dictionary, properties);
         resourceResolver.create(dictionary, language, properties);
         resourceResolver.commit();
-    }
-
-    private ResourceResolver getServiceResourceResolver() throws LoginException {
-        Map<String, Object> authenticationInfo = Map.of(ResourceResolverFactory.SUBSERVICE, "dictionary-service");
-        return resourceResolverFactory.getServiceResourceResolver(authenticationInfo);
     }
 
     public @NotNull List<Resource> getDictionaries(ResourceResolver resourceResolver) {
@@ -136,7 +127,7 @@ public class DictionaryServiceImpl implements DictionaryService {
                 throw new DictionaryException("Dictionary '" + dictionaryPath + "' not found");
             }
         } catch (PersistenceException | ReplicationException e) {
-            throw new DictionaryException("Could not delete dictionary: " + e.getMessage(), e);
+            throw new DictionaryException("Could not delete dictionary", e);
         }
     }
 
@@ -165,7 +156,7 @@ public class DictionaryServiceImpl implements DictionaryService {
                 resourceResolver.delete(languageResource);
                 resourceResolver.commit();
             } catch (PersistenceException | ReplicationException e) {
-                throw new DictionaryException("Could not delete language: " + e.getMessage(), e);
+                throw new DictionaryException("Could not delete language", e);
             }
         } else {
             throw new DictionaryException("Language does not exist: " + language);
@@ -248,25 +239,29 @@ public class DictionaryServiceImpl implements DictionaryService {
     }
 
     @Override
-    public void updateMessageEntry(ResourceResolver resourceResolver, Resource dictionaryResource, String language, String key, String message) throws PersistenceException, RepositoryException {
+    public void updateMessageEntry(ResourceResolver resourceResolver, Resource dictionaryResource, String language, String key, String message) throws PersistenceException {
         Resource languageResource = getLanguageResource(dictionaryResource, language);
         if (languageResource != null) {
             Resource messageEntryResource = getOrCreateMessageEntryResource(resourceResolver, languageResource, key);
             if (messageEntryResource != null) {
-                ValueMap valueMap = messageEntryResource.adaptTo(ModifiableValueMap.class);
-                if (valueMap != null) {
-                    if (message.isBlank()) {
-                        valueMap.remove(SLING_MESSAGE);
-                    } else {
-                        valueMap.put(SLING_MESSAGE, message);
-                        if (StringUtils.isNotBlank(key)) {
-                            valueMap.putIfAbsent(SLING_KEY, key);
-                        }
-                        LOG.trace("Updated message entry with name '{}' and message '{}' on path '{}'", messageEntryResource.getName(), message, messageEntryResource.getPath());
-                    }
-                }
+                updateMessage(key, message, messageEntryResource);
             }
             resourceResolver.commit();
+        }
+    }
+
+    private static void updateMessage(String key, String message, Resource messageEntryResource) {
+        ValueMap valueMap = messageEntryResource.adaptTo(ModifiableValueMap.class);
+        if (valueMap != null) {
+            if (message.isBlank()) {
+                valueMap.remove(SLING_MESSAGE);
+            } else {
+                valueMap.put(SLING_MESSAGE, message);
+                if (StringUtils.isNotBlank(key)) {
+                    valueMap.putIfAbsent(SLING_KEY, key);
+                }
+                LOG.trace("Updated message entry with name '{}' and message '{}' on path '{}'", messageEntryResource.getName(), message, messageEntryResource.getPath());
+            }
         }
     }
 
@@ -301,17 +296,15 @@ public class DictionaryServiceImpl implements DictionaryService {
             }
             resourceResolver.commit();
         }
-
     }
 
-    private Resource getOrCreateMessageEntryResource(ResourceResolver resourceResolver, Resource languageResource, String key) throws RepositoryException {
+    private Resource getOrCreateMessageEntryResource(ResourceResolver resourceResolver, Resource languageResource, String key) throws PersistenceException {
         Resource messageEntryResource = getMessageEntryResource(languageResource, key);
         if (messageEntryResource != null) {
             return messageEntryResource;
         }
-        Session session = resourceResolver.adaptTo(Session.class);
-        JcrUtil.createPath(languageResource.getPath() + "/" + Text.escapeIllegalJcrChars(key), SLING_MESSAGEENTRY, session);
-        session.save();
+        resourceResolver.create(languageResource, Text.escapeIllegalJcrChars(key), Map.of("jcr:primaryType", SLING_MESSAGEENTRY));
+        resourceResolver.commit();
         return languageResource.getChild(Text.escapeIllegalJcrChars(key));
     }
 

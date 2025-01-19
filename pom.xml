@@ -84,11 +84,6 @@
 
         <aem.version>6.5.17</aem.version>
         <aemanalyser.version>1.6.6</aemanalyser.version>
-
-        <sonar.organization>orbinson</sonar.organization>
-        <sonar.projectKey>${sonar.organization}_${project.artifactId}</sonar.projectKey>
-        <sonar.host.url>https://sonarcloud.io</sonar.host.url>
-        <sonar.coverage.jacoco.xmlReportPaths>**/target/site/jacoco</sonar.coverage.jacoco.xmlReportPaths>
     </properties>
 
     <build>
@@ -120,12 +115,12 @@
                         <configuration>
                             <rules>
                                 <requireMavenVersion>
-                                    <message>Maven version should be 3.3.9+</message>
+                                    <message>Maven version must be 3.3.9 or higher</message>
                                     <version>[3.3.9,)</version>
                                 </requireMavenVersion>
                                 <requireJavaVersion>
-                                    <message>Maven must be executed with a JDK 11</message>
-                                    <version>[11,12)</version>
+                                    <message>Maven must be executed with JDK 11, 17 or 21</message>
+                                    <version>[11,22)</version>
                                 </requireJavaVersion>
                             </rules>
                         </configuration>
@@ -139,24 +134,6 @@
                     <source>11</source>
                     <target>11</target>
                 </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.jacoco</groupId>
-                <artifactId>jacoco-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>prepare-agent</id>
-                        <goals>
-                            <goal>prepare-agent</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>report</id>
-                        <goals>
-                            <goal>report</goal>
-                        </goals>
-                    </execution>
-                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -486,11 +463,57 @@ Bundle-DocURL:
                         <installDirectory>${project.build.directory}</installDirectory>
                     </configuration>
                 </plugin>
+                <plugin>
+                    <groupId>org.sonarsource.scanner.maven</groupId>
+                    <artifactId>sonar-maven-plugin</artifactId>
+                    <version>5.0.0.4389</version>
+                </plugin>
             </plugins>
         </pluginManagement>
     </build>
 
     <profiles>
+        <profile>
+            <id>coverage</id>
+
+            <properties>
+                <sonar.organization>orbinson</sonar.organization>
+                <sonar.projectKey>${sonar.organization}_${project.artifactId}</sonar.projectKey>
+                <sonar.host.url>https://sonarcloud.io</sonar.host.url>
+                <sonar.coverage.jacoco.xmlReportPaths>${project.basedir}/target/site/jacoco/jacoco.xml
+                </sonar.coverage.jacoco.xmlReportPaths>
+
+                <aem.analyser.skip>true</aem.analyser.skip>
+                <checkstyle.skip>true</checkstyle.skip>
+                <enforcer.skip>true</enforcer.skip>
+                <pmd.skip>true</pmd.skip>
+                <spotbugs.skip>true</spotbugs.skip>
+                <vault.skipValidation>true</vault.skipValidation>
+            </properties>
+
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.jacoco</groupId>
+                        <artifactId>jacoco-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>prepare-agent</id>
+                                <goals>
+                                    <goal>prepare-agent</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <id>report</id>
+                                <goals>
+                                    <goal>report</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
         <profile>
             <id>release</id>
             <build>
@@ -625,6 +648,12 @@ Bundle-DocURL:
                 <scope>import</scope>
             </dependency>
             <dependency>
+                <groupId>org.junit.jupiter</groupId>
+                <artifactId>junit-jupiter-params</artifactId>
+                <version>5.11.3</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-core</artifactId>
                 <version>5.15.2</version>
@@ -642,6 +671,7 @@ Bundle-DocURL:
                 <version>1.4</version>
                 <scope>test</scope>
             </dependency>
+
             <dependency>
                 <groupId>io.wcm</groupId>
                 <artifactId>io.wcm.testing.aem-mock.junit5</artifactId>
@@ -670,7 +700,8 @@ Bundle-DocURL:
             <dependency>
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-csv</artifactId>
-                <version>1.12.0</version>
+                <!-- Highest version compatible with commons-io 2.11.0 in uber-jar -->
+                <version>1.10.0</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

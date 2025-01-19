@@ -5,178 +5,108 @@ import be.orbinson.aem.dictionarytranslator.services.impl.DictionaryServiceImpl;
 import com.day.cq.replication.Replicator;
 import io.wcm.testing.mock.aem.junit5.AemContext;
 import io.wcm.testing.mock.aem.junit5.AemContextExtension;
-import junit.framework.Assert;
-import org.apache.commons.lang3.time.DateUtils;
-import org.apache.sling.api.resource.Resource;
+import org.apache.sling.api.resource.ResourceResolver;
+import org.apache.sling.testing.mock.jcr.MockJcr;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.junit.jupiter.MockitoSettings;
-import org.mockito.quality.Strictness;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.Mockito;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.*;
+import javax.jcr.RepositoryException;
+import javax.jcr.Session;
+import javax.jcr.security.AccessControlManager;
+import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doReturn;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
-@ExtendWith({AemContextExtension.class, MockitoExtension.class})
-@MockitoSettings(strictness = Strictness.LENIENT)
+@ExtendWith(AemContextExtension.class)
 class DictionaryImplTest {
-
 
     private final AemContext context = new AemContext();
 
     @BeforeEach
     public void setUp() {
         context.addModelsForClasses(DictionaryImpl.class);
+
         context.registerService(Replicator.class, mock(Replicator.class));
         context.registerInjectActivateService(new DictionaryServiceImpl());
-        context.load().json("/i18nTestDictionaries.json", "/content/dictionaries");
+
+        context.load().json("/content.json", "/content");
     }
 
     @Test
-    void testGetLanguages() {
-        final List<String> expectedLanguages = new ArrayList<>();
-        expectedLanguages.add("de");
-        expectedLanguages.add("en");
-        expectedLanguages.add("fr");
+    void dictionaryShouldReturnCorrectLanguages() {
+        context.currentResource("/content/dictionaries/fruit/i18n");
 
-        final Resource testResource = context.currentResource("/content/dictionaries/languages");
-        if (testResource != null) {
-            final Dictionary dictionary = context.request().adaptTo(Dictionary.class);
-            if (dictionary != null) {
-                Assert.assertNotNull(dictionary);
-                final List<String> actualLanguages = new ArrayList<>(dictionary.getLanguages());
-                Assert.assertEquals(expectedLanguages, actualLanguages);
-            } else {
-                Assert.fail("could not adapt resource to dictionary");
-            }
-        } else {
-            Assert.fail("No resource available");
-        }
+        Dictionary dictionary = context.request().adaptTo(Dictionary.class);
+
+        assertEquals(List.of("en", "nl_BE"), dictionary.getLanguages());
     }
 
     @Test
-    void testGetLanguagesString() {
-        final String expectedLanguages = "de, en, fr";
+    void dictionaryShouldReturnCorrectKeyCount() {
+        context.currentResource("/content/dictionaries/fruit/i18n");
 
-        final Resource testResource = context.currentResource("/content/dictionaries/languages");
-        if (testResource != null) {
-            final Dictionary dictionary = context.request().adaptTo(Dictionary.class);
-            if (dictionary != null) {
-                Assert.assertNotNull(dictionary);
-                final String actualLanguages = dictionary.getLanguageList();
-                Assert.assertEquals("message", expectedLanguages, actualLanguages);
-            } else {
-                Assert.fail("could not adapt resource to dictionary");
-            }
-        } else {
-            Assert.fail("No resource available");
-        }
+        Dictionary dictionary = context.request().adaptTo(Dictionary.class);
+
+        assertEquals(3, dictionary.getKeyCount());
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void dictionaryShouldBeEditable(boolean hasPrivileges) throws RepositoryException {
+        Session session = MockJcr.newSession();
+        context.registerAdapter(ResourceResolver.class, Session.class, session);
+        AccessControlManager acm = Mockito.mock(AccessControlManager.class);
+        MockJcr.setAccessControlManager(session, acm);
+        when(acm.hasPrivileges(anyString(), any())).thenReturn(hasPrivileges);
+
+        context.currentResource("/content/dictionaries/fruit/i18n");
+
+        Dictionary dictionary = context.request().adaptTo(Dictionary.class);
+
+        assertEquals(hasPrivileges, dictionary.isEditable());
     }
 
     @Test
-    void testAppsIsNotEditable() {
-        context.load().json("/i18nTestDictionaries.json", "/apps/dictionaries");
-        final Resource testResource = context.currentResource("/apps/dictionaries/languages");
-        if (testResource != null) {
-            final Dictionary dictionary = context.request().adaptTo(Dictionary.class);
-            if (dictionary != null) {
-                Assert.assertFalse(dictionary.isEditable());
-            } else {
-                Assert.fail("could not adapt resource to dictionary");
-            }
-        } else {
-            Assert.fail("No resource available");
-        }
+    void dictionaryShouldReturnCorrectKeys() {
+        context.currentResource("/content/dictionaries/fruit/i18n");
+
+        Dictionary dictionary = context.request().adaptTo(Dictionary.class);
+
+        assertEquals(List.of("apple", "banana", "cherry"), dictionary.getKeys());
     }
 
     @Test
-    void testLibsIsNotEditable() {
-        context.load().json("/i18nTestDictionaries.json", "/libs/dictionaries");
-        final Resource testResource = context.currentResource("/libs/dictionaries/languages");
-        if (testResource != null) {
-            final Dictionary dictionary = context.request().adaptTo(Dictionary.class);
-            if (dictionary != null) {
-                Assert.assertFalse(dictionary.isEditable());
-            } else {
-                Assert.fail("could not adapt resource to dictionary");
-            }
-        } else {
-            Assert.fail("No resource available");
-        }
+    void dictionaryShouldReturnCorrectResource() {
+        context.currentResource("/content/dictionaries/fruit/i18n");
+
+        Dictionary dictionary = context.request().adaptTo(Dictionary.class);
+
+        assertEquals("/content/dictionaries/fruit/i18n", dictionary.getResource().getPath());
     }
 
     @Test
-    void getCreated() throws ParseException {
-        final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss.SSSXXX");
-        final String dateInString = "2022-08-23T10:42:50.469+02:00";
-        final Date date = simpleDateFormat.parse(dateInString);
-        final Calendar expectedCreated = Calendar.getInstance();
-        expectedCreated.setTime(date);
+    void dictionaryShouldReturnCorrectBasename() {
+        context.currentResource("/content/dictionaries/fruit/i18n");
 
-        final Resource testResource = context.currentResource("/content/dictionaries/languages");
-        if (testResource != null) {
-            final Dictionary dictionary = context.request().adaptTo(Dictionary.class);
-            if (dictionary != null) {
-                final Calendar actualCreated = dictionary.getCreated();
-                Assert.assertTrue(DateUtils.isSameInstant(expectedCreated, actualCreated));
-            } else {
-                Assert.fail("could not adapt resource to dictionary");
-            }
-        } else {
-            Assert.fail("No resource available");
-        }
+        Dictionary dictionary = context.request().adaptTo(Dictionary.class);
+
+        assertEquals("/content/dictionaries/fruit/i18n", dictionary.getBasename());
     }
 
     @Test
-    void testGetLastModifiedWhenNotModified() throws ParseException {
-        final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss.SSSXXX");
-        final String dateInString = "2022-08-23T10:42:50.469+02:00";
-        final Date date = simpleDateFormat.parse(dateInString);
-        final Calendar expectedCreated = Calendar.getInstance();
-        expectedCreated.setTime(date);
+    void dictionaryShouldReturnCorrectLanguageList() {
+        context.currentResource("/content/dictionaries/fruit/i18n");
 
-        final Resource testResource = context.currentResource("/content/dictionaries/languages");
-        if (testResource != null) {
-            final Dictionary dictionary = context.request().adaptTo(Dictionary.class);
-            if (dictionary != null) {
-                final Calendar actualCreated = dictionary.getLastModified();
-                Assert.assertTrue(DateUtils.isSameInstant(expectedCreated, actualCreated));
-            } else {
-                Assert.fail("could not adapt resource to dictionary");
-            }
-        } else {
-            Assert.fail("No resource available");
-        }
+        Dictionary dictionary = context.request().adaptTo(Dictionary.class);
+
+        assertEquals("en, nl_BE", dictionary.getLanguageList());
     }
-
-    @Test
-    void testGetLastModified() throws ParseException {
-        final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss.SSSXXX");
-        final String dateInString = "2022-08-24T10:42:50.469+02:00";
-        final Date date = simpleDateFormat.parse(dateInString);
-        final Calendar expectedCreated = Calendar.getInstance();
-        expectedCreated.setTime(date);
-
-        final Resource testResource = context.currentResource("/content/dictionaries/modified");
-        if (testResource != null) {
-            final Dictionary dictionary = context.request().adaptTo(Dictionary.class);
-            if (dictionary != null) {
-                final Calendar actualModified = dictionary.getLastModified();
-                final Calendar actualCreated = dictionary.getCreated();
-                Assert.assertTrue(DateUtils.isSameInstant(expectedCreated, actualModified));
-                Assert.assertFalse(DateUtils.isSameInstant(expectedCreated, actualCreated));
-            } else {
-                Assert.fail("could not adapt resource to dictionary");
-            }
-        } else {
-            Assert.fail("No resource available");
-        }
-    }
-
 }

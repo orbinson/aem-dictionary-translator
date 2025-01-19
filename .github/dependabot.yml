@@ -12,6 +12,8 @@ updates:
         versions: [ "[6.5.17,)" ]
       - dependency-name: "biz.aQute.bnd:bnd-maven-plugin"
         update-types: [ "version-update:semver-major" ]
+      - dependency-name: "org.apache.commons:commons-csv"
+        versions: [ "[1.10.0,)" ]
   - package-ecosystem: "npm"
     directory: "/ui.tests"
     reviewers:

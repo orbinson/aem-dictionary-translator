@@ -1,0 +1,81 @@
+{
+  "jcr:primaryType": "sling:OrderedFolder",
+  "aem-dictionary-translator": {
+    "jcr:primaryType": "sling:Folder",
+    "content": {
+      "jcr:primaryType": "nt:folder",
+      "granite": {
+        "jcr:primaryType": "nt:folder",
+        "field": {
+          "jcr:primaryType": "sling:Folder",
+          "publish": {
+            "jcr:primaryType": "nt:unstructured",
+            "action": "aem-dictionary-translator.dictionary.publish",
+            "activeCondition": "aem-dictionary-translator.dictionary.editable",
+            "icon": "publish",
+            "text": "Publish",
+            "variant": "actionBar",
+            "command": "p",
+            "sling:resourceType": "granite/ui/components/coral/foundation/collection/action",
+            "granite:rendercondition": {
+              "jcr:primaryType": "nt:unstructured",
+              "agentId": "publish",
+              "sling:resourceType": "aem-dictionary-translator/components/rendercondition/replication-agent-enabled"
+            }
+          },
+          "publish-preview": {
+            "jcr:primaryType": "nt:unstructured",
+            "action": "aem-dictionary-translator.dictionary.publish",
+            "activeCondition": "aem-dictionary-translator.dictionary.editable",
+            "icon": "globe",
+            "text": "Publish to Preview",
+            "variant": "actionBar",
+            "sling:resourceType": "granite/ui/components/coral/foundation/collection/action",
+            "data": {
+              "jcr:primaryType": "nt:unstructured",
+              "agentId": "preview"
+            },
+            "granite:rendercondition": {
+              "jcr:primaryType": "nt:unstructured",
+              "agentId": "preview",
+              "sling:resourceType": "aem-dictionary-translator/components/rendercondition/replication-agent-enabled"
+            }
+          }
+        }
+      },
+      "dictionaries": {
+        "jcr:primaryType": "cq:Page",
+        "message-entries": {
+          "jcr:primaryType": "cq:Page",
+          "jcr:content": {
+            "jcr:primaryType": "nt:unstructured",
+            "actions": {
+              "jcr:primaryType": "nt:unstructured",
+              "primary": {
+                "jcr:primaryType": "nt:unstructured",
+                "create-key": {
+                  "jcr:primaryType": "nt:unstructured",
+                  "action": "foundation.dialog",
+                  "target": "#key-list",
+                  "icon": "add",
+                  "text": "Create Key",
+                  "variant": "primary",
+                  "sling:resourceType": "granite/ui/components/coral/foundation/collection/action",
+                  "data": {
+                    "jcr:primaryType": "nt:unstructured",
+                    "src.uritemplate": "/apps/aem-dictionary-translator/content/granite/dialog/dictionary/key/create.html${requestPathInfo.suffix}"
+                  },
+                  "granite:rendercondition": {
+                    "jcr:primaryType": "nt:unstructured",
+                    "path": "${requestPathInfo.suffix}",
+                    "sling:resourceType": "aem-dictionary-translator/components/rendercondition/editable-dictionary"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
