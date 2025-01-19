@@ -6,7 +6,7 @@ updates:
       - bdhoine
       - royteeuwen
     schedule:
-      interval: "weekly"
+      interval: "monthly"
     ignore:
       - dependency-name: "io.wcm.maven:io.wcm.maven.aem-dependencies"
         versions: [ "[6.5.17,)" ]
@@ -20,11 +20,11 @@ updates:
       - bdhoine
       - royteeuwen
     schedule:
-      interval: "weekly"
+      interval: "monthly"
   - package-ecosystem: "github-actions"
     directory: "/"
     reviewers:
       - bdhoine
       - royteeuwen
     schedule:
-      interval: "weekly"
+      interval: "monthly"
