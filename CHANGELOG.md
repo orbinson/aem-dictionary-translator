@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Make dictionary keys sortable [#62](https://github.com/orbinson/aem-dictionary-translator/issues/62)
 - Support sling:key being optional [#62](https://github.com/orbinson/aem-dictionary-translator/issues/62)
 - Render entries when not all languages are present [#62](https://github.com/orbinson/aem-dictionary-translator/issues/62)
+- Enable "sling:Message" mixinType based message entries [#106](https://github.com/orbinson/aem-dictionary-translator/issues/106)
 
 ### Fixed
 

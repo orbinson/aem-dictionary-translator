@@ -10,12 +10,7 @@ import com.day.cq.replication.ReplicationException;
 import com.day.cq.replication.Replicator;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jackrabbit.util.Text;
-import org.apache.sling.api.resource.ModifiableValueMap;
-import org.apache.sling.api.resource.PersistenceException;
-import org.apache.sling.api.resource.Resource;
-import org.apache.sling.api.resource.ResourceResolver;
-import org.apache.sling.api.resource.ResourceUtil;
-import org.apache.sling.api.resource.ValueMap;
+import org.apache.sling.api.resource.*;
 import org.apache.sling.jcr.resource.api.JcrResourceConstants;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -26,24 +21,13 @@ import org.slf4j.LoggerFactory;
 
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
-
 import javax.jcr.security.AccessControlManager;
 import javax.jcr.security.Privilege;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants.SLING_KEY;
-import static be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants.SLING_MESSAGE;
-import static be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants.SLING_MESSAGEENTRY;
-import static org.apache.jackrabbit.JcrConstants.JCR_LANGUAGE;
-import static org.apache.jackrabbit.JcrConstants.JCR_PRIMARYTYPE;
+import static be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants.*;
+import static org.apache.jackrabbit.JcrConstants.*;
 
 @Component
 public class DictionaryServiceImpl implements DictionaryService {
@@ -269,18 +253,23 @@ public class DictionaryServiceImpl implements DictionaryService {
     public Resource getMessageEntryResource(Resource languageResource, String key) {
         // In order to speed up the search, we go for the default check where it is the escaped key as node name
         Resource messageEntryResource = languageResource.getChild(Text.escapeIllegalJcrChars(key));
-        if (messageEntryResource != null) {
+        if (isMessageEntryResource(messageEntryResource)) {
             return messageEntryResource;
         }
 
         // Fall back to searching for the resource with sling:key as correct property
         for (Resource resource : languageResource.getChildren()) {
-            if (key.equals(resource.getValueMap().get(DictionaryConstants.SLING_KEY))) {
+            if (key.equals(resource.getValueMap().get(DictionaryConstants.SLING_KEY)) && isMessageEntryResource(messageEntryResource)) {
                 return resource;
             }
         }
 
         return null;
+    }
+
+    private static boolean isMessageEntryResource(Resource messageEntryResource) {
+        return messageEntryResource != null && (messageEntryResource.isResourceType(DictionaryConstants.SLING_MESSAGEENTRY) ||
+                Arrays.asList(messageEntryResource.getValueMap().get(JCR_MIXINTYPES, new String[0])).contains(SLING_MESSAGE_MIXIN));
     }
 
     @Override
