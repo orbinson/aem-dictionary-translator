@@ -15,15 +15,7 @@ import org.jetbrains.annotations.Nullable;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-
-import static be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants.SLING_MESSAGEENTRY;
+import java.util.*;
 
 @Component(
         service = ResourceProvider.class,
@@ -53,7 +45,7 @@ public class CombiningMessageEntryResourceProvider extends ResourceProvider<Obje
             Resource languageResource = dictionaryService.getLanguageResource(dictionaryResource, language);
             if (languageResource != null) {
                 Resource messageEntryResource = dictionaryService.getMessageEntryResource(languageResource, key);
-                if (messageEntryResource != null && messageEntryResource.isResourceType(DictionaryConstants.SLING_MESSAGEENTRY)) {
+                if (messageEntryResource != null) {
                     properties.put(language, messageEntryResource.getValueMap().get(DictionaryConstants.SLING_MESSAGE, ""));
                     messageEntryPaths.add(messageEntryResource.getPath());
                 } else {
@@ -107,7 +99,7 @@ public class CombiningMessageEntryResourceProvider extends ResourceProvider<Obje
                 Resource languageResource = dictionaryService.getLanguageResource(dictionaryResource, language);
                 if (languageResource != null) {
                     Resource messageEntryResource = dictionaryService.getMessageEntryResource(languageResource, key);
-                    if (messageEntryResource != null && messageEntryResource.isResourceType(SLING_MESSAGEENTRY)) {
+                    if (messageEntryResource != null) {
                         return true;
                     }
                 }
