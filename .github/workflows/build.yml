@@ -1,12 +1,11 @@
+# Tigger CI
 name: Build
 
 on:
   push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
+    branches: [ main ]
+  pull_request_target:
+    types: [opened, synchronize, reopened]
 
 jobs:
   aem-maven-build:
