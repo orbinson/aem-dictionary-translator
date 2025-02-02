@@ -2,11 +2,9 @@ name: Build
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
   pull_request:
-    branches:
-      - main
+    branches: [ main ]
 
 jobs:
   aem-maven-build:
@@ -14,32 +12,6 @@ jobs:
     uses: orbinson/workflows/.github/workflows/aem-maven-build.yml@main
     with:
       java-version: 21
-
-  sonar:
-    name: Run SonarQube analysis
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - name: Setup Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: zulu
-          java-version: 21
-          cache: maven
-      - name: Cache SonarQube packages
-        uses: actions/cache@v4
-        with:
-          path: ~/.sonar/cache
-          key: ${{ runner.os }}-sonar
-          restore-keys: ${{ runner.os }}-sonar
-      - name: Execute SonarQube maven plugin
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: mvn -B -Pcoverage verify sonar:sonar
 
   ui-tests:
     name: Run UI tests
