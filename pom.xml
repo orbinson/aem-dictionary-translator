@@ -9,7 +9,7 @@
     <version>1.3.0-SNAPSHOT</version>
 
     <name>AEM Dictionary Translator</name>
-    <description>Tool to translate AEM i18 dictionaries for internationalization</description>
+    <description>Tool to translate AEM i18n dictionaries for internationalization</description>
 
     <modules>
         <module>all</module>
