@@ -23,11 +23,13 @@ The [AEM Dictionary Translator](http://localhost:4502/tools/translation/dictiona
 The minimal required AEM and AEM Dictionary Translator versions are:
 
 | AEM Type | AEM version                     | AEM Dictionary Translator |
-|----------|---------------------------------|----------------------|
-| AEM 6.5  | `6.5.17`                        | `1.3.0`              |
-| AEMaaCS  | `2023.1.10912.20230130T173736Z` | `1.0.0`              |
+|----------|---------------------------------|---------------------------|
+| AEM 6.5  | `6.5.17`                        | `1.3.0`                   |
+| AEMaaCS  | `2023.1.10912.20230130T173736Z` | `1.0.0`                   |
 
 The minimal required Java version is `11`.
+
+**Note:** AEM 6.5 is supported on a best-effort basis and will not undergo active testing or bug fixing. Known issues exist in service packs 18, 19, and 20. We depend on the community to help identify and resolve bugs through pull request contributions.
 
 ### Package installation
 
