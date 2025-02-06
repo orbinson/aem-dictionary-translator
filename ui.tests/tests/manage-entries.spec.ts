@@ -53,7 +53,7 @@ test("Edit key", async ({ page }) => {
     await page.getByRole("button", { name: "Edit(e)" }).click();
     await page.getByLabel("Dutch (nl)").fill("Appeltje");
     await page.getByRole("dialog").getByRole("button", { name: "Save" }).click();
-    
+
     await expect(page.getByRole("row", { name: "apple Apple Appeltje" })).toBeVisible();
 });
 
@@ -90,4 +90,15 @@ test("Delete key", async ({ page }) => {
     await page.getByRole("alertdialog").getByRole("button", { name: "Delete" }).click();
 
     await expect(row).toHaveCount(0);
+});
+
+test("Keys of all types exist", async ({ page }) => {
+    const mixedPrimaryTypeAndMixinTypeRow = page.getByRole("row", { name: "apple Apple Appel" });
+    await expect(mixedPrimaryTypeAndMixinTypeRow).toBeVisible();
+
+    const mixinTypeRow = page.getByRole("row", { name: "banana Banana Banaan" });
+    await expect(mixinTypeRow).toBeVisible();
+
+    const primaryTypeRow = page.getByRole("row", { name: "cherry Cherry Kers" });
+    await expect(primaryTypeRow).toBeVisible();
 });

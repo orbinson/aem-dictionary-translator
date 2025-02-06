@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Fixed "sling:Message" mixinType when it didn't exist at all as sling:MessageEntry [#106](https://github.com/orbinson/aem-dictionary-translator/issues/106)
+
 ## [1.3.0] - 2025-02-04
 
 ### Added

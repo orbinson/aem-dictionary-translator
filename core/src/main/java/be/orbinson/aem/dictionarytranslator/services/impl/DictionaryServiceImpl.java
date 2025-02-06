@@ -186,7 +186,7 @@ public class DictionaryServiceImpl implements DictionaryService {
             Resource languageResource = getLanguageResource(dictionaryResource, language);
             if (languageResource != null) {
                 for (Resource messageEntryResource : languageResource.getChildren()) {
-                    if (messageEntryResource.isResourceType(SLING_MESSAGEENTRY)) {
+                    if (isMessageEntryResource(messageEntryResource)) {
                         String key = Optional.ofNullable(messageEntryResource.getValueMap().get(SLING_KEY, String.class))
                                 .orElse(messageEntryResource.getName());
                         keys.add(key);
