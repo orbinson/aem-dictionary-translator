@@ -7,7 +7,7 @@
           sling:basename="/content/dictionaries/fruit/i18n"
           sling:resourceType="sling:Folder">
     <apple jcr:primaryType="nt:folder" jcr:mixinTypes="[sling:Message]" sling:key="apple" sling:message="Appel"/>
-    <banana jcr:primaryType="sling:MessageEntry" sling:key="banana" sling:message="Banaan"/>
+    <banana jcr:primaryType="nt:folder" jcr:mixinTypes="[sling:Message]" sling:key="banana" sling:message="Banaan"/>
     <cherry jcr:primaryType="sling:MessageEntry" sling:key="cherry" sling:message="Kers"/>
     <date jcr:primaryType="sling:MessageEntry" sling:key="date" sling:message="Dadel"/>
     <grape jcr:primaryType="sling:MessageEntry" sling:key="grape" sling:message="Druif"/>
