@@ -1,5 +1,6 @@
 name: Code Quality
 
+# Temporary disable to test SonarCloud automatic analysis
 on:
   workflow_call:
 
