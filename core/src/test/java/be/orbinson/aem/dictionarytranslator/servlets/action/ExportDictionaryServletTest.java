@@ -44,7 +44,7 @@ class ExportDictionaryServletTest {
 
         servlet.doPost(context.request(), context.response());
 
-        String csvContent = context.response().getOutputAsString();
+        String csvContent = context.response().getOutputAsString().replaceAll("\r\n", "\n");
         String expectedContent = "KEY" + delimiter + "en" + delimiter + "nl_BE\n" +
                 "apple" + delimiter + "Apple" + delimiter + "Appel\n" +
                 "banana" + delimiter + "Banana" + delimiter + "Banaan\n" +

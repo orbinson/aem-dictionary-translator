@@ -167,5 +167,29 @@ class ImportDictionaryServletTest {
 
         assertEquals(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, context.response().getStatus());
     }
+
+    @Test
+    void doPostValuesWithDelimiter() throws Exception {
+        context.request().addRequestParameter("dictionary", "/content/dictionaries/fruit/i18n");
+        String csvData = "KEY,en,nl_BE\nhello,Hello;Hi,Hallo\n";
+        InputStream csvStream = new ByteArrayInputStream(csvData.getBytes());
+        context.request().addRequestParameter("csvfile", csvStream.readAllBytes(), "text/csv", "translations.csv");
+
+        servlet.doPost(context.request(), context.response());
+
+        assertEquals(HttpServletResponse.SC_OK, context.response().getStatus());
+    }
+
+    @Test
+    void doPostLineEndings() throws Exception {
+        context.request().addRequestParameter("dictionary", "/content/dictionaries/fruit/i18n");
+        String csvData = "KEY,en,nl_BE\r\nhello,Hello;Hi,Hallo\r\n";
+        InputStream csvStream = new ByteArrayInputStream(csvData.getBytes());
+        context.request().addRequestParameter("csvfile", csvStream.readAllBytes(), "text/csv", "translations.csv");
+
+        servlet.doPost(context.request(), context.response());
+
+        assertEquals(HttpServletResponse.SC_OK, context.response().getStatus());
+    }
 }
 
