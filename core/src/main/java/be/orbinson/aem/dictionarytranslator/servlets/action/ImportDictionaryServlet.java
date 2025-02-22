@@ -4,6 +4,7 @@ import be.orbinson.aem.dictionarytranslator.services.DictionaryService;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.request.RequestParameter;
@@ -65,9 +66,11 @@ public class ImportDictionaryServlet extends SlingAllMethodsServlet {
 
         ResourceResolver resourceResolver = request.getResourceResolver();
 
-        String result = IOUtils.toString(csvContent, String.valueOf(StandardCharsets.UTF_8));
+        List<String> lines = IOUtils.readLines(csvContent, String.valueOf(StandardCharsets.UTF_8));
+        String header = !lines.isEmpty() ? lines.get(0) : StringUtils.EMPTY;
+        String result = String.join("\n", lines);
 
-        CSVFormat format = determineCsvFormat(result);
+        CSVFormat format = determineCsvFormat(header);
         if (format == null) {
             return;
         }
@@ -91,17 +94,17 @@ public class ImportDictionaryServlet extends SlingAllMethodsServlet {
         }
     }
 
-    private CSVFormat determineCsvFormat(String csvContent) throws IOException {
+    private CSVFormat determineCsvFormat(String csvHeader) throws IOException {
         CSVFormat.Builder builder = CSVFormat.Builder.create()
                 .setSkipHeaderRecord(true);
-        if (csvContent.contains(";")) {
+        if (csvHeader.contains(";")) {
             builder
                     .setDelimiter(';')
-                    .setHeader(csvContent.split("\n")[0].split(";"));
-        } else if (csvContent.contains(",")) {
+                    .setHeader(csvHeader.split("\n")[0].split(";"));
+        } else if (csvHeader.contains(",")) {
             builder
                     .setDelimiter(',')
-                    .setHeader(csvContent.split("\n")[0].split(","));
+                    .setHeader(csvHeader.split("\n")[0].split(","));
         } else {
             throw new IOException("Invalid CSV file. The Delimiter should be ',' or ';'.");
         }
