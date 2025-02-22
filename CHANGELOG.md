@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.2] - 2025-02-22
+
 ### Fixed
 
 - Delimiter recognition when both `,` and `;` are present in a file [#118](https://github.com/orbinson/aem-dictionary-translator/issues/118)
@@ -163,7 +165,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Create, publish and edit dictionaries
 - Create, delete and update message entries in a dictionary
 
-[unreleased]: https://github.com/orbinson/aem-dictionary-translator/compare/1.3.1...HEAD
+[unreleased]: https://github.com/orbinson/aem-dictionary-translator/compare/1.3.2...HEAD
+[1.3.2]: https://github.com/orbinson/aem-dictionary-translator/compare/1.3.1...1.3.2
 [1.3.1]: https://github.com/orbinson/aem-dictionary-translator/compare/1.3.0...1.3.1
 [1.3.0]: https://github.com/orbinson/aem-dictionary-translator/compare/1.2.1...1.3.0
 [1.2.1]: https://github.com/orbinson/aem-dictionary-translator/compare/1.2.0...1.2.1
