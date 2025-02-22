@@ -6,8 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-[#118] Fixed delimiter recognition when both `,` and `;` are present in a file (https://github.com/orbinson/aem-dictionary-translator/issues/118)
-[#119] Fixed import for files with CR LF line endings(https://github.com/orbinson/aem-dictionary-translator/issues/119)
+
+### Fixed
+
+- Delimiter recognition when both `,` and `;` are present in a file [#118](https://github.com/orbinson/aem-dictionary-translator/issues/118)
+- Import for files with CR LF line endings [#119](https://github.com/orbinson/aem-dictionary-translator/issues/119)
 
 ## [1.3.1] - 2025-02-06
 
