@@ -1,10 +1,8 @@
 name: Code Quality
 
+# Temporary disable to test SonarCloud automatic analysis
 on:
-  push:
-    branches: [ main ]
-  pull_request:
-    types: [ opened, synchronize, reopened ]
+  workflow_call:
 
 jobs:
   sonar:
