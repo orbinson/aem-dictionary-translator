@@ -15,19 +15,40 @@
                     primary: true,
                     handler: function () {
                         let agentId = config.data?.agentId || "";
-                        replicate(ui, collection, agentId, getPublishPaths(selections));
+                        replicateRecursive(ui, collection, agentId, "/content/dictionaries/fruit");
                     }
                 }
             ]);
         }
-    })
+    });
 
-    function getPublishPaths(selections) {
-        return selections.flatMap(selection =>
-            Array.from(selection.querySelectorAll("[data-publish-path]"))
-                .map(element => element.getAttribute("data-publish-path"))
-                .filter(value => value !== null)
-        );
+    function query(path, limit, offset) {
+        const params = new URLSearchParams({
+            "path": path,
+            "p.limit": limit,
+            "p.offset": offset,
+            "p.hits": "selective",
+            "p.properties": "jcr:path",
+        });
+        const endpoint = Granite.HTTP.externalize("/bin/querybuilder.json");
+
+        return fetch(`${endpoint}?${params.toString()}`)
+            .then(response => response.json());
+    }
+
+    async function replicateRecursive(ui, collection, agentId, path, batchSize = 100) {
+        let offset = 0;
+        let total = null;
+
+        do {
+            const response = await query(path, batchSize, offset);
+            total = total ?? response.total;
+
+            const paths = response.hits.map(hit => hit["jcr:path"]);
+            replicate(ui, collection, agentId, paths);
+
+            offset += batchSize;
+        } while (offset < total);
     }
 
     function replicate(ui, collection, agentId, paths) {
@@ -38,7 +59,8 @@
                 _charset_: "utf-8",
                 cmd: "Activate",
                 path: paths,
-                agentId: agentId || "publish"
+                agentId: agentId || "publish",
+                batch: "true"
             }
         }).always(function () {
             ui.clearWait();
