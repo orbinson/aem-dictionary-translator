@@ -45,6 +45,7 @@
             "p.offset": offset,
             "p.hits": "selective",
             "p.properties": "jcr:path",
+            "orderby": "@jcr:path",
         });
         const endpoint = Granite.HTTP.externalize("/bin/querybuilder.json");
 
