@@ -2,6 +2,9 @@ package be.orbinson.aem.dictionarytranslator.servlets.datasource;
 
 import be.orbinson.aem.dictionarytranslator.models.Dictionary;
 import be.orbinson.aem.dictionarytranslator.services.impl.CombiningMessageEntryResourceProvider;
+import com.adobe.granite.ui.components.Config;
+import com.adobe.granite.ui.components.ExpressionHelper;
+import com.adobe.granite.ui.components.ExpressionResolver;
 import com.adobe.granite.ui.components.ds.DataSource;
 import com.adobe.granite.ui.components.ds.SimpleDataSource;
 import com.adobe.granite.ui.components.ds.ValueMapResource;
@@ -35,8 +38,12 @@ import java.util.Map;
 )
 public class CombiningMessageEntryDatasource extends SlingSafeMethodsServlet {
     public static final String FIELD_LABEL = "fieldLabel";
+
     @Reference
     private transient ModelFactory modelFactory;
+
+    @Reference
+    private ExpressionResolver expressionResolver;
 
     private static void setColumnsDataSource(ResourceResolver resourceResolver, List<Resource> resourceList, Dictionary dictionary, Map<String, String> languageMap) {
         resourceList.add(getColumn(resourceResolver, "select", true));
@@ -133,12 +140,18 @@ public class CombiningMessageEntryDatasource extends SlingSafeMethodsServlet {
         String dictionaryPath = request.getRequestPathInfo().getSuffix();
         if (dictionaryPath != null) {
             createDictionaryDataSource(request, resourceResolver, dictionaryPath, resourceList, languageMap);
+            if ("list".equals(request.getResource().getName())) {
+                Config dsCfg = new Config(request.getResource().getChild("datasource"));
+                ExpressionHelper expressionHelper = new ExpressionHelper(expressionResolver, request);
+                Integer limit = expressionHelper.get(dsCfg.get("limit"), Integer.class);
+                Integer offset = expressionHelper.get(dsCfg.get("offset"), Integer.class);
+                resourceList = resourceList.subList(offset, Math.min(offset + limit, resourceList.size()));
+            }
         }
 
         String combiningMessageEntryPath = request.getParameter("item");
         if (combiningMessageEntryPath != null) {
             createCombiningMessageEntryDataSource(request.getLocale(), languageMap, resourceResolver, combiningMessageEntryPath, resourceList);
-
         }
 
         DataSource dataSource = new SimpleDataSource(resourceList.iterator());
