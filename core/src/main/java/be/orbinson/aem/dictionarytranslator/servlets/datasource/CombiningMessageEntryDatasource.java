@@ -145,6 +145,9 @@ public class CombiningMessageEntryDatasource extends SlingSafeMethodsServlet {
                 ExpressionHelper expressionHelper = new ExpressionHelper(expressionResolver, request);
                 Integer limit = expressionHelper.get(dsCfg.get("limit"), Integer.class);
                 Integer offset = expressionHelper.get(dsCfg.get("offset"), Integer.class);
+                if (offset > resourceList.size()) {
+                    offset = 0;
+                }
                 resourceList = resourceList.subList(offset, Math.min(offset + limit, resourceList.size()));
             }
         }
