@@ -1,7 +1,6 @@
 package be.orbinson.aem.dictionarytranslator.servlets.datasource;
 
 import be.orbinson.aem.dictionarytranslator.services.impl.DictionaryServiceImpl;
-import com.adobe.granite.ui.components.ExpressionHelper;
 import com.adobe.granite.ui.components.ExpressionResolver;
 import com.adobe.granite.ui.components.ds.DataSource;
 import com.adobe.granite.ui.components.ds.SimpleDataSource;
@@ -20,14 +19,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.Iterator;
 import java.util.List;
 
-import static com.mongodb.client.model.Filters.eq;
 import static junitx.framework.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith({AemContextExtension.class, MockitoExtension.class})
 class DictionaryDatasourceTest {
