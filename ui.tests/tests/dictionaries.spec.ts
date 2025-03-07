@@ -84,7 +84,7 @@ test("Publish dictionary", async ({ page, baseURL }) => {
     // get items in the replication queue
     const state = await replicationQueueState(baseURL);
 
-    expect(state.queue[0].path).toBe("/content/dictionaries/fruit/i18n");
+    expect(state.queue[0].path).toBe("/content/dictionaries/fruit/i18n/nl_be/redcurrant");
     expect(state.queue[0].type).toBe("Activate");
 });
 

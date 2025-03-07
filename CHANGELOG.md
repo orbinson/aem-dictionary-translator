@@ -10,6 +10,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Lazy loading of data in UI to prevent performance issues with large dictionaries [#80](https://github.com/orbinson/aem-dictionary-translator/issues/80)
+- Publication of dictionaries recusively publishes all dictionary properties and items [#119](https://github.com/orbinson/aem-dictionary-translator/issues/102)
+- Betty bar navigation does not crash tab [#113](https://github.com/orbinson/aem-dictionary-translator/issues/133)
+
+### Changed
+
+- Publication will always be batched per 100 [#119](https://github.com/orbinson/aem-dictionary-translator/issues/102) 
 
 ## [1.3.2] - 2025-02-22
 

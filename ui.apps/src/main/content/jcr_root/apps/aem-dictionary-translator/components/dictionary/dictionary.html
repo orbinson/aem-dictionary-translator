@@ -1,11 +1,13 @@
 <tr data-sly-use.model="be.orbinson.aem.dictionarytranslator.models.Dictionary"
     is="coral-table-row"
     data-foundation-collection-item-id="${resource.path}"
-    data-dictionary-item-editable="${model.editable ? 'true' : 'false'}"
     data-foundation-collection-navigator-href="/tools/translation/dictionaries/message-entries.html${resource.path}"
+    data-dictionary-publish-paths="${resource.path}"
+    data-dictionary-publish-recursive="true"
+    data-dictionary-item-editable="${model.editable ? 'true' : 'false'}"
     class="foundation-collection-item foundation-collection-navigator">
     <td is="coral-table-cell" coral-table-rowselect></td>
-    <td is="coral-table-cell" data-publish-path="${resource.path}">${resource.path}</td>
+    <td is="coral-table-cell">${resource.path}</td>
     <td is="coral-table-cell">${model.languageList}</td>
     <td is="coral-table-cell">${model.basename}</td>
     <td is="coral-table-cell">
