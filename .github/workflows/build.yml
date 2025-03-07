@@ -23,7 +23,7 @@ jobs:
       pull-requests: write
     services:
       aem-author:
-        image: ghcr.io/orbinson/aem-sdk:author-2024.10.18459.20241031T210302Z-241000
+        image: ghcr.io/orbinson/aem-sdk:author-2025.3.19823.20250304T101418Z-250200
         ports:
           - 4502:4502
     steps:
