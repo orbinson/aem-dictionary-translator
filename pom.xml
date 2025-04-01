@@ -300,7 +300,7 @@ Bundle-DocURL:
                 <plugin>
                     <groupId>io.wcm.maven.plugins</groupId>
                     <artifactId>wcmio-content-package-maven-plugin</artifactId>
-                    <version>2.1.6</version>
+                    <version>2.2.0</version>
                     <configuration>
                         <serviceURL>http://${aem.host}:${aem.port}/crx/packmgr/service</serviceURL>
                         <userId>${vault.user}</userId>
