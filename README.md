@@ -78,6 +78,11 @@ Example `org.apache.sling.i18n.impl.JcrResourceBundleProvider` OSGi config
 
 ```
 
+## Limitations
+
+1. Only [`sling:Message` or `sling:MessageEntry` based dictionaries](https://sling.apache.org/documentation/bundles/internationalization-support-i18n.html#slingmessageentry-jcrprimarytype-or-slingmessage-jcrmixintypes-based) are supported but not ones in [JSON format](https://github.com/orbinson/aem-dictionary-translator/issues/26).
+2. Due to the [search order of dictionaries](https://sling.apache.org/documentation/bundles/internationalization-support-i18n.html#resourcebundle-hierarchies) it is not possible to overwrite entries from dictionaries within `/libs` (shipped with AEM) with different translations leveraging a dictionary placed below `/content`.
+
 ## Development
 
 If you want to contribute to the project make sure to check the contribution guidelines in [CONTRIBUTING.md](CONTRIBUTING.md).
