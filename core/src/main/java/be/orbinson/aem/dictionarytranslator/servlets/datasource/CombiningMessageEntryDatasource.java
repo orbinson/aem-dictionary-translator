@@ -57,6 +57,7 @@ public class CombiningMessageEntryDatasource extends SlingSafeMethodsServlet {
     private static void setColumnsDataSource(ResourceResolver resourceResolver, List<Resource> resourceList, Dictionary dictionary, Map<String, String> languageMap) {
         resourceList.add(getColumn(resourceResolver, "select", true));
         resourceList.add(getColumn(resourceResolver, "jcr:title", "Key"));
+        resourceList.add(getColumn(resourceResolver, "jcr:title", "Validation"));
 
         dictionary.getLanguages().forEach(language -> {
                     String title = languageMap.getOrDefault(language, language);

@@ -9,6 +9,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
@@ -81,7 +82,7 @@ class DeleteMessageEntryServletTest {
     
     private void createCombiningMessageEntryResource(ContentBuilder builder, String dictionaryPath, String key, Map<String, Message> messagePerLanguage) {
         String path = CombiningMessageEntryResourceProvider.ROOT + dictionaryPath + "/" + key;
-        builder.resource(path, CombiningMessageEntryResourceProvider.createResourceProperties(path, true, messagePerLanguage));
+        builder.resource(path, CombiningMessageEntryResourceProvider.createResourceProperties(path, true, messagePerLanguage, Collections.emptySortedSet()));
         for (String language : messagePerLanguage.keySet()) {
             builder.resource(dictionaryPath + "/" + language + "/" + key, ResourceResolver.PROPERTY_RESOURCE_TYPE, DictionaryConstants.SLING_MESSAGEENTRY);
         }

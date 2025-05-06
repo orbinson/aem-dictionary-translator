@@ -13,6 +13,7 @@ import org.apache.sling.models.annotations.injectorspecific.SlingObject;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
+import java.util.Optional;
 
 @Model(
         adaptables = SlingHttpServletRequest.class,

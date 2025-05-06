@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,6 +26,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
@@ -104,6 +106,18 @@ public class DictionaryServiceImpl implements DictionaryService, ResourceChangeL
             }
         }
         return false;
+    }
+
+    @Override
+    public int getOrdinal(Resource dictionaryResource) {
+        final String[] searchPaths = dictionaryResource.getResourceResolver().getSearchPath();
+        int i = 0;
+        for (; i < searchPaths.length; i++) {
+            if (dictionaryResource.getPath().startsWith(searchPaths[i])) {
+                return i;
+            }
+        }
+        return i;
     }
 
     public void addLanguage(Resource dictionary, String language, String basename) throws PersistenceException {
@@ -226,8 +240,8 @@ public class DictionaryServiceImpl implements DictionaryService, ResourceChangeL
     }
 
     @Override
-    public boolean keyExists(Resource dictionaryResource, String language, String key) throws DictionaryException {
-        return getMessages(dictionaryResource, language).containsKey(key);
+    public boolean keyExists(Resource dictionaryResource, String language, String key) {
+        return internalGetMessages(dictionaryResource, language).map(m -> m.containsKey(key)).orElse(false);
     }
 
     @Override
@@ -322,24 +336,34 @@ public class DictionaryServiceImpl implements DictionaryService, ResourceChangeL
             }
         }
     }
- 
+
     @Override
     public synchronized Map<String, Message> getMessages(Resource dictionaryResource, String language) throws DictionaryException {
-        Map<String, Message> messages = messagesPerLanguageDictionary.get(dictionaryResource.getPath() + "/" + language);
-        if (messages == null) {
-            messages = loadMessages(dictionaryResource, language);
-            messagesPerLanguageDictionary.put(dictionaryResource.getPath() + "/" + language, messages);
-        }
-        return messages;
+        return internalGetMessages(dictionaryResource, language).orElseThrow(() -> new DictionaryException("No messages found for language \"" + language + "\" in dictionary \"" + dictionaryResource.getPath() + "\""));
     }
 
-    private Map<String, Message> loadMessages(Resource dictionaryResource, String language) throws DictionaryException {
-        Resource resource = getLanguageResource(dictionaryResource, language).orElseThrow(() -> new DictionaryException("Language resource not found for language \"" + language + "\" of dictionary \"" + dictionaryResource.getPath() + "\""));
+    private synchronized Optional<Map<String, Message>> internalGetMessages(Resource dictionaryResource, String language) {
+        String cacheKey = dictionaryResource.getPath() + "/" + language;
+        if (!messagesPerLanguageDictionary.containsKey(cacheKey)) {
+            Map<String, Message> messages = loadMessages(dictionaryResource, language).orElse(null);
+            // also cache non-existing languages to speed up the conflict check
+            messagesPerLanguageDictionary.put(cacheKey, messages);
+            return Optional.ofNullable(messages);
+        } else {
+            return Optional.ofNullable(messagesPerLanguageDictionary.get(cacheKey));
+        }
+    }
+
+    private Optional<Map<String, Message>> loadMessages(Resource dictionaryResource, String language) {
+        Resource resource = getLanguageResource(dictionaryResource, language).orElse(null);
+        if (resource == null) {
+            return Optional.empty();
+        }
         if (isJsonFileBasedDictionary(resource)) {
             Map<String, Object> messages = new HashMap<>();
             loadJsonDictionary(resource.getChild(JCR_CONTENT), messages);
-            return messages.entrySet().stream()
-                    .collect(Collectors.toMap(Entry::getKey, e -> new Message(e.getValue().toString(), null)));
+            return Optional.of(messages.entrySet().stream()
+                    .collect(Collectors.toMap(Entry::getKey, e -> new Message(e.getValue().toString(), null))));
         } else {
             Map<String, Message> messages = new HashMap<>();
             resource.listChildren().forEachRemaining(messageEntryResource -> {
@@ -349,7 +373,7 @@ public class DictionaryServiceImpl implements DictionaryService, ResourceChangeL
                     messages.put(key, new Message(messageEntryResource.getValueMap().get(SLING_MESSAGE, ""), messageEntryResource.getPath()));
                 }
             });
-            return messages;
+            return Optional.of(messages);
         }
     }
 
@@ -449,6 +473,15 @@ public class DictionaryServiceImpl implements DictionaryService, ResourceChangeL
             LOG.trace("Created message entry with key '{}' on path '{}'", key, newResource.getPath());
             return newResource;
         }
+    }
+
+    @Override
+    public Optional<Resource> getConflictingDictionary(Resource dictionaryResource, String language, String key) {
+        return getDictionaries(dictionaryResource.getResourceResolver()).stream()
+                .filter(r -> !r.getPath().equals(dictionaryResource.getPath()))
+                .filter(r -> getOrdinal(r) <= getOrdinal(dictionaryResource))
+                .filter(r -> keyExists(r, language, key))
+                .findFirst();
     }
 
 }
