@@ -188,7 +188,7 @@ class DictionaryServiceImplTest {
     void dictionaryServiceShouldBeAbleToDeleteLanguage() throws DictionaryException {
         context.currentResource("/content/dictionaries/fruit/i18n");
 
-        dictionaryService.deleteLanguage(context.resourceResolver(), context.currentResource(), "en");
+        dictionaryService.deleteLanguage(context.currentResource(), "en");
 
         assertEquals(List.of("nl_BE"), dictionaryService.getLanguages(context.currentResource()));
     }
@@ -197,7 +197,7 @@ class DictionaryServiceImplTest {
     void deletingNonExistingLanguageShouldThrowExeption() {
         context.currentResource("/content/dictionaries/fruit/i18n");
         assertThrows(DictionaryException.class, () -> {
-            dictionaryService.deleteLanguage(context.resourceResolver(), context.currentResource(), "ar");
+            dictionaryService.deleteLanguage(context.currentResource(), "ar");
         });
     }
 
@@ -205,7 +205,7 @@ class DictionaryServiceImplTest {
     void dictionaryShouldUpdateMessageEntry() throws PersistenceException, RepositoryException {
         context.currentResource("/content/dictionaries/fruit/i18n");
 
-        dictionaryService.updateMessageEntry(context.resourceResolver(), context.currentResource(), "en", "apple", "Not a banana");
+        dictionaryService.createOrUpdateMessageEntry(context.currentResource(), "en", "apple", "Not a banana");
 
         assertEquals("Not a banana", context.resourceResolver().getResource("/content/dictionaries/fruit/i18n/en/apple").getValueMap().get("sling:message"));
     }
@@ -214,7 +214,7 @@ class DictionaryServiceImplTest {
     void dictionaryShouldUpdateNonExistingMessageEntry() throws PersistenceException, RepositoryException {
         context.currentResource("/content/dictionaries/fruit/i18n");
 
-        dictionaryService.updateMessageEntry(context.resourceResolver(), context.currentResource(), "en", "kaboeboe", "Kaboeboe");
+        dictionaryService.createOrUpdateMessageEntry(context.currentResource(), "en", "kaboeboe", "Kaboeboe");
 
         assertEquals("Kaboeboe", context.resourceResolver().getResource("/content/dictionaries/fruit/i18n/en/kaboeboe").getValueMap().get("sling:message"));
     }
@@ -223,7 +223,7 @@ class DictionaryServiceImplTest {
     void dictionaryWithEmptyMessageShouldDeleteMessageEntry() throws PersistenceException, RepositoryException {
         context.currentResource("/content/dictionaries/fruit/i18n");
 
-        dictionaryService.updateMessageEntry(context.resourceResolver(), context.currentResource(), "en", "apple", "");
+        dictionaryService.createOrUpdateMessageEntry(context.currentResource(), "en", "apple", "");
 
         assertFalse(context.resourceResolver().getResource("/content/dictionaries/fruit/i18n/en/apple").getValueMap().containsKey("sling:message"));
     }

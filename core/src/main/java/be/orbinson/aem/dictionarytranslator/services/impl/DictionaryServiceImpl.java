@@ -1,16 +1,49 @@
 package be.orbinson.aem.dictionarytranslator.services.impl;
 
-import be.orbinson.aem.dictionarytranslator.exception.DictionaryException;
-import be.orbinson.aem.dictionarytranslator.services.DictionaryService;
-import be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants;
-import com.day.cq.commons.jcr.JcrConstants;
-import com.day.cq.commons.jcr.JcrUtil;
-import com.day.cq.replication.ReplicationActionType;
-import com.day.cq.replication.ReplicationException;
-import com.day.cq.replication.Replicator;
+import static be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants.SLING_KEY;
+import static be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants.SLING_MESSAGE;
+import static be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants.SLING_MESSAGEENTRY;
+import static be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants.SLING_MESSAGE_MIXIN;
+import static be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants.MIX_LANGUAGE;
+import static org.apache.jackrabbit.JcrConstants.JCR_CONTENT;
+import static org.apache.jackrabbit.JcrConstants.JCR_LANGUAGE;
+import static org.apache.jackrabbit.JcrConstants.JCR_MIXINTYPES;
+import static org.apache.jackrabbit.JcrConstants.JCR_PRIMARYTYPE;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Optional;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
+
+import javax.jcr.RepositoryException;
+import javax.jcr.Session;
+import javax.jcr.security.AccessControlManager;
+import javax.jcr.security.Privilege;
+
 import org.apache.commons.lang3.StringUtils;
+import org.apache.jackrabbit.commons.json.JsonHandler;
+import org.apache.jackrabbit.commons.json.JsonParser;
 import org.apache.jackrabbit.util.Text;
-import org.apache.sling.api.resource.*;
+import org.apache.sling.api.resource.ModifiableValueMap;
+import org.apache.sling.api.resource.PersistenceException;
+import org.apache.sling.api.resource.Resource;
+import org.apache.sling.api.resource.ResourceMetadata;
+import org.apache.sling.api.resource.ResourceResolver;
+import org.apache.sling.api.resource.ResourceUtil;
+import org.apache.sling.api.resource.ValueMap;
+import org.apache.sling.api.resource.observation.ResourceChange;
+import org.apache.sling.api.resource.observation.ResourceChangeListener;
 import org.apache.sling.jcr.resource.api.JcrResourceConstants;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -19,27 +52,41 @@ import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.jcr.RepositoryException;
-import javax.jcr.Session;
-import javax.jcr.security.AccessControlManager;
-import javax.jcr.security.Privilege;
-import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
+import com.day.cq.commons.jcr.JcrConstants;
+import com.day.cq.commons.jcr.JcrUtil;
+import com.day.cq.replication.ReplicationActionType;
+import com.day.cq.replication.ReplicationException;
+import com.day.cq.replication.Replicator;
 
-import static be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants.*;
-import static org.apache.jackrabbit.JcrConstants.*;
+import be.orbinson.aem.dictionarytranslator.exception.DictionaryException;
+import be.orbinson.aem.dictionarytranslator.services.DictionaryService;
+import be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants;
 
-@Component
-public class DictionaryServiceImpl implements DictionaryService {
+@Component(property = { ResourceChangeListener.PATHS + "=/",
+ResourceChangeListener.CHANGES + "=ADDED" ,
+ResourceChangeListener.CHANGES + "=REMOVED",
+ResourceChangeListener.CHANGES + "=CHANGED"})
+public class DictionaryServiceImpl implements DictionaryService, ResourceChangeListener {
 
     private static final Logger LOG = LoggerFactory.getLogger(DictionaryServiceImpl.class);
     private static final String SLING_BASENAME = "sling:basename";
+    // same as https://github.com/apache/sling-org-apache-sling-i18n/blob/3f98ebf430e416226500c2975086423edc29dcb3/src/main/java/org/apache/sling/i18n/impl/JcrResourceBundle.java#L69
+    static final String QUERY_LANGUAGE_ROOTS = "//element(*,mix:language)[@jcr:language]";
 
     @Reference
     private Replicator replicator;
 
+    /**
+     * Cache of language dictionaries, the key is an artifical path in the format {@code <dictionaryPath>/<language>}.
+     * The cache for all languages is automatically invalidated when a resource below the dictionary path was changed.
+     */
+    private final Map<String, Map<String, Message>> messagesPerLanguageDictionary = new HashMap<>();
+
     public boolean isEditableDictionary(Resource resource) {
         String path = resource.getPath();
+        if (getType(resource) != DictionaryType.SLING_MESSAGE_ENTRY) {
+            return false;
+        }
         Session session = resource.getResourceResolver().adaptTo(Session.class);
         if (session != null) {
             try {
@@ -84,7 +131,7 @@ public class DictionaryServiceImpl implements DictionaryService {
         Map<String, Resource> result = new TreeMap<>();
 
         resourceResolver
-                .findResources("//element(*, mix:language)[@jcr:language and (@jcr:primaryType='sling:Folder' or @jcr:primaryType='nt:folder')]/..", "xpath")
+                .findResources(QUERY_LANGUAGE_ROOTS + "/..", "xpath")
                 .forEachRemaining(resource -> result.put(resource.getPath(), resource));
 
         return new ArrayList<>(result.values());
@@ -118,13 +165,13 @@ public class DictionaryServiceImpl implements DictionaryService {
         }
     }
 
-
     public List<String> getLanguages(Resource dictionaryResource) {
         Set<String> result = new TreeSet<>();
 
         dictionaryResource.listChildren().forEachRemaining(child -> {
             ValueMap properties = child.getValueMap();
-            if (properties.containsKey(JCR_LANGUAGE)) {
+            // mixin check not implemented due to https://issues.apache.org/jira/browse/SLING-12779
+            if (properties.containsKey(JCR_LANGUAGE) /* && hasMixinType(child, MIX_LANGUAGE)*/) {
                 LOG.trace("Found language with path '{}'", child.getPath());
                 result.add(properties.get(JCR_LANGUAGE, String.class));
             }
@@ -134,11 +181,12 @@ public class DictionaryServiceImpl implements DictionaryService {
     }
 
     @Override
-    public void deleteLanguage(ResourceResolver resourceResolver, Resource dictionaryResource, String language) throws DictionaryException {
+    public void deleteLanguage(Resource dictionaryResource, String language) throws DictionaryException {
         Resource languageResource = getLanguageResource(dictionaryResource, language);
         if (languageResource != null) {
             try {
                 LOG.debug("Delete language '{}' from '{}'", language, dictionaryResource.getPath());
+                ResourceResolver resourceResolver = dictionaryResource.getResourceResolver();
                 replicator.replicate(resourceResolver.adaptTo(Session.class), ReplicationActionType.DEACTIVATE, languageResource.getPath());
                 resourceResolver.delete(languageResource);
                 resourceResolver.commit();
@@ -170,8 +218,7 @@ public class DictionaryServiceImpl implements DictionaryService {
      * @param language           The language
      * @return the language resource if it exists
      */
-    @Override
-    public @Nullable Resource getLanguageResource(Resource dictionaryResource, String language) {
+    private @Nullable Resource getLanguageResource(Resource dictionaryResource, String language) {
         if (dictionaryResource != null) {
             for (Resource languageResource : dictionaryResource.getChildren()) {
                 if (language.equals(languageResource.getValueMap().get(JcrConstants.JCR_LANGUAGE))) {
@@ -185,55 +232,26 @@ public class DictionaryServiceImpl implements DictionaryService {
     @Override
     public List<String> getKeys(Resource dictionaryResource) {
         Set<String> keys = new TreeSet<>();
+        // collect keys from all languages
         for (String language : getLanguages(dictionaryResource)) {
-            Resource languageResource = getLanguageResource(dictionaryResource, language);
-            if (languageResource != null) {
-                for (Resource messageEntryResource : languageResource.getChildren()) {
-                    if (isMessageEntryResource(messageEntryResource)) {
-                        String key = Optional.ofNullable(messageEntryResource.getValueMap().get(SLING_KEY, String.class))
-                                .orElse(messageEntryResource.getName());
-                        keys.add(key);
-                    }
-                }
-            }
+            keys.addAll(getMessages(dictionaryResource, language).keySet());
         }
         return List.copyOf(keys);
     }
 
-
     @Override
     public boolean keyExists(Resource dictionaryResource, String language, String key) {
-        Resource languageResource = getLanguageResource(dictionaryResource, language);
-        return languageResource != null && getMessageEntryResource(languageResource, key) != null;
+        return getMessages(dictionaryResource, language).containsKey(key);
     }
 
     @Override
-    public void createMessageEntry(ResourceResolver resourceResolver, Resource dictionaryResource, String language, String key, String message) throws PersistenceException {
-        Resource languageResource = getLanguageResource(dictionaryResource, language);
-
-        if (languageResource != null) {
-            String path = languageResource.getPath();
-            Map<String, Object> properties = new HashMap<>();
-            properties.put(JCR_PRIMARYTYPE, SLING_MESSAGEENTRY);
-            properties.put(SLING_KEY, key);
-            if (!message.isBlank()) {
-                properties.put(SLING_MESSAGE, message);
-            }
-            resourceResolver.create(languageResource, Text.escapeIllegalJcrChars(key), properties);
-            resourceResolver.commit();
-            LOG.trace("Created message entry with key '{}' and message '{}' on path '{}'", key, message, path);
-        }
-    }
-
-    @Override
-    public void updateMessageEntry(ResourceResolver resourceResolver, Resource dictionaryResource, String language, String key, String message) throws PersistenceException {
+    public void createOrUpdateMessageEntry(Resource dictionaryResource, String language, String key, String message) throws PersistenceException {
         Resource languageResource = getLanguageResource(dictionaryResource, language);
         if (languageResource != null) {
-            Resource messageEntryResource = getOrCreateMessageEntryResource(resourceResolver, languageResource, key);
+            Resource messageEntryResource = getOrCreateMessageEntryResource(languageResource, key);
             if (messageEntryResource != null) {
                 updateMessage(key, message, messageEntryResource);
             }
-            resourceResolver.commit();
         }
     }
 
@@ -252,8 +270,7 @@ public class DictionaryServiceImpl implements DictionaryService {
         }
     }
 
-    @Override
-    public Resource getMessageEntryResource(Resource languageResource, String key) {
+    private Resource getMessageEntryResource(Resource languageResource, String key) {
         // In order to speed up the search, we go for the default check where it is the escaped key as node name
         Resource messageEntryResource = languageResource.getChild(Text.escapeIllegalJcrChars(key));
         if (isMessageEntryResource(messageEntryResource)) {
@@ -270,34 +287,188 @@ public class DictionaryServiceImpl implements DictionaryService {
         return null;
     }
 
-    private static boolean isMessageEntryResource(Resource messageEntryResource) {
-        return messageEntryResource != null && (messageEntryResource.isResourceType(DictionaryConstants.SLING_MESSAGEENTRY) ||
-                Arrays.asList(messageEntryResource.getValueMap().get(JCR_MIXINTYPES, new String[0])).contains(SLING_MESSAGE_MIXIN));
-    }
-
     @Override
-    public void deleteMessageEntry(ResourceResolver resourceResolver, Resource combiningMessageEntryResource) throws PersistenceException, ReplicationException {
-        ValueMap properties = combiningMessageEntryResource.getValueMap();
-        if (properties.containsKey(CombiningMessageEntryResourceProvider.MESSAGE_ENTRY_PATHS)) {
-            for (String messageEntryPath : properties.get(CombiningMessageEntryResourceProvider.MESSAGE_ENTRY_PATHS, new String[0])) {
-                Resource messageEntryResource = resourceResolver.getResource(messageEntryPath);
-                if (messageEntryResource != null) {
-                    replicator.replicate(resourceResolver.adaptTo(Session.class), ReplicationActionType.DEACTIVATE, messageEntryPath);
-                    resourceResolver.delete(messageEntryResource);
-                }
-            }
-            resourceResolver.commit();
+    public DictionaryType getType(Resource dictionaryResource, String language) throws DictionaryException {
+        Resource languageResource = getLanguageResource(dictionaryResource, language);
+        if (languageResource == null) {
+            throw new DictionaryException("Language resource not found for language \"" + language + "\" in dictionary \"" + dictionaryResource.getPath() + "\"");
+        }
+        if (isJsonFileBasedDictionary(languageResource)) {
+            return DictionaryType.JSON_FILE;
+        } else {
+            return DictionaryType.SLING_MESSAGE_ENTRY;
         }
     }
 
-    private Resource getOrCreateMessageEntryResource(ResourceResolver resourceResolver, Resource languageResource, String key) throws PersistenceException {
+    @Override
+    public DictionaryType getType(Resource dictionaryResource) {
+        DictionaryType type = null;
+        for (String language : getLanguages(dictionaryResource)) {
+            try {
+                DictionaryType newType = getType(dictionaryResource, language);
+                if (type != null && type != newType) {
+                    return DictionaryType.MIXED;
+                } else {
+                    type = newType;
+                }
+            } catch (DictionaryException e) {
+                LOG.warn("Could not get dictionary type for language '{}' below '{}, skipping language", language, dictionaryResource.getPath(), e);
+            }
+        }
+        if (type == null) {
+            // for empty dictionaries, we return the default type
+            return DictionaryType.SLING_MESSAGE_ENTRY;
+        }
+        return type;
+    }
+
+    @Override
+    public void onChange(final @NotNull List<ResourceChange> changes) {
+        for (final ResourceChange change : changes) {
+            // always invalidate all languages of a dictionary
+            synchronized(this) {
+                messagesPerLanguageDictionary.keySet().removeIf(
+                    key -> {
+                        String dictionaryPath = Text.getRelativeParent(key, 1);
+                        if (change.getPath().startsWith(dictionaryPath)) {
+                            LOG.debug("Invalidating dictionary cache for path '{}'", dictionaryPath);
+                            return true;
+                        }
+                        return false;
+                    });
+            }
+        }
+    }
+ 
+    @Override
+    public synchronized Map<String, Message> getMessages(Resource dictionaryResource, String language) {
+        return messagesPerLanguageDictionary.computeIfAbsent(dictionaryResource.getPath() + "/" + language, k -> {
+            LOG.debug("Loading messages for dictionary resource '{}' and language '{}'", dictionaryResource.getPath(), language);
+            Resource resource = getLanguageResource(dictionaryResource, language);
+            if (resource != null) {
+                if (isJsonFileBasedDictionary(resource)) {
+                    Map<String, Object> messages = new HashMap<>();
+                    loadJsonDictionary(resource.getChild(JCR_CONTENT), messages);
+                    return messages.entrySet().stream()
+                            .collect(Collectors.toMap(Entry::getKey, e -> new Message(e.getValue().toString(), null)));
+                } else {
+                    Map<String, Message> messages = new HashMap<>();
+                    resource.listChildren().forEachRemaining(messageEntryResource -> {
+                        if (isMessageEntryResource(messageEntryResource)) {
+                            String key = Optional.ofNullable(messageEntryResource.getValueMap().get(SLING_KEY, String.class))
+                                    .orElse(Text.unescapeIllegalJcrChars(messageEntryResource.getName()));
+                            messages.put(key, new Message(messageEntryResource.getValueMap().get(SLING_MESSAGE, ""), messageEntryResource.getPath()));
+                        }
+                    });
+                    return messages;
+                }
+            }
+            return Collections.emptyMap();
+        });
+    }
+
+    private boolean isJsonFileBasedDictionary(Resource languageResource) {
+        return (languageResource.getName().endsWith(".json") && languageResource.getChild(JCR_CONTENT) != null);
+    }
+
+    // start copy of https://github.com/apache/sling-org-apache-sling-i18n/blob/3f98ebf430e416226500c2975086423edc29dcb3/src/main/java/org/apache/sling/i18n/impl/JcrResourceBundle.java#L245
+    private void loadJsonDictionary(Resource resource, final Map<String, Object> targetDictionary) {
+        LOG.info("Loading json dictionary: {}", resource.getPath());
+
+        // use streaming parser (we don't need the dict in memory twice)
+        JsonParser parser = new JsonParser(new JsonHandler() {
+
+            private String key;
+
+            @Override
+            public void key(String key) throws IOException {
+                this.key = key;
+            }
+
+            @Override
+            public void value(String value) throws IOException {
+                targetDictionary.put(key, value);
+            }
+
+            @Override
+            public void object() throws IOException {}
+
+            @Override
+            public void endObject() throws IOException {}
+
+            @Override
+            public void array() throws IOException {}
+
+            @Override
+            public void endArray() throws IOException {}
+
+            @Override
+            public void value(boolean value) throws IOException {}
+
+            @Override
+            public void value(long value) throws IOException {}
+
+            @Override
+            public void value(double value) throws IOException {}
+        });
+
+        final InputStream stream = resource.adaptTo(InputStream.class);
+        if (stream != null) {
+            String encoding = "utf-8";
+            final ResourceMetadata metadata = resource.getResourceMetadata();
+            if (metadata.getCharacterEncoding() != null) {
+                encoding = metadata.getCharacterEncoding();
+            }
+
+            try {
+
+                parser.parse(stream, encoding);
+
+            } catch (IOException e) {
+                LOG.warn("Could not parse i18n json dictionary {}: {}", resource.getPath(), e.getMessage());
+            } finally {
+                try {
+                    stream.close();
+                } catch (IOException ignore) {
+                }
+            }
+        } else {
+            LOG.warn("Not a json file: {}", resource.getPath());
+        }
+    }
+
+    private static boolean isMessageEntryResource(Resource messageEntryResource) {
+        return messageEntryResource != null && (messageEntryResource.isResourceType(SLING_MESSAGEENTRY) ||
+                hasMixinType(messageEntryResource, SLING_MESSAGE_MIXIN));
+    }
+
+    private static boolean hasMixinType(Resource resource, String mixinType) {
+        return Arrays.asList(resource.getValueMap().get(JCR_MIXINTYPES, new String[0])).contains(mixinType);
+    }
+
+    @Override
+    public void deleteMessageEntry(Resource dictionaryResource, String language, String key) throws PersistenceException, ReplicationException {
+        Resource languageResource = getLanguageResource(dictionaryResource, language);
+        if (languageResource == null) {
+            LOG.warn("Language resource not found for language '{}' of dictionary '{}'", language, dictionaryResource.getPath());
+        }
+        Resource messageEntryResource = getMessageEntryResource(languageResource, key);
+        if (messageEntryResource != null) {
+            replicator.replicate(dictionaryResource.getResourceResolver().adaptTo(Session.class), ReplicationActionType.DEACTIVATE, messageEntryResource.getPath());
+            dictionaryResource.getResourceResolver().delete(messageEntryResource);
+        } else {
+            LOG.warn("Message entry resource not found for key '{}' in language '{}' of dictionary '{}'", key, language, dictionaryResource.getPath());
+        }
+    }
+
+    private @NotNull Resource getOrCreateMessageEntryResource(Resource languageResource, String key) throws PersistenceException {
         Resource messageEntryResource = getMessageEntryResource(languageResource, key);
         if (messageEntryResource != null) {
             return messageEntryResource;
         }
-        resourceResolver.create(languageResource, Text.escapeIllegalJcrChars(key), Map.of("jcr:primaryType", SLING_MESSAGEENTRY));
-        resourceResolver.commit();
-        return languageResource.getChild(Text.escapeIllegalJcrChars(key));
+        messageEntryResource = languageResource.getResourceResolver().create(languageResource, Text.escapeIllegalJcrChars(key), Map.of(JCR_PRIMARYTYPE, SLING_MESSAGEENTRY));
+        LOG.trace("Created message entry with key '{}' on path '{}'", key, messageEntryResource.getPath());
+        return messageEntryResource;
     }
 
 }

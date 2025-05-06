@@ -1,7 +1,8 @@
 package be.orbinson.aem.dictionarytranslator.services.impl;
 
 import be.orbinson.aem.dictionarytranslator.services.DictionaryService;
-import be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants;
+import be.orbinson.aem.dictionarytranslator.services.DictionaryService.Message;
+
 import com.adobe.granite.ui.components.ds.ValueMapResource;
 import com.day.text.Text;
 import org.apache.sling.api.resource.Resource;
@@ -17,6 +18,14 @@ import org.osgi.service.component.annotations.Reference;
 
 import java.util.*;
 
+/**
+ * Resource provider exposing all translations for one dictionary entry.
+ * It expects the path to be of the form:
+ * {@code /mnt/dictionary/<dictionaryPath>/<key>}
+ * <p>
+ * This resource provider is used to combine message entries from different languages into a single resource.
+ * It is used in the AEM UI to display the combined message entries for a given key.
+ */
 @Component(
         service = ResourceProvider.class,
         property = {
@@ -37,28 +46,6 @@ public class CombiningMessageEntryResourceProvider extends ResourceProvider<Obje
     @Reference
     private DictionaryService dictionaryService;
 
-    private Map<String, Object> getValuesAndMessageEntryPaths(Resource dictionaryResource, String key, List<String> languages) {
-        Map<String, Object> properties = new HashMap<>();
-        List<String> messageEntryPaths = new ArrayList<>();
-
-        for (String language : languages) {
-            Resource languageResource = dictionaryService.getLanguageResource(dictionaryResource, language);
-            if (languageResource != null) {
-                Resource messageEntryResource = dictionaryService.getMessageEntryResource(languageResource, key);
-                if (messageEntryResource != null) {
-                    properties.put(language, messageEntryResource.getValueMap().get(DictionaryConstants.SLING_MESSAGE, ""));
-                    messageEntryPaths.add(messageEntryResource.getPath());
-                } else {
-                    properties.put(language, "");
-                }
-            }
-        }
-
-        properties.put(MESSAGE_ENTRY_PATHS, messageEntryPaths);
-
-        return properties;
-    }
-
     @Override
     public @Nullable Resource getResource(@NotNull ResolveContext<Object> ctx, @NotNull String path, @NotNull ResourceContext resourceContext, @Nullable Resource parent) {
         ResourceResolver resourceResolver = ctx.getResourceResolver();
@@ -71,7 +58,7 @@ public class CombiningMessageEntryResourceProvider extends ResourceProvider<Obje
         String dictionaryPath = Text.getRelativeParent(path, 1).replaceFirst(ROOT, "");
         Resource dictionaryResource = resourceResolver.getResource(dictionaryPath);
 
-        if (dictionaryResource != null && isMessageEntry(dictionaryResource, key)) {
+        if (dictionaryResource != null /* && isMessageEntry(dictionaryResource, key) */) {
             Map<String, Object> properties = new HashMap<>();
             properties.put(KEY, key);
             properties.put("path", path);
@@ -79,33 +66,24 @@ public class CombiningMessageEntryResourceProvider extends ResourceProvider<Obje
             properties.put(DICTIONARY_PATH, dictionaryPath);
             List<String> languages = dictionaryService.getLanguages(dictionaryResource);
             properties.put(LANGUAGES, languages);
-            properties.putAll(getValuesAndMessageEntryPaths(dictionaryResource, key, languages));
+            List<String> messageEntryPaths = new ArrayList<>();
+            for (String language : languages) {
+                Message message = dictionaryService.getMessages(dictionaryResource, language).get(key);
+                final String text;
+                if (message == null) {
+                    text = "";
+                } else {
+                    text = message.getText();
+                    message.getResourcePath().ifPresent(messageEntryPaths::add);
+                }
+                properties.put(language, text);
+            }
+            // all paths to replicate
+            properties.put(MESSAGE_ENTRY_PATHS, messageEntryPaths);
+
             return new ValueMapResource(resourceResolver, path, RESOURCE_TYPE, new ValueMapDecorator(properties));
         }
         return null;
-    }
-
-    private boolean isMessageEntry(Resource dictionaryResource, String key) {
-        List<String> languages = dictionaryService.getLanguages(dictionaryResource);
-        // in order to speed things up always start with language "en" (if existing)
-        String mostCompleteLanguage = Locale.ENGLISH.getLanguage();
-        if (languages.contains(mostCompleteLanguage)) {
-            languages.remove(mostCompleteLanguage);
-            languages.add(0, mostCompleteLanguage);
-        }
-
-        if (!languages.isEmpty()) {
-            for (String language : languages) {
-                Resource languageResource = dictionaryService.getLanguageResource(dictionaryResource, language);
-                if (languageResource != null) {
-                    Resource messageEntryResource = dictionaryService.getMessageEntryResource(languageResource, key);
-                    if (messageEntryResource != null) {
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
     }
 
     @Override
