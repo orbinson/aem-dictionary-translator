@@ -1,32 +1,5 @@
 package be.orbinson.aem.dictionarytranslator.services.impl;
 
-import be.orbinson.aem.dictionarytranslator.exception.DictionaryException;
-import be.orbinson.aem.dictionarytranslator.models.Dictionary;
-import be.orbinson.aem.dictionarytranslator.models.impl.DictionaryImpl;
-import be.orbinson.aem.dictionarytranslator.services.DictionaryService;
-import com.day.cq.replication.ReplicationActionType;
-import com.day.cq.replication.ReplicationException;
-import com.day.cq.replication.Replicator;
-import io.wcm.testing.mock.aem.junit5.AemContext;
-import io.wcm.testing.mock.aem.junit5.AemContextExtension;
-import org.apache.sling.api.resource.PersistenceException;
-import org.apache.sling.api.resource.Resource;
-import org.apache.sling.api.resource.ResourceResolver;
-import org.apache.sling.testing.mock.jcr.MockJcr;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.junit.jupiter.MockitoExtension;
-
-import javax.jcr.RepositoryException;
-import javax.jcr.Session;
-import javax.jcr.security.AccessControlManager;
-import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -41,6 +14,35 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import java.util.List;
+
+import javax.jcr.RepositoryException;
+import javax.jcr.Session;
+import javax.jcr.security.AccessControlManager;
+
+import org.apache.sling.api.resource.PersistenceException;
+import org.apache.sling.api.resource.Resource;
+import org.apache.sling.api.resource.ResourceResolver;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import com.day.cq.replication.ReplicationActionType;
+import com.day.cq.replication.ReplicationException;
+import com.day.cq.replication.Replicator;
+
+import be.orbinson.aem.dictionarytranslator.exception.DictionaryException;
+import be.orbinson.aem.dictionarytranslator.models.Dictionary;
+import be.orbinson.aem.dictionarytranslator.models.impl.DictionaryImpl;
+import be.orbinson.aem.dictionarytranslator.services.DictionaryService;
+import io.wcm.testing.mock.aem.junit5.AemContext;
+import io.wcm.testing.mock.aem.junit5.AemContextExtension;
 
 @ExtendWith({AemContextExtension.class, MockitoExtension.class})
 class DictionaryServiceImplTest {
@@ -81,25 +83,27 @@ class DictionaryServiceImplTest {
     }
 
     @ParameterizedTest
-    @ValueSource(booleans = {true, false})
-    void dictionaryShouldBeEditableWhenPriviledgesAreFullfilled(boolean hasPrivileges) throws RepositoryException {
-        Session session = MockJcr.newSession();
+    @CsvSource({"true,true", "true,false", "false,true", "false,false"})
+    void dictionaryShouldBeEditableWhenPrivilegesAndCapabilitiesAreFullfilled(boolean hasPrivileges, boolean hasCapability) throws RepositoryException {
+        Session session = Mockito.mock(Session.class);
         context.registerAdapter(ResourceResolver.class, Session.class, session);
         AccessControlManager acm = Mockito.mock(AccessControlManager.class);
-        MockJcr.setAccessControlManager(session, acm);
-        when(acm.hasPrivileges(anyString(), any())).thenReturn(hasPrivileges);
+        when(session.getAccessControlManager()).thenReturn(acm);
+        when(session.hasCapability(anyString(), any(), any())).thenReturn(hasCapability);
+        Mockito.lenient().when(acm.hasPrivileges(anyString(), any())).thenReturn(hasPrivileges);
 
         context.currentResource("/content/dictionaries/fruit/i18n");
 
-        assertEquals(hasPrivileges, dictionaryService.isEditableDictionary(context.currentResource()));
+        assertEquals(hasPrivileges && hasCapability, dictionaryService.isEditableDictionary(context.currentResource()));
     }
 
     @Test
     void dictionaryShouldNotBeEditableWhenPrivilegesCanNotBeDetermined() throws RepositoryException {
-        Session session = MockJcr.newSession();
+        Session session = Mockito.mock(Session.class);
         context.registerAdapter(ResourceResolver.class, Session.class, session);
         AccessControlManager acm = Mockito.mock(AccessControlManager.class);
-        MockJcr.setAccessControlManager(session, acm);
+        when(session.getAccessControlManager()).thenReturn(acm);
+        when(session.hasCapability(anyString(), any(), any())).thenReturn(true);
 
         doThrow(new RepositoryException("Failed to determine privileges")).when(acm).hasPrivileges(anyString(), any());
 
