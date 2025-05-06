@@ -12,6 +12,15 @@ import java.util.List;
 public interface DictionaryService {
 
     boolean isEditableDictionary(Resource resource);
+    
+    /**
+     * Returns the ordinal of the dictionary resource. The lower the ordinal, the higher the precedence.
+     * The ordinal is determined by the path of the dictionary resource and follows the logic from
+     * <a href="https://sling.apache.org/documentation/bundles/internationalization-support-i18n.html#resourcebundle-hierarchies">ResourceBundle hierarchies</a>.
+     * @param dictionaryResource the dictionary resource
+     * @return the ordinal of the dictionary resource
+     */
+    int getOrdinal(Resource dictionaryResource);
 
     List<Resource> getDictionaries(ResourceResolver resourceResolver);
 
