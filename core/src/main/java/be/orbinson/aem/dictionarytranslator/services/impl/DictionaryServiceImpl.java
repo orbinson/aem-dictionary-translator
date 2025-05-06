@@ -57,6 +57,18 @@ public class DictionaryServiceImpl implements DictionaryService {
         return false;
     }
 
+    @Override
+    public int getOrdinal(Resource dictionaryResource) {
+        final String[] searchPaths = dictionaryResource.getResourceResolver().getSearchPath();
+        int i = 0;
+        for (; i < searchPaths.length; i++) {
+            if (dictionaryResource.getPath().startsWith(searchPaths[i])) {
+                return i;
+            }
+        }
+        return i;
+    }
+
     public void addLanguage(Resource dictionary, String language, String basename) throws PersistenceException {
         Map<String, Object> properties = new HashMap<>();
 

@@ -223,4 +223,11 @@ class DictionaryServiceImplTest {
 
         assertFalse(context.resourceResolver().getResource("/content/dictionaries/fruit/i18n/en/apple").getValueMap().containsKey("sling:message"));
     }
+
+    @Test
+    void testDictionaryOrdinal() {
+        context.load().json("/content.json", "/apps");
+        assertEquals(2, dictionaryService.getOrdinal(context.currentResource("/content/dictionaries/fruit/i18n")));
+        assertEquals(0, dictionaryService.getOrdinal(context.currentResource("/apps/dictionaries/vegetables/i18n")));
+    }
 }

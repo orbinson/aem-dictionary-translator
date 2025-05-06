@@ -10,6 +10,7 @@ import org.apache.sling.models.annotations.injectorspecific.SlingObject;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
+import java.util.Optional;
 
 @Model(
         adaptables = SlingHttpServletRequest.class,
@@ -55,5 +56,16 @@ public class DictionaryImpl implements Dictionary {
     @Override
     public List<String> getKeys() {
         return dictionaryService.getKeys(resource);
+    }
+
+    @Override
+    public Optional<Resource> getConflictingDictionary(String key, String language) {
+        return dictionaryService.getDictionaries(resource.getResourceResolver())
+                .stream()
+                .filter(r -> r != resource)
+                .filter(r -> dictionaryService.getOrdinal(r) <= dictionaryService.getOrdinal(resource))
+                .filter(r -> dictionaryService.getBasename(r).equals(getBasename()))
+                .filter(r -> dictionaryService.keyExists(r, language, key))
+                .findFirst();
     }
 }

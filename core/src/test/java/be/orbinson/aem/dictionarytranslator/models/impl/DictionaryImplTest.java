@@ -5,8 +5,14 @@ import be.orbinson.aem.dictionarytranslator.services.impl.DictionaryServiceImpl;
 import com.day.cq.replication.Replicator;
 import io.wcm.testing.mock.aem.junit5.AemContext;
 import io.wcm.testing.mock.aem.junit5.AemContextExtension;
+
+import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.testing.mock.jcr.MockJcr;
+import org.apache.sling.testing.resourceresolver.MockFindQueryResources;
+import org.apache.sling.testing.resourceresolver.MockFindResourcesHandler;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,12 +23,17 @@ import org.mockito.Mockito;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.security.AccessControlManager;
+
+import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(AemContextExtension.class)
@@ -108,5 +119,52 @@ class DictionaryImplTest {
         Dictionary dictionary = context.request().adaptTo(Dictionary.class);
 
         assertEquals("en, nl_BE", dictionary.getLanguageList());
+    }
+
+    @Test
+    void dictionaryShouldReturnConflictingDictionaryForSameKeyHigherPrecedence() {
+        context.load().json("/content.json", "/apps");
+        MockFindResourcesHandler handler = new MockFindResourcesHandler() {
+            @Override
+            public @Nullable Iterator<Resource> findResources(@NotNull String query, String language) {
+                return List.of(
+                        context.resourceResolver().getResource("/apps/dictionaries/fruit/i18n"),
+                        context.resourceResolver().getResource("/apps/dictionaries/vegetables/i18n"),
+                        context.resourceResolver().getResource("/content/dictionaries/fruit/i18n"),
+                        context.resourceResolver().getResource("/content/dictionaries/vegetables/i18n")
+                ).iterator();
+            }
+        };
+        MockFindQueryResources.addFindResourceHandler(context.resourceResolver(), handler);
+
+        context.currentResource("/content/dictionaries/fruit/i18n");
+
+        Dictionary dictionary = context.request().adaptTo(Dictionary.class);
+
+        assertEquals("/apps/dictionaries/fruit/i18n", dictionary.getConflictingDictionary("apple", "en").get().getPath());
+    }
+
+    @Test
+    void dictionaryShouldNotReturnConflictingDictionaryForSameKeyLowerPrecedence() {
+        context.load().json("/content.json", "/apps");
+        MockFindResourcesHandler handler = new MockFindResourcesHandler() {
+
+            @Override
+            public @Nullable Iterator<Resource> findResources(@NotNull String query, String language) {
+                return List.of(
+                        context.resourceResolver().getResource("/apps/dictionaries/vegetables/i18n"),
+                        context.resourceResolver().getResource("/content/dictionaries/fruit/i18n"),
+                        context.resourceResolver().getResource("/content/dictionaries/vegetables/i18n")
+                ).iterator();
+            }
+            
+        };
+        MockFindQueryResources.addFindResourceHandler(context.resourceResolver(), handler);
+
+        context.currentResource("/apps/dictionaries/fruit/i18n");
+
+        Dictionary dictionary = context.request().adaptTo(Dictionary.class);
+
+        assertEquals(Optional.empty(), dictionary.getConflictingDictionary("apple", "en"));
     }
 }
