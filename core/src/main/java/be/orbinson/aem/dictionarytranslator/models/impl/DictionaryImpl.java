@@ -1,7 +1,10 @@
 package be.orbinson.aem.dictionarytranslator.models.impl;
 
+import be.orbinson.aem.dictionarytranslator.exception.DictionaryException;
 import be.orbinson.aem.dictionarytranslator.models.Dictionary;
 import be.orbinson.aem.dictionarytranslator.services.DictionaryService;
+import be.orbinson.aem.dictionarytranslator.services.DictionaryService.DictionaryType;
+
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.models.annotations.Model;
@@ -48,12 +51,18 @@ public class DictionaryImpl implements Dictionary {
     }
 
     @Override
-    public int getKeyCount() {
+    public int getKeyCount() throws DictionaryException {
         return getKeys().size();
     }
 
     @Override
-    public List<String> getKeys() {
+    public List<String> getKeys() throws DictionaryException {
         return dictionaryService.getKeys(resource);
     }
+
+    @Override
+    public DictionaryType getType() {
+        return dictionaryService.getType(resource);
+    }
+
 }

@@ -1,5 +1,6 @@
 package be.orbinson.aem.dictionarytranslator.servlets.datasource;
 
+import be.orbinson.aem.dictionarytranslator.exception.DictionaryException;
 import be.orbinson.aem.dictionarytranslator.models.Dictionary;
 import be.orbinson.aem.dictionarytranslator.services.impl.CombiningMessageEntryResourceProvider;
 import com.adobe.granite.ui.components.Config;
@@ -9,6 +10,7 @@ import com.adobe.granite.ui.components.ds.DataSource;
 import com.adobe.granite.ui.components.ds.SimpleDataSource;
 import com.adobe.granite.ui.components.ds.ValueMapResource;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.jackrabbit.util.Text;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.resource.Resource;
@@ -65,9 +67,10 @@ public class CombiningMessageEntryDatasource extends SlingSafeMethodsServlet {
         return new ValueMapResource(resourceResolver, "", "", valueMap);
     }
 
-    private static void setDataSource(ResourceResolver resourceResolver, List<Resource> resourceList, Dictionary dictionary) {
+    private static void setDataSource(ResourceResolver resourceResolver, List<Resource> resourceList, Dictionary dictionary) throws DictionaryException {
         for (String key : dictionary.getKeys()) {
-            String path = CombiningMessageEntryResourceProvider.ROOT + dictionary.getResource().getPath() + '/' + key;
+            // the escaping of the key is necessary as it may contain "/" which has a special meaning (even outside the JCR provider)
+            String path = CombiningMessageEntryResourceProvider.ROOT + dictionary.getResource().getPath() + '/' + Text.escapeIllegalJcrChars(key);
             Resource keyResource = resourceResolver.getResource(path);
             if (keyResource != null) {
                 resourceList.add(keyResource);
@@ -139,7 +142,12 @@ public class CombiningMessageEntryDatasource extends SlingSafeMethodsServlet {
 
         String dictionaryPath = request.getRequestPathInfo().getSuffix();
         if (dictionaryPath != null) {
-            createDictionaryDataSource(request, resourceResolver, dictionaryPath, resourceList, languageMap);
+            try {
+                createDictionaryDataSource(request, resourceResolver, dictionaryPath, resourceList, languageMap);
+            } catch (DictionaryException e) {
+                response.sendError(SlingHttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
+                return;
+            }
             if ("list".equals(request.getResource().getName())) {
                 Config dsCfg = new Config(request.getResource().getChild("datasource"));
                 ExpressionHelper expressionHelper = new ExpressionHelper(expressionResolver, request);
@@ -161,7 +169,7 @@ public class CombiningMessageEntryDatasource extends SlingSafeMethodsServlet {
         request.setAttribute(DataSource.class.getName(), dataSource);
     }
 
-    private void createDictionaryDataSource(@NotNull SlingHttpServletRequest request, ResourceResolver resourceResolver, String dictionaryPath, List<Resource> resourceList, Map<String, String> languageMap) {
+    private void createDictionaryDataSource(@NotNull SlingHttpServletRequest request, ResourceResolver resourceResolver, String dictionaryPath, List<Resource> resourceList, Map<String, String> languageMap) throws DictionaryException {
         Resource dictionaryResource = resourceResolver.getResource(dictionaryPath);
         if (dictionaryResource != null) {
             Dictionary dictionary = modelFactory.getModelFromWrappedRequest(request, dictionaryResource, Dictionary.class);

@@ -1,10 +1,14 @@
 package be.orbinson.aem.dictionarytranslator.servlets.action;
 
-import be.orbinson.aem.dictionarytranslator.exception.DictionaryException;
-import be.orbinson.aem.dictionarytranslator.services.DictionaryService;
+import java.io.IOException;
+
+import javax.servlet.Servlet;
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
+import org.apache.sling.api.resource.PersistenceException;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.servlets.SlingAllMethodsServlet;
@@ -14,9 +18,10 @@ import org.jetbrains.annotations.NotNull;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
-import javax.servlet.Servlet;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
+import com.day.cq.replication.ReplicationException;
+
+import be.orbinson.aem.dictionarytranslator.exception.DictionaryException;
+import be.orbinson.aem.dictionarytranslator.services.DictionaryService;
 
 @Component(service = Servlet.class)
 @SlingServletResourceTypes(
@@ -43,13 +48,13 @@ public class DeleteLanguageServlet extends SlingAllMethodsServlet {
             Resource dictionaryResource = resourceResolver.getResource(dictionary);
             try {
                 if (dictionaryResource != null) {
-                    dictionaryService.deleteLanguage(resourceResolver, dictionaryResource, language);
+                    dictionaryService.deleteLanguage(dictionaryResource, language);
                 } else {
                     HtmlResponse htmlResponse = new HtmlResponse();
                     htmlResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST, String.format("Unable to get dictionary '%s'", dictionary));
                     htmlResponse.send(response, true);
                 }
-            } catch (DictionaryException e) {
+            } catch (DictionaryException | PersistenceException | ReplicationException e) {
                 HtmlResponse htmlResponse = new HtmlResponse();
                 htmlResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST, String.format("Unable to delete language '%s': %s", language, e.getMessage()));
                 htmlResponse.send(response, true);
