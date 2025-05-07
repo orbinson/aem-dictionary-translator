@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Dictionaries in /apps and /libs should not be marked as editable in AEMaaCS [#132](https://github.com/orbinson/aem-dictionary-translator/issues/132)
+
 ## [1.3.3] - 2025-03-07
 
 ### Fixed

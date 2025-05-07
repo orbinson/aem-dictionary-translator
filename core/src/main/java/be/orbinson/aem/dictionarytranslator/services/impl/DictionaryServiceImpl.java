@@ -49,8 +49,11 @@ public class DictionaryServiceImpl implements DictionaryService {
                         accessControlManager.privilegeFromName(Privilege.JCR_REMOVE_NODE),
                         accessControlManager.privilegeFromName("crx:replicate")
                 };
-                return accessControlManager.hasPrivileges(path, privileges);
+                // https://jackrabbit.apache.org/oak/docs/nodestore/compositens.html#checking-for-read-only-access
+                boolean isPathWritable= session.hasCapability("addNode", path, new Object[] { "nt:folder" });
+                return isPathWritable && accessControlManager.hasPrivileges(path, privileges);
             } catch (RepositoryException e) {
+                LOG.debug("Could not check if dictionary is editable, therefore assume it is not!", e);
                 return false;
             }
         }

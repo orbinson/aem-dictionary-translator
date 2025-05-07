@@ -6,12 +6,11 @@ import com.day.cq.replication.Replicator;
 import io.wcm.testing.mock.aem.junit5.AemContext;
 import io.wcm.testing.mock.aem.junit5.AemContextExtension;
 import org.apache.sling.api.resource.ResourceResolver;
-import org.apache.sling.testing.mock.jcr.MockJcr;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.Mockito;
 
 import javax.jcr.RepositoryException;
@@ -59,19 +58,20 @@ class DictionaryImplTest {
     }
 
     @ParameterizedTest
-    @ValueSource(booleans = {true, false})
-    void dictionaryShouldBeEditable(boolean hasPrivileges) throws RepositoryException {
-        Session session = MockJcr.newSession();
+    @CsvSource({"true,true", "true,false", "false,true", "false,false"})
+    void dictionaryShouldBeEditableWhenPrivilegesAndCapabilitiesAreFullfilled(boolean hasPrivileges, boolean hasCapability) throws RepositoryException {
+        Session session = Mockito.mock(Session.class);
         context.registerAdapter(ResourceResolver.class, Session.class, session);
         AccessControlManager acm = Mockito.mock(AccessControlManager.class);
-        MockJcr.setAccessControlManager(session, acm);
-        when(acm.hasPrivileges(anyString(), any())).thenReturn(hasPrivileges);
+        when(session.getAccessControlManager()).thenReturn(acm);
+        when(session.hasCapability(anyString(), any(), any())).thenReturn(hasCapability);
+        Mockito.lenient().when(acm.hasPrivileges(anyString(), any())).thenReturn(hasPrivileges);
 
         context.currentResource("/content/dictionaries/fruit/i18n");
 
         Dictionary dictionary = context.request().adaptTo(Dictionary.class);
 
-        assertEquals(hasPrivileges, dictionary.isEditable());
+        assertEquals(hasPrivileges && hasCapability, dictionary.isEditable());
     }
 
     @Test
