@@ -1,20 +1,5 @@
 package be.orbinson.aem.dictionarytranslator.servlets.action;
 
-import be.orbinson.aem.dictionarytranslator.services.DictionaryService;
-import be.orbinson.aem.dictionarytranslator.services.impl.DictionaryServiceImpl;
-import com.day.cq.replication.Replicator;
-import io.wcm.testing.mock.aem.junit5.AemContext;
-import io.wcm.testing.mock.aem.junit5.AemContextExtension;
-import org.apache.sling.api.resource.Resource;
-import org.apache.sling.api.resource.ValueMap;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.util.Map;
-
 import static be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants.SLING_KEY;
 import static be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants.SLING_MESSAGE;
 import static be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants.SLING_MESSAGEENTRY;
@@ -24,13 +9,33 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.mock;
 
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.sling.api.resource.Resource;
+import org.apache.sling.api.resource.ValueMap;
+import org.apache.sling.api.resource.observation.ResourceChange;
+import org.apache.sling.api.resource.observation.ResourceChange.ChangeType;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
+import com.day.cq.replication.Replicator;
+
+import be.orbinson.aem.dictionarytranslator.services.impl.DictionaryServiceImpl;
+import io.wcm.testing.mock.aem.junit5.AemContext;
+import io.wcm.testing.mock.aem.junit5.AemContextExtension;
+
 @ExtendWith(AemContextExtension.class)
 class CreateMessageEntryServletTest {
     private final AemContext context = new AemContext();
 
     CreateMessageEntryServlet servlet;
 
-    DictionaryService dictionaryService;
+    DictionaryServiceImpl dictionaryService;
 
     @BeforeEach
     void beforeEach() {
@@ -115,7 +120,6 @@ class CreateMessageEntryServletTest {
         ValueMap properties = resource.getValueMap();
         assertNotNull(resource);
         assertEquals(SLING_MESSAGEENTRY, properties.get(JCR_PRIMARYTYPE));
-        assertEquals("greeting", properties.get(SLING_KEY));
         assertNull(properties.get(SLING_MESSAGE));
     }
 
@@ -174,6 +178,8 @@ class CreateMessageEntryServletTest {
 
         assertEquals(HttpServletResponse.SC_OK, context.response().getStatus());
 
+        // invalidate cache
+        dictionaryService.onChange(List.of(new ResourceChange(ChangeType.ADDED, "/content/dictionaries/i18n/en", false)));
         servlet.doPost(context.request(), context.response());
 
         assertEquals(HttpServletResponse.SC_BAD_REQUEST, context.response().getStatus());

@@ -10,5 +10,6 @@ public final class DictionaryConstants {
     public static final String SLING_MESSAGE = "sling:message";
     public static final String SLING_MESSAGEENTRY = "sling:MessageEntry";
     public static final String SLING_MESSAGE_MIXIN = "sling:Message";
+    public static final String MIX_LANGUAGE = "mix:language";
 
 }

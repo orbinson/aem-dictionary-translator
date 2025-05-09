@@ -77,8 +77,9 @@ public class UpdateMessageEntryServlet extends SlingAllMethodsServlet {
                 if (message == null) {
                     throw new DictionaryException("Unable to get message for language '" + language + "'");
                 }
-                dictionaryService.updateMessageEntry(resourceResolver, dictionaryResource, language, key, message);
+                dictionaryService.createOrUpdateMessageEntry(dictionaryResource, language, key, message);
             }
+            resourceResolver.commit();
         } else {
             throw new DictionaryException("Could not find dictionary path");
         }

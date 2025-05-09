@@ -1,9 +1,13 @@
 package be.orbinson.aem.dictionarytranslator.models;
 
-import org.apache.sling.api.resource.Resource;
-
 import java.util.List;
 
+import org.apache.sling.api.resource.Resource;
+import org.osgi.annotation.versioning.ProviderType;
+
+import be.orbinson.aem.dictionarytranslator.services.DictionaryService;
+
+@ProviderType
 public interface Dictionary {
     Resource getResource();
 
@@ -18,4 +22,6 @@ public interface Dictionary {
     boolean isEditable();
 
     int getKeyCount();
+    
+    DictionaryService.DictionaryType getType();
 }

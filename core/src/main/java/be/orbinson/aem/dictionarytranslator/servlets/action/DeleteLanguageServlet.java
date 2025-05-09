@@ -43,7 +43,7 @@ public class DeleteLanguageServlet extends SlingAllMethodsServlet {
             Resource dictionaryResource = resourceResolver.getResource(dictionary);
             try {
                 if (dictionaryResource != null) {
-                    dictionaryService.deleteLanguage(resourceResolver, dictionaryResource, language);
+                    dictionaryService.deleteLanguage(dictionaryResource, language);
                 } else {
                     HtmlResponse htmlResponse = new HtmlResponse();
                     htmlResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST, String.format("Unable to get dictionary '%s'", dictionary));

@@ -192,6 +192,10 @@
                             jcr:primaryType="nt:unstructured"
                             jcr:title="Basename"
                             sortable="true"/>
+                    <type
+                            jcr:primaryType="nt:unstructured"
+                            jcr:title="Type"
+                            sortable="true"/>
                     <editable
                             jcr:primaryType="nt:unstructured"
                             jcr:title="Editable"

@@ -57,13 +57,14 @@ public class CreateMessageEntryServlet extends SlingAllMethodsServlet {
                     LOG.debug("Create message entry on path '{}/{}'", dictionary, key);
                     String message = request.getParameter(language);
                     if (!dictionaryService.keyExists(dictionaryResource, language, key)) {
-                        dictionaryService.createMessageEntry(resourceResolver, dictionaryResource, language, key, message);
+                        dictionaryService.createOrUpdateMessageEntry(dictionaryResource, language, key, message);
                     } else {
                         HtmlResponse htmlResponse = new HtmlResponse();
                         htmlResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST, String.format("Can not create message entry %s, key already exists", key));
                         htmlResponse.send(response, true);
                     }
                 }
+                resourceResolver.commit();
             } else {
                 HtmlResponse htmlResponse = new HtmlResponse();
                 htmlResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST, String.format("Unable to get dictionary '%s'", dictionary));
