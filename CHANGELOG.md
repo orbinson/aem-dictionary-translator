@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Dictionaries in /apps and /libs should not be marked as editable in AEMaaCS [#132](https://github.com/orbinson/aem-dictionary-translator/issues/132)
+- Export logic was not executable twice [#170](https://github.com/orbinson/aem-dictionary-translator/issues/170)
 - Support JSON file based dictionaries in read-only mode [#26](https://github.com/orbinson/aem-dictionary-translator/issues/26)
 
 ## [1.3.3] - 2025-03-07
