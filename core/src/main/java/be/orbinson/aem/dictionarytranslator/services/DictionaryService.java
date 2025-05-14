@@ -41,6 +41,14 @@ public interface DictionaryService {
 
     List<String> getKeys(Resource dictionaryResource) throws DictionaryException;
 
+    /**
+     * Returns the message entry for the given language and key.
+     * @param dictionaryResource
+     * @param language
+     * @param key
+     * @return {@code true} if the message entry exists, {@code false} otherwise
+     * @throws DictionaryException if either language or key does not exist below the given dictionary resource
+     */
     boolean keyExists(Resource dictionaryResource, String language, String key) throws DictionaryException;
 
     /**
@@ -49,8 +57,8 @@ public interface DictionaryService {
      * @param language
      * @param key
      * @param message
-     * @throws PersistenceException
-     * @throws DictionaryException 
+     * @throws PersistenceException in case creating a new resource failed
+     * @throws DictionaryException in case the language doees not exist below the given dictionary resource
      */
     void createOrUpdateMessageEntry(Resource dictionaryResource, String language, String key, String message) throws PersistenceException, DictionaryException;
 
@@ -60,12 +68,19 @@ public interface DictionaryService {
      * @param dictionaryResource
      * @param language
      * @param key
-     * @throws PersistenceException
-     * @throws ReplicationException
-     * @throws DictionaryException 
+     * @throws PersistenceException in case deleting the resource failed
+     * @throws ReplicationException in case deactivation failed
+     * @throws DictionaryException if either language or key does not exist below the given dictionary resource
      */
     void deleteMessageEntry(Resource dictionaryResource, String language, String key)  throws PersistenceException, ReplicationException, DictionaryException;
 
+    /**
+     * Returns all message entries for the given language below the given dictionary resource.
+     * @param dictionaryResource
+     * @param language
+     * @return all message entries for the given language. The key of the map is the key of the message entry and the value is a {@link Message} object containing the actual text and other metadata.
+     * @throws DictionaryException if the dictionary for the given language does not exist
+     */
     Map<String, Message> getMessages(Resource dictionaryResource, String language) throws DictionaryException;
 
     /** 
