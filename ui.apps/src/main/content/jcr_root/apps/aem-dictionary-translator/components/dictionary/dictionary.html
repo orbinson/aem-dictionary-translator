@@ -10,7 +10,7 @@
     <td is="coral-table-cell">${resource.path}</td>
     <td is="coral-table-cell">${model.languageList}</td>
     <td is="coral-table-cell">${model.basename}</td>
-    <td is="coral-table-cell">${model.type}</td>
+    <td is="coral-table-cell">${model.type.toString}</td><!--/* call toString due to https://issues.apache.org/jira/browse/SLING-12785 */-->
     <td is="coral-table-cell">
         <coral-icon
                 class="icon--${model.editable ? 'success' : 'warning'}"

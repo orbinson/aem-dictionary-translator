@@ -80,15 +80,10 @@ public class CombiningMessageEntryResourceProvider extends ResourceProvider<Obje
                 }
                 messagePerLanguage.put(language, message);
             }
-           return createResource(parent, resourceResolver, path, dictionaryService.isEditableDictionary(dictionaryResource), messagePerLanguage);
+           return new ValueMapResource(resourceResolver, path, RESOURCE_TYPE, new ValueMapDecorator(createResourceProperties(path, dictionaryService.isEditableDictionary(dictionaryResource), messagePerLanguage)));
         } else {
             throw new ResourceNotFoundException(path, "Unable to get underlying dictionary resource for path '" + dictionaryPath + "'");
         }
-    }
-
-    static @NotNull Resource createResource(@Nullable Resource parent, @NotNull ResourceResolver resourceResolver, 
-            @NotNull String path, boolean isEditable, @NotNull Map<String, Message> messagePerLanguage) {
-        return new ValueMapResource(resourceResolver, path, RESOURCE_TYPE, new ValueMapDecorator(createResourceProperties(path, isEditable, messagePerLanguage)));
     }
 
     private static String extractKeyFromPath(@NotNull String path) {

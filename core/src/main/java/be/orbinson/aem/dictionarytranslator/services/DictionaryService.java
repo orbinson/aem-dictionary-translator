@@ -69,8 +69,8 @@ public interface DictionaryService {
     Map<String, Message> getMessages(Resource dictionaryResource, String language) throws DictionaryException;
 
     /** 
-     * Encapsulating a message entry (for one language).
-     * Exposes both the actual text as well as the resource path of the message entry.
+     * Encapsulating a single message entry (for one language).
+     * Exposes both the actual text as well as the resource path of the source message entry.
      * The latter is only available if the message is based on a single resource (and not based on a JSON file).
      */
     public final class Message {
@@ -114,10 +114,21 @@ public interface DictionaryService {
     }
 
     enum DictionaryType {
-        SLING_MESSAGE_ENTRY,
-        JSON_FILE,
+        SLING_MESSAGE_ENTRY("sling:MessageEntry"),
+        JSON_FILE("JSON file"),
         /** the languages below this dictionary have different types, only applicable on dictionary level, not on language level */
-        MIXED
+        MIXED("Mixed");
+
+        private final String label;
+
+        DictionaryType(String label) {
+            this.label = label;
+        }
+
+        @Override
+        public String toString() {
+            return label;
+        }
     }
 
     /**

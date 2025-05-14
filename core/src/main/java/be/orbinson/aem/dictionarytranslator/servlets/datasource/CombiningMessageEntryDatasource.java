@@ -33,6 +33,13 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+/**
+ * This data source has two different use cases:
+ * <ol>
+ * <li>It is used backing a coral table to display dictionary entries for all languages below a given dictionary</li>
+ * <li>It is used to populate the edit dialog for a single message entry (/apps/aem-dictionary-translator/content/granite/dialog/dictionary/key/update/.content.xml)</li>
+ * 
+ */
 @Component(service = Servlet.class)
 @SlingServletResourceTypes(
         resourceTypes = "aem-dictionary-translator/datasource/combining-message-entry",
@@ -59,7 +66,7 @@ public class CombiningMessageEntryDatasource extends SlingSafeMethodsServlet {
     }
 
     @NotNull
-    private static ValueMapResource getColumn(ResourceResolver resourceResolver, String key, Object value) {
+    static ValueMapResource getColumn(ResourceResolver resourceResolver, String key, Object value) {
         ValueMap valueMap = new ValueMapDecorator(Map.of(
                 key, value,
                 "sortable", true
@@ -74,6 +81,8 @@ public class CombiningMessageEntryDatasource extends SlingSafeMethodsServlet {
             Resource keyResource = resourceResolver.getResource(path);
             if (keyResource != null) {
                 resourceList.add(keyResource);
+            } else {
+                throw new IllegalStateException("Could not get resource for path: " + path + ". Probably the mandatory CombiningMessageEntryResourceProvider is not active.");
             }
         }
     }
