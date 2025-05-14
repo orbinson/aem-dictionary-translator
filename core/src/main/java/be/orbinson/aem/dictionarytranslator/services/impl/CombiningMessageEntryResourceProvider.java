@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -69,7 +70,7 @@ public class CombiningMessageEntryResourceProvider extends ResourceProvider<Obje
         Resource dictionaryResource = resourceResolver.getResource(dictionaryPath);
 
         if (dictionaryResource != null) {
-            @NotNull Map<String, Message> messagePerLanguage = new HashMap<>();
+            @NotNull Map<String, Message> messagePerLanguage = new LinkedHashMap<>(); // preserve the order of languages
             List<String> languages = dictionaryService.getLanguages(dictionaryResource);
             for (String language : languages) {
                 Message message;

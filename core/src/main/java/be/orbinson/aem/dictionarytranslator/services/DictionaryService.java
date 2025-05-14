@@ -31,6 +31,11 @@ public interface DictionaryService {
 
     void deleteDictionary(ResourceResolver resourceResolver, String dictionaryPath) throws DictionaryException, ReplicationException, PersistenceException;
 
+    /**
+     * Returns the list of languages for the given dictionary resource in alphabetical order.
+     * @param dictionaryResource
+     * @return the list of languages for the given dictionary resource in alphabetical order
+     */
     List<String> getLanguages(Resource dictionaryResource);
 
     void deleteLanguage(Resource dictionaryResource, String language) throws DictionaryException, ReplicationException, PersistenceException;
