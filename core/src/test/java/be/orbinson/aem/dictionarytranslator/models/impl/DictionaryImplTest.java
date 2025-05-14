@@ -1,5 +1,6 @@
 package be.orbinson.aem.dictionarytranslator.models.impl;
 
+import be.orbinson.aem.dictionarytranslator.exception.DictionaryException;
 import be.orbinson.aem.dictionarytranslator.models.Dictionary;
 import be.orbinson.aem.dictionarytranslator.services.impl.DictionaryServiceImpl;
 import com.day.cq.replication.Replicator;
@@ -49,7 +50,7 @@ class DictionaryImplTest {
     }
 
     @Test
-    void dictionaryShouldReturnCorrectKeyCount() {
+    void dictionaryShouldReturnCorrectKeyCount() throws DictionaryException {
         context.currentResource("/content/dictionaries/fruit/i18n");
 
         Dictionary dictionary = context.request().adaptTo(Dictionary.class);
@@ -75,7 +76,7 @@ class DictionaryImplTest {
     }
 
     @Test
-    void dictionaryShouldReturnCorrectKeys() {
+    void dictionaryShouldReturnCorrectKeys() throws DictionaryException {
         context.currentResource("/content/dictionaries/fruit/i18n");
 
         Dictionary dictionary = context.request().adaptTo(Dictionary.class);

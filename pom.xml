@@ -179,6 +179,12 @@
                             <goals>
                                 <goal>baseline</goal>
                             </goals>
+                            <configuration>
+                                <diffignores>
+                                    <!-- ignore Bundle-Version header for baseline, i.e. no enforcement of specific bundle versions -->
+                                    <diffignore>Bundle-Version</diffignore>
+                                </diffignores>
+                            </configuration>
                         </execution>
                     </executions>
                 </plugin>

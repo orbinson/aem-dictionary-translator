@@ -1,5 +1,6 @@
 package be.orbinson.aem.dictionarytranslator.servlets.action;
 
+import be.orbinson.aem.dictionarytranslator.exception.DictionaryException;
 import be.orbinson.aem.dictionarytranslator.services.DictionaryService;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.SlingHttpServletRequest;
@@ -57,19 +58,20 @@ public class CreateMessageEntryServlet extends SlingAllMethodsServlet {
                     LOG.debug("Create message entry on path '{}/{}'", dictionary, key);
                     String message = request.getParameter(language);
                     if (!dictionaryService.keyExists(dictionaryResource, language, key)) {
-                        dictionaryService.createMessageEntry(resourceResolver, dictionaryResource, language, key, message);
+                        dictionaryService.createOrUpdateMessageEntry(dictionaryResource, language, key, message);
                     } else {
                         HtmlResponse htmlResponse = new HtmlResponse();
                         htmlResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST, String.format("Can not create message entry %s, key already exists", key));
                         htmlResponse.send(response, true);
                     }
                 }
+                resourceResolver.commit();
             } else {
                 HtmlResponse htmlResponse = new HtmlResponse();
                 htmlResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST, String.format("Unable to get dictionary '%s'", dictionary));
                 htmlResponse.send(response, true);
             }
-        } catch (PersistenceException e) {
+        } catch (PersistenceException|DictionaryException e) {
             HtmlResponse htmlResponse = new HtmlResponse();
             htmlResponse.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, String.format("Unable to create key '%s' on dictionary '%s': %s", key, dictionary, e.getMessage()));
             htmlResponse.send(response, true);

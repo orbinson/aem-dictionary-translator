@@ -1,12 +1,18 @@
 package be.orbinson.aem.dictionarytranslator.servlets.action;
 
+import be.orbinson.aem.dictionarytranslator.exception.DictionaryException;
 import be.orbinson.aem.dictionarytranslator.services.DictionaryService;
+import be.orbinson.aem.dictionarytranslator.services.impl.CombiningMessageEntryResourceProvider;
+
 import com.day.cq.replication.ReplicationException;
+
+import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.resource.PersistenceException;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
+import org.apache.sling.api.resource.ValueMap;
 import org.apache.sling.api.servlets.SlingAllMethodsServlet;
 import org.apache.sling.servlets.annotations.SlingServletResourceTypes;
 import org.apache.sling.servlets.post.HtmlResponse;
@@ -41,29 +47,48 @@ public class DeleteMessageEntryServlet extends SlingAllMethodsServlet {
             HtmlResponse htmlResponse = new HtmlResponse();
             htmlResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST, "item parameter is required");
             htmlResponse.send(response, true);
-        } else {
-            for (String combiningMessageEntryPath : combiningMessageEntryPaths) {
-                ResourceResolver resourceResolver = request.getResourceResolver();
-                Resource combiningMessageEntryResource = resourceResolver.getResource(combiningMessageEntryPath);
-                try {
-                    if (combiningMessageEntryResource != null) {
-                        // javasecurity:S5145
-                        LOG.debug("Delete message entry for path '{}'", combiningMessageEntryResource.getPath());
-                        dictionaryService.deleteMessageEntry(resourceResolver, combiningMessageEntryResource);
-                    } else {
-                        // javasecurity:S5145
-                        HtmlResponse htmlResponse = new HtmlResponse();
-                        htmlResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST, String.format("Unable to get message entry '%s'", combiningMessageEntryPath));
-                        htmlResponse.send(response, true);
-                    }
-                } catch (PersistenceException | ReplicationException e) {
-                    HtmlResponse htmlResponse = new HtmlResponse();
-                    htmlResponse.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, String.format("Unable to delete message entry '%s': %s", combiningMessageEntryPath, e.getMessage()));
-                    htmlResponse.send(response, true);
-                }
+            return;
+        } 
+        for (String combiningMessageEntryPath : combiningMessageEntryPaths) {
+            ResourceResolver resourceResolver = request.getResourceResolver();
+            Resource combiningMessageEntryResource = resourceResolver.getResource(combiningMessageEntryPath);
+            if (combiningMessageEntryResource == null) {
+                HtmlResponse htmlResponse = new HtmlResponse();
+                htmlResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST, String.format("Unable to get message entry '%s'", combiningMessageEntryPath));
+                htmlResponse.send(response, true);
+                return;
             }
+            try {
+                ValueMap properties = combiningMessageEntryResource.getValueMap();
+                String key = properties.get(CombiningMessageEntryResourceProvider.KEY, String.class);
+                if (key == null) {
+                    throw new IllegalArgumentException("" + CombiningMessageEntryResourceProvider.KEY + " is required");
+                }
+                String dictionaryPath = properties.get(CombiningMessageEntryResourceProvider.DICTIONARY_PATH, String.class);
+                if (dictionaryPath == null) {
+                    throw new IllegalArgumentException("" + CombiningMessageEntryResourceProvider.DICTIONARY_PATH + " is required");
+                }
+                Resource dictionaryResource = resourceResolver.getResource(dictionaryPath);
+                String[] languages = properties.get(CombiningMessageEntryResourceProvider.LANGUAGES, new String[0]);
+                for (String language : languages) {
+                    dictionaryService.deleteMessageEntry(dictionaryResource, language, key);
+                }
+                resourceResolver.commit();
+                // javasecurity:S5145
+                LOG.debug("Deleted message entry for key '{}' from languages {} of dictionary '{}'", key, String.join(", ", languages), dictionaryPath);
+            
+            } catch (DictionaryException | PersistenceException | ReplicationException e) {
+                HtmlResponse htmlResponse = new HtmlResponse();
+                htmlResponse.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, String.format("Unable to delete message entry '%s': %s", combiningMessageEntryPath, e.getMessage()));
+                htmlResponse.send(response, true);
+                return;
+            } catch (IllegalArgumentException e) {
+                HtmlResponse htmlResponse = new HtmlResponse();
+                htmlResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST, String.format("Missing mandatory property from resource: %s", combiningMessageEntryPath, e.getMessage()));
+                htmlResponse.send(response, true);
+                return;
+            } 
         }
     }
-
 
 }

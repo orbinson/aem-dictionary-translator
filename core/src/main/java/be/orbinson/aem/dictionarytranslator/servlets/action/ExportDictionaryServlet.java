@@ -1,6 +1,14 @@
 package be.orbinson.aem.dictionarytranslator.servlets.action;
 
-import be.orbinson.aem.dictionarytranslator.services.DictionaryService;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.Servlet;
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.request.RequestParameter;
@@ -9,21 +17,13 @@ import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.servlets.SlingAllMethodsServlet;
 import org.apache.sling.servlets.annotations.SlingServletResourceTypes;
 import org.apache.sling.servlets.post.HtmlResponse;
-import org.jetbrains.annotations.NotNull;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.servlet.Servlet;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import static be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants.SLING_MESSAGE;
+import be.orbinson.aem.dictionarytranslator.exception.DictionaryException;
+import be.orbinson.aem.dictionarytranslator.services.DictionaryService;
 
 // TODO should add quoting / escaping for CSV's
 @Component(service = Servlet.class)
@@ -62,7 +62,7 @@ public class ExportDictionaryServlet extends SlingAllMethodsServlet {
                 htmlResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST, "Dictionary resource not found.");
                 htmlResponse.send(response, true);
             }
-        } catch (IOException e) {
+        } catch (IOException | DictionaryException e) {
             HtmlResponse htmlResponse = new HtmlResponse();
             htmlResponse.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error while writing CSV file: " + e.getMessage());
             htmlResponse.send(response, true);
@@ -82,18 +82,26 @@ public class ExportDictionaryServlet extends SlingAllMethodsServlet {
         LOG.debug("CSV header: {}", csvHeader);
     }
 
-    private void writeCsvRows(PrintWriter writer, RequestParameter delimiter, Resource dictionaryResource, List<String> languages) {
+    private void writeCsvRows(PrintWriter writer, RequestParameter delimiter, Resource dictionaryResource, List<String> languages) throws DictionaryException {
         List<String> keys = dictionaryService.getKeys(dictionaryResource);
-        Map<String, Resource> languageResources = getLanguageResourceMap(dictionaryResource, languages);
+        Map<String, Map<String, String>> messageMapPerKey = new HashMap<>(); // the key is the message key
+        for (String language : languages) {
+            dictionaryService.getMessages(dictionaryResource, language).entrySet().stream()
+                    .forEach(entry -> {
+                        String key = entry.getKey();
+                        String message = entry.getValue().getText();
+                        messageMapPerKey.computeIfAbsent(key, k -> new HashMap<>()).put(language, message);
+                    });
+        }
         for (String key : keys) {
             StringBuilder csvRow = new StringBuilder();
             csvRow.append(key);
             csvRow.append(delimiter);
+            Map<String, String> messagesPerLanguage = messageMapPerKey.get(key);
             for (int i = 0; i < languages.size(); i++) {
-                String language = languages.get(i);
-                Resource messageEntryResource = dictionaryService.getMessageEntryResource(languageResources.get(language), key);
-                if (messageEntryResource != null) {
-                    csvRow.append(messageEntryResource.getValueMap().get(SLING_MESSAGE));
+                String message = messagesPerLanguage.get(languages.get(i));
+                if (message != null) {
+                    csvRow.append(message);
                 } else {
                     csvRow.append(" ");
                 }
@@ -104,17 +112,6 @@ public class ExportDictionaryServlet extends SlingAllMethodsServlet {
             LOG.debug("CSV row: {}", csvRow);
             writer.println(csvRow);
         }
-    }
-
-    private @NotNull Map<String, Resource> getLanguageResourceMap(Resource dictionaryResource, List<String> languages) {
-        Map<String, Resource> languageResources = new HashMap<>();
-        for (String lang : languages) {
-            Resource languageResource = dictionaryService.getLanguageResource(dictionaryResource, lang);
-            if (languageResource != null) {
-                languageResources.put(lang, languageResource);
-            }
-        }
-        return languageResources;
     }
 
 }

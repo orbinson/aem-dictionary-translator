@@ -15,12 +15,17 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.security.AccessControlManager;
 
+import org.apache.sling.api.resource.ModifiableValueMap;
 import org.apache.sling.api.resource.PersistenceException;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
@@ -41,6 +46,7 @@ import be.orbinson.aem.dictionarytranslator.exception.DictionaryException;
 import be.orbinson.aem.dictionarytranslator.models.Dictionary;
 import be.orbinson.aem.dictionarytranslator.models.impl.DictionaryImpl;
 import be.orbinson.aem.dictionarytranslator.services.DictionaryService;
+import be.orbinson.aem.dictionarytranslator.services.DictionaryService.Message;
 import io.wcm.testing.mock.aem.junit5.AemContext;
 import io.wcm.testing.mock.aem.junit5.AemContextExtension;
 
@@ -153,7 +159,7 @@ class DictionaryServiceImplTest {
     }
 
     @Test
-    void dictionaryServiceShouldBeAbleToDeleteDictionary() throws DictionaryException {
+    void dictionaryServiceShouldBeAbleToDeleteDictionary() throws DictionaryException, PersistenceException, ReplicationException {
         assertNotNull(context.resourceResolver().getResource("/content/dictionaries/fruit/i18n"));
 
         dictionaryService.deleteDictionary(context.resourceResolver(), "/content/dictionaries/fruit/i18n");
@@ -165,13 +171,13 @@ class DictionaryServiceImplTest {
     void replicationExceptionOnDeletingDictionaryShouldThrowNewException() throws ReplicationException {
         doThrow(new ReplicationException("Replication failed")).when(replicator).replicate(any(), any(), any());
 
-        assertThrows(DictionaryException.class, () -> {
+        assertThrows(ReplicationException.class, () -> {
             dictionaryService.deleteDictionary(context.resourceResolver(), "/content/dictionaries/fruit/i18n");
         });
     }
 
     @Test
-    void deletingDictionaryShouldDeactivate() throws DictionaryException, ReplicationException {
+    void deletingDictionaryShouldDeactivate() throws DictionaryException, ReplicationException, PersistenceException {
         dictionaryService.deleteDictionary(context.resourceResolver(), "/content/dictionaries/fruit/i18n");
 
         verify(replicator, times(1)).replicate(any(), eq(ReplicationActionType.DEACTIVATE), eq("/content/dictionaries/fruit/i18n"));
@@ -185,10 +191,10 @@ class DictionaryServiceImplTest {
     }
 
     @Test
-    void dictionaryServiceShouldBeAbleToDeleteLanguage() throws DictionaryException {
+    void dictionaryServiceShouldBeAbleToDeleteLanguage() throws DictionaryException, PersistenceException, ReplicationException {
         context.currentResource("/content/dictionaries/fruit/i18n");
 
-        dictionaryService.deleteLanguage(context.resourceResolver(), context.currentResource(), "en");
+        dictionaryService.deleteLanguage(context.currentResource(), "en");
 
         assertEquals(List.of("nl_BE"), dictionaryService.getLanguages(context.currentResource()));
     }
@@ -197,34 +203,59 @@ class DictionaryServiceImplTest {
     void deletingNonExistingLanguageShouldThrowExeption() {
         context.currentResource("/content/dictionaries/fruit/i18n");
         assertThrows(DictionaryException.class, () -> {
-            dictionaryService.deleteLanguage(context.resourceResolver(), context.currentResource(), "ar");
+            dictionaryService.deleteLanguage(context.currentResource(), "ar");
         });
     }
 
     @Test
-    void dictionaryShouldUpdateMessageEntry() throws PersistenceException, RepositoryException {
+    void dictionaryShouldUpdateMessageEntry() throws PersistenceException, DictionaryException {
         context.currentResource("/content/dictionaries/fruit/i18n");
 
-        dictionaryService.updateMessageEntry(context.resourceResolver(), context.currentResource(), "en", "apple", "Not a banana");
+        dictionaryService.createOrUpdateMessageEntry(context.currentResource(), "en", "apple", "Not a banana");
 
         assertEquals("Not a banana", context.resourceResolver().getResource("/content/dictionaries/fruit/i18n/en/apple").getValueMap().get("sling:message"));
     }
 
     @Test
-    void dictionaryShouldUpdateNonExistingMessageEntry() throws PersistenceException, RepositoryException {
+    void dictionaryShouldUpdateNonExistingMessageEntry() throws PersistenceException, DictionaryException {
         context.currentResource("/content/dictionaries/fruit/i18n");
 
-        dictionaryService.updateMessageEntry(context.resourceResolver(), context.currentResource(), "en", "kaboeboe", "Kaboeboe");
+        dictionaryService.createOrUpdateMessageEntry(context.currentResource(), "en", "kaboeboe", "Kaboeboe");
 
         assertEquals("Kaboeboe", context.resourceResolver().getResource("/content/dictionaries/fruit/i18n/en/kaboeboe").getValueMap().get("sling:message"));
     }
 
     @Test
-    void dictionaryWithEmptyMessageShouldDeleteMessageEntry() throws PersistenceException, RepositoryException {
+    void dictionaryWithEmptyMessageShouldDeleteMessageEntry() throws PersistenceException, DictionaryException {
         context.currentResource("/content/dictionaries/fruit/i18n");
 
-        dictionaryService.updateMessageEntry(context.resourceResolver(), context.currentResource(), "en", "apple", "");
+        dictionaryService.createOrUpdateMessageEntry(context.currentResource(), "en", "apple", "");
 
         assertFalse(context.resourceResolver().getResource("/content/dictionaries/fruit/i18n/en/apple").getValueMap().containsKey("sling:message"));
+    }
+
+    @Test
+    void dictionaryServiceShouldReturnMessagesForMessageEntryDictionary() throws DictionaryException {
+        Resource dictionaryResource = context.currentResource("/content/dictionaries/fruit/i18n");
+
+        assertEquals(Map.of("apple", new Message("Apple", "/content/dictionaries/fruit/i18n/en/apple"), 
+                "banana", new Message("Banana", "/content/dictionaries/fruit/i18n/en/banana"),
+                "cherry", new Message("Cherry", "/content/dictionaries/fruit/i18n/en/cherry")),
+                dictionaryService.getMessages(dictionaryResource, "en"));
+    }
+
+    @Test
+    void dictionaryServiceShouldReturnMessagesForJsonBasedDictionary() throws DictionaryException, IOException {
+        context.currentResource("/content/dictionaries/fruit/i18n");
+        try (InputStream is = getClass().getResourceAsStream("/fruit.de.json")) {
+            Objects.requireNonNull(is);
+            Resource resource = context.load().binaryFile(is, "/content/dictionaries/fruit/i18n/de.json");
+            ModifiableValueMap properties = resource.adaptTo(ModifiableValueMap.class);
+            Objects.requireNonNull(properties);
+            properties.put("jcr:language", "de");
+        }
+
+        assertEquals(Map.of("apple", new Message("Apfel", null), "banana", new Message("Banane", null), "cherry", new Message("Kirsche", null)), 
+                dictionaryService.getMessages(context.currentResource(), "de"));
     }
 }
