@@ -147,44 +147,45 @@ public class CombiningMessageEntryDatasource extends SlingSafeMethodsServlet {
     protected void doGet(@NotNull SlingHttpServletRequest request, @NotNull SlingHttpServletResponse response) throws ServletException, IOException {
         List<Resource> resourceList = new ArrayList<>();
         ResourceResolver resourceResolver = request.getResourceResolver();
-        Map<String, String> languageMap = LanguageDatasource.getAllAvailableLanguages(request, response);
 
-        String dictionaryPath = request.getRequestPathInfo().getSuffix();
-        if (dictionaryPath != null) {
-            try {
-                createDictionaryDataSource(request, resourceResolver, dictionaryPath, resourceList, languageMap);
-            } catch (DictionaryException e) {
-                response.sendError(SlingHttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
-                return;
-            }
-            if ("list".equals(request.getResource().getName())) {
-                Config dsCfg = new Config(request.getResource().getChild("datasource"));
-                ExpressionHelper expressionHelper = new ExpressionHelper(expressionResolver, request);
-                Integer limit = expressionHelper.get(dsCfg.get("limit"), Integer.class);
-                Integer offset = expressionHelper.get(dsCfg.get("offset"), Integer.class);
-                if (offset > resourceList.size()) {
-                    offset = 0;
-                }
-                resourceList = resourceList.subList(offset, Math.min(offset + limit, resourceList.size()));
-            }
-        }
-
+        // expose only data for one item or
         String combiningMessageEntryPath = request.getParameter("item");
         if (combiningMessageEntryPath != null) {
-            createCombiningMessageEntryDataSource(request.getLocale(), languageMap, resourceResolver, combiningMessageEntryPath, resourceList);
+            createCombiningMessageEntryDataSource(request.getLocale(), LanguageDatasource.getAllAvailableLanguages(request, response), resourceResolver, combiningMessageEntryPath, resourceList);
+        } else {
+            // for the complete dictionary
+            String dictionaryPath = request.getRequestPathInfo().getSuffix();
+            if (dictionaryPath != null) {
+                try {
+                    createDictionaryDataSource(request, response, resourceResolver, dictionaryPath, resourceList);
+                } catch (DictionaryException e) {
+                    response.sendError(SlingHttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
+                    return;
+                }
+                if ("list".equals(request.getResource().getName())) {
+                    Config dsCfg = new Config(request.getResource().getChild("datasource"));
+                    ExpressionHelper expressionHelper = new ExpressionHelper(expressionResolver, request);
+                    Integer limit = expressionHelper.get(dsCfg.get("limit"), Integer.class);
+                    Integer offset = expressionHelper.get(dsCfg.get("offset"), Integer.class);
+                    if (offset > resourceList.size()) {
+                        offset = 0;
+                    }
+                    resourceList = resourceList.subList(offset, Math.min(offset + limit, resourceList.size()));
+                }
+            }
         }
 
         DataSource dataSource = new SimpleDataSource(resourceList.iterator());
         request.setAttribute(DataSource.class.getName(), dataSource);
     }
 
-    private void createDictionaryDataSource(@NotNull SlingHttpServletRequest request, ResourceResolver resourceResolver, String dictionaryPath, List<Resource> resourceList, Map<String, String> languageMap) throws DictionaryException {
+    private void createDictionaryDataSource(@NotNull SlingHttpServletRequest request, @NotNull SlingHttpServletResponse response, ResourceResolver resourceResolver, String dictionaryPath, List<Resource> resourceList) throws DictionaryException, ServletException, IOException {
         Resource dictionaryResource = resourceResolver.getResource(dictionaryPath);
         if (dictionaryResource != null) {
             Dictionary dictionary = modelFactory.getModelFromWrappedRequest(request, dictionaryResource, Dictionary.class);
             if (dictionary != null) {
                 if ("columnsdatasource".equals(request.getResource().getName())) {
-                    setColumnsDataSource(resourceResolver, resourceList, dictionary, languageMap);
+                    setColumnsDataSource(resourceResolver, resourceList, dictionary, LanguageDatasource.getAllAvailableLanguages(request, response));
                 } else {
                     setDataSource(resourceResolver, resourceList, dictionary);
                 }
