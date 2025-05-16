@@ -17,9 +17,11 @@ import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
@@ -29,6 +31,10 @@ import org.apache.sling.api.resource.ModifiableValueMap;
 import org.apache.sling.api.resource.PersistenceException;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
+import org.apache.sling.testing.resourceresolver.MockFindQueryResources;
+import org.apache.sling.testing.resourceresolver.MockFindResourcesHandler;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -258,4 +264,52 @@ class DictionaryServiceImplTest {
         assertEquals(Map.of("apple", new Message("Apfel", null), "banana", new Message("Banane", null), "cherry", new Message("Kirsche", null)), 
                 dictionaryService.getMessages(context.currentResource(), "de"));
     }
+
+    @Test
+    void testDictionaryOrdinal() {
+        context.load().json("/content.json", "/apps");
+        assertEquals(2, dictionaryService.getOrdinal(context.currentResource("/content/dictionaries/fruit/i18n")));
+        assertEquals(0, dictionaryService.getOrdinal(context.currentResource("/apps/dictionaries/vegetables/i18n")));
+    }
+
+    /*
+    @Test
+    void dictionaryShouldReturnConflictingDictionaryForSameKeyHigherPrecedence() {
+        context.load().json("/content.json", "/apps");
+        MockFindResourcesHandler handler = new MockFindResourcesHandler() {
+            @Override
+            public @Nullable Iterator<Resource> findResources(@NotNull String query, String language) {
+                return List.of(
+                        context.resourceResolver().getResource("/apps/dictionaries/fruit/i18n"),
+                        context.resourceResolver().getResource("/apps/dictionaries/vegetables/i18n"),
+                        context.resourceResolver().getResource("/content/dictionaries/fruit/i18n"),
+                        context.resourceResolver().getResource("/content/dictionaries/vegetables/i18n")
+                ).iterator();
+            }
+        };
+        MockFindQueryResources.addFindResourceHandler(context.resourceResolver(), handler);
+
+        assertEquals("/apps/dictionaries/fruit/i18n", dictionaryService.getConflictingDictionary(context.currentResource("/content/dictionaries/fruit/i18n"), "apple", "en").get().getPath());
+    }
+
+    @Test
+    void dictionaryShouldNotReturnConflictingDictionaryForSameKeyLowerPrecedence() {
+        context.load().json("/content.json", "/apps");
+        MockFindResourcesHandler handler = new MockFindResourcesHandler() {
+
+            @Override
+            public @Nullable Iterator<Resource> findResources(@NotNull String query, String language) {
+                return List.of(
+                        context.resourceResolver().getResource("/apps/dictionaries/vegetables/i18n"),
+                        context.resourceResolver().getResource("/content/dictionaries/fruit/i18n"),
+                        context.resourceResolver().getResource("/content/dictionaries/vegetables/i18n")
+                ).iterator();
+            }
+            
+        };
+        MockFindQueryResources.addFindResourceHandler(context.resourceResolver(), handler);
+
+
+        assertEquals(Optional.empty(), dictionaryService.getConflictingDictionary(context.currentResource("/apps/dictionaries/fruit/i18n"), "apple", "en"));
+    }*/
 }

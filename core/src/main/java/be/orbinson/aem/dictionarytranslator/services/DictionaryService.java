@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import org.apache.sling.api.resource.PersistenceException;
 import org.apache.sling.api.resource.Resource;
@@ -24,6 +25,15 @@ import be.orbinson.aem.dictionarytranslator.exception.DictionaryException;
 public interface DictionaryService {
 
     boolean isEditableDictionary(Resource dictionaryResource);
+    
+    /**
+     * Returns the ordinal of the dictionary resource. The lower the ordinal, the higher the precedence.
+     * The ordinal is determined by the path of the dictionary resource and follows the logic from
+     * <a href="https://sling.apache.org/documentation/bundles/internationalization-support-i18n.html#resourcebundle-hierarchies">ResourceBundle hierarchies</a>.
+     * @param dictionaryResource the dictionary resource
+     * @return the ordinal of the dictionary resource
+     */
+    int getOrdinal(Resource dictionaryResource);
 
     List<Resource> getDictionaries(ResourceResolver resourceResolver);
 
@@ -47,14 +57,13 @@ public interface DictionaryService {
     List<String> getKeys(Resource dictionaryResource) throws DictionaryException;
 
     /**
-     * Returns the message entry for the given language and key.
+     * Checks if a message entry for the given language and key exists. Never throws an exception (even if the language or key does not exist below the given dictionary resource.
      * @param dictionaryResource
      * @param language
      * @param key
      * @return {@code true} if the message entry exists, {@code false} otherwise
-     * @throws DictionaryException if either language or key does not exist below the given dictionary resource
      */
-    boolean keyExists(Resource dictionaryResource, String language, String key) throws DictionaryException;
+    boolean keyExists(Resource dictionaryResource, String language, String key);
 
     /**
      * Either creates a new message entry or updates an existing one. The changes are not persisted until the resource resolver is committed.
@@ -171,4 +180,12 @@ public interface DictionaryService {
      */
     DictionaryType getType(Resource dictionaryResource);
 
+    /**
+     * Returns the dictionary resource having a lower or same ordinal, containing the given key and language. It does not evaluate the basename(s), though.
+     * @param dictionaryResource
+     * @param key
+     * @param language
+     * @return the dictionary resource having a higher or same precedence if it exists, otherwise an empty Optional
+     */
+    Optional<Resource> getConflictingDictionary(Resource dictionaryResource, String language, String key);
 }

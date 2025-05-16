@@ -112,6 +112,7 @@ class CombiningMessageEntryDatasourceTest {
 
         assertDataSourceEquals(dataSource, CombiningMessageEntryDatasource.getColumn(context.resourceResolver(), "select", true),
                 CombiningMessageEntryDatasource.getColumn(context.resourceResolver(), "jcr:title", "Key"),
+                CombiningMessageEntryDatasource.getColumn(context.resourceResolver(), "jcr:title", "Validation"),
                 CombiningMessageEntryDatasource.getColumn(context.resourceResolver(), "jcr:title", "en"),
                 CombiningMessageEntryDatasource.getColumn(context.resourceResolver(), "jcr:title", "nl_BE"));
     }
