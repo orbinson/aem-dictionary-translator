@@ -14,6 +14,7 @@ import javax.servlet.ServletException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jackrabbit.util.Text;
+import org.apache.jackrabbit.vault.util.JcrConstants;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.resource.Resource;
@@ -24,7 +25,6 @@ import org.apache.sling.api.wrappers.ValueMapDecorator;
 import org.apache.sling.models.factory.ModelFactory;
 import org.apache.sling.servlets.annotations.SlingServletResourceTypes;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
@@ -64,12 +64,12 @@ public class CombiningMessageEntryDatasource extends SlingSafeMethodsServlet {
 
     private static void setColumnsDataSource(ResourceResolver resourceResolver, List<Resource> resourceList, Dictionary dictionary, Map<String, String> languageMap) {
         resourceList.add(getColumn(resourceResolver, "select", true));
-        resourceList.add(getColumn(resourceResolver, "jcr:title", "Key"));
-        resourceList.add(getColumn(resourceResolver, "jcr:title", "Validation"));
+        resourceList.add(getColumn(resourceResolver, JcrConstants.JCR_TITLE, "Key"));
+        resourceList.add(getColumn(resourceResolver, JcrConstants.JCR_TITLE, "Validation"));
 
         dictionary.getLanguages().forEach(language -> {
                     String title = languageMap.getOrDefault(language, language);
-                    resourceList.add(getColumn(resourceResolver, "jcr:title", title));
+                    resourceList.add(getColumn(resourceResolver, JcrConstants.JCR_TITLE, title));
                 }
         );
     }
@@ -126,7 +126,7 @@ public class CombiningMessageEntryDatasource extends SlingSafeMethodsServlet {
 
     private static Resource createAlertResource(ResourceResolver resourceResolver, String path, String title, String text, String variant) {
         ValueMap valueMap = new ValueMapDecorator(Map.of(
-                "jcr:title", title,
+                JcrConstants.JCR_TITLE, title,
                 "text", text,
                 "variant", variant
         ));

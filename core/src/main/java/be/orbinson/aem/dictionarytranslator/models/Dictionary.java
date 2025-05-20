@@ -1,7 +1,6 @@
 package be.orbinson.aem.dictionarytranslator.models;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.apache.sling.api.resource.Resource;
 
