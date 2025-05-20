@@ -14,7 +14,6 @@ import javax.servlet.ServletException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jackrabbit.util.Text;
-import org.apache.jackrabbit.vault.util.JcrConstants;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.resource.Resource;
@@ -34,6 +33,7 @@ import com.adobe.granite.ui.components.ExpressionResolver;
 import com.adobe.granite.ui.components.ds.DataSource;
 import com.adobe.granite.ui.components.ds.SimpleDataSource;
 import com.adobe.granite.ui.components.ds.ValueMapResource;
+import com.day.cq.commons.jcr.JcrConstants;
 import com.day.cq.i18n.I18n;
 
 import be.orbinson.aem.dictionarytranslator.exception.DictionaryException;
