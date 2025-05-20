@@ -102,6 +102,9 @@ public class CombiningMessageEntryDatasource extends SlingSafeMethodsServlet {
 
 
     private static Resource createTextFieldResource(ResourceResolver resourceResolver, String label, String name, String value, boolean required, boolean disabled) {
+        return createTextFieldResource(resourceResolver, "", label, name, value, required, disabled);
+    }
+    private static Resource createTextFieldResource(ResourceResolver resourceResolver, String path, String label, String name, String value, boolean required, boolean disabled) {
         ValueMap valueMap = new ValueMapDecorator(Map.of(
                 FIELD_LABEL, label,
                 "name", name,
@@ -109,7 +112,7 @@ public class CombiningMessageEntryDatasource extends SlingSafeMethodsServlet {
                 "disabled", disabled,
                 "required", required)
         );
-        return new ValueMapResource(resourceResolver, name, "granite/ui/components/coral/foundation/form/textfield", valueMap);
+        return new ValueMapResource(resourceResolver, path, "granite/ui/components/coral/foundation/form/textfield", valueMap);
     }
 
     private static Resource createHiddenFieldResource(ResourceResolver resourceResolver, String key, String value) {
@@ -121,12 +124,18 @@ public class CombiningMessageEntryDatasource extends SlingSafeMethodsServlet {
         return new ValueMapResource(resourceResolver, "", "granite/ui/components/coral/foundation/form/hidden", valueMap);
     }
 
-    private static Resource createFieldSetResource(ResourceResolver resourceResolver, Collection<Resource> childResources) {
+    private static Resource createAlertResource(ResourceResolver resourceResolver, String path, String title, String text, String variant) {
         ValueMap valueMap = new ValueMapDecorator(Map.of(
-                "jcr:title", "Validation messages"
+                "jcr:title", title,
+                "text", text,
+                "variant", variant
         ));
-        Resource items = new ValueMapResource(resourceResolver, "items", "nt:unstructured", null, childResources);
-        return new ValueMapResource(resourceResolver, "", "granite/ui/components/coral/foundation/form/fieldset", valueMap, Collections.singleton(items));
+        return new ValueMapResource(resourceResolver, path, "granite/ui/components/coral/foundation/alert", valueMap);
+    }
+
+    private static Resource createFieldSetResource(ResourceResolver resourceResolver, String path, Collection<Resource> childResources) {
+        Resource items = new ValueMapResource(resourceResolver, path+"/items", "nt:unstructured", null, childResources);
+        return new ValueMapResource(resourceResolver, path, "granite/ui/components/coral/foundation/form/fieldset", null, Collections.singleton(items));
     }
 
     private static void sortResourcesByProperty(String propertyName, Locale locale, List<Resource> resources) {
@@ -157,25 +166,27 @@ public class CombiningMessageEntryDatasource extends SlingSafeMethodsServlet {
             // make sure that key is always at the top
             resourceList.add(0, createTextFieldResource(resourceResolver, "Key", key, key, false, true));
             resourceList.add(1, createHiddenFieldResource(resourceResolver, "key", key));
-            Resource validationContainer = addValidationMessagesResource(i18n, resourceResolver, properties.get(CombiningMessageEntryResourceProvider.VALIDATION_MESSAGES, ValidationMessage[].class));
+            Resource validationContainer = addValidationMessagesResource(i18n, resourceResolver, languageMap, properties.get(CombiningMessageEntryResourceProvider.VALIDATION_MESSAGES, ValidationMessage[].class));
             if (validationContainer != null) {
-                resourceList.add(2, validationContainer);
+                resourceList.add(0, validationContainer);
             }
         }
     }
 
-    private static Resource addValidationMessagesResource(I18n i18n, ResourceResolver resourceResolver, ValidationMessage... validationMessages) {
+    private static Resource addValidationMessagesResource(I18n i18n, ResourceResolver resourceResolver, Map<String, String> languageMap, ValidationMessage... validationMessages) {
         if (validationMessages == null || validationMessages.length == 0) {
             return null;
         }
         List<Resource> validationResources = new ArrayList<>();
         int index = 0;
+        String fieldSetPath = "/dialog/validation"; // artifical path to avoid collision with other resources
         for (ValidationMessage validationMessage : validationMessages) {
-            String label = new StringBuilder().append(validationMessage.getSeverity()).append(" in language ").append(validationMessage.getLanguage()).toString();
+            String textFieldPath = fieldSetPath + "/items/item" + index++;
+            String label = new StringBuilder().append(i18n.get("Language")).append(" ").append(languageMap.getOrDefault(validationMessage.getLanguage(), validationMessage.getLanguage())).toString();
             String text =  i18n.get(validationMessage.getI18nKey(), null, (Object[])validationMessage.getArguments());
-            validationResources.add(createTextFieldResource(resourceResolver, label, "items/item"+index++, text, false, true));
+            validationResources.add(createAlertResource(resourceResolver, textFieldPath, label, text, validationMessage.getSeverity().name().toLowerCase(Locale.ENGLISH)));
         }
-        return createFieldSetResource(resourceResolver, validationResources);
+        return createFieldSetResource(resourceResolver, fieldSetPath, validationResources);
     }
 
     @Override

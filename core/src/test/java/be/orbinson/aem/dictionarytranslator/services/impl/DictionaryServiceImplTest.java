@@ -272,7 +272,6 @@ class DictionaryServiceImplTest {
         assertEquals(0, dictionaryService.getOrdinal(context.currentResource("/apps/dictionaries/vegetables/i18n")));
     }
 
-    /*
     @Test
     void dictionaryShouldReturnConflictingDictionaryForSameKeyHigherPrecedence() {
         context.load().json("/content.json", "/apps");
@@ -289,7 +288,7 @@ class DictionaryServiceImplTest {
         };
         MockFindQueryResources.addFindResourceHandler(context.resourceResolver(), handler);
 
-        assertEquals("/apps/dictionaries/fruit/i18n", dictionaryService.getConflictingDictionary(context.currentResource("/content/dictionaries/fruit/i18n"), "apple", "en").get().getPath());
+        assertEquals("/apps/dictionaries/fruit/i18n", dictionaryService.getConflictingDictionary(context.currentResource("/content/dictionaries/fruit/i18n"), "en", "apple").get().getPath());
     }
 
     @Test
@@ -310,6 +309,6 @@ class DictionaryServiceImplTest {
         MockFindQueryResources.addFindResourceHandler(context.resourceResolver(), handler);
 
 
-        assertEquals(Optional.empty(), dictionaryService.getConflictingDictionary(context.currentResource("/apps/dictionaries/fruit/i18n"), "apple", "en"));
-    }*/
+        assertEquals(Optional.empty(), dictionaryService.getConflictingDictionary(context.currentResource("/apps/dictionaries/fruit/i18n"), "en", "apple"));
+    }
 }

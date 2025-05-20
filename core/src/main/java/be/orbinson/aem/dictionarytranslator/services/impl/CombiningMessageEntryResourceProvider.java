@@ -58,7 +58,7 @@ public class CombiningMessageEntryResourceProvider extends ResourceProvider<Obje
     }
 
     public static final class ValidationMessage implements Comparable<ValidationMessage> {
-        enum Severity {
+        public enum Severity {
             ERROR("error"), // most severe should have lowest ordinal
             WARNING("warning"),
             INFO("info");
@@ -109,7 +109,7 @@ public class CombiningMessageEntryResourceProvider extends ResourceProvider<Obje
         public int compareTo(ValidationMessage o) {
             // must be consistent with equals
             // lowest ordinal should be first
-            int result = severity.compareTo(this.severity) * -1;
+            int result = this.severity.compareTo(o.severity);
             if (result == 0) {
                 result = 1;
             }
@@ -215,18 +215,18 @@ public class CombiningMessageEntryResourceProvider extends ResourceProvider<Obje
                 throw new IllegalStateException("Unable to get message entries for language '" + language + "' in dictionary '" + conflictingDictionaryResource.get().getPath() + "'", e);
             }
             if (Objects.equals(otherMessage, message)) {
-                validationMessage = new ValidationMessage(ValidationMessage.Severity.INFO, language, "Conflicting dictionary at {0} for language {1}, it has the same message though", conflictingDictionaryResource.get().getPath(), language);
+                validationMessage = new ValidationMessage(ValidationMessage.Severity.INFO, language, "Conflicting dictionary at \"{0}\" for language {1}, it has the same message though.", conflictingDictionaryResource.get().getPath(), language);
             } else {
                 String conflictingDictionaryBasename = dictionaryService.getBasename(conflictingDictionaryResource.get());
                 switch (checkBasenameOverlap(dictionaryService.getBasename(dictionaryResource), conflictingDictionaryBasename)) {
                     case PARTIAL:
-                        validationMessage = new ValidationMessage(ValidationMessage.Severity.WARNING, language, "Conflicting dictionary at {0} for language {1} with another translation and partially overlapping basenames {2}", conflictingDictionaryResource.get().getPath(), language);
+                        validationMessage = new ValidationMessage(ValidationMessage.Severity.WARNING, language, "Conflicting dictionary at \"{0}\" for language {1} with another translation and partially overlapping basenames {2}.", conflictingDictionaryResource.get().getPath(), language, conflictingDictionaryBasename);
                         break;
                     case FULL:
-                        validationMessage = new ValidationMessage(ValidationMessage.Severity.ERROR, language, "Conflicting dictionary at {0} for language {1} with another translation for same basenames {2}", conflictingDictionaryResource.get().getPath(), language, conflictingDictionaryBasename);
+                        validationMessage = new ValidationMessage(ValidationMessage.Severity.WARNING, language, "Conflicting dictionary at \"{0}\" for language {1} with another translation for same basenames,", conflictingDictionaryResource.get().getPath(), language);
                         break;
                     case POTENTIAL:
-                        validationMessage = new ValidationMessage(ValidationMessage.Severity.WARNING, language, "Potential conflicting dictionary at {0} for language {1}, with another translation and potentially overlapping basenames (one side is null)", conflictingDictionaryResource.get().getPath(), language);
+                        validationMessage = new ValidationMessage(ValidationMessage.Severity.WARNING, language, "Potential conflicting dictionary at \"{0}\" for language {1}, with another translation and potentially overlapping basenames (one side is null).", conflictingDictionaryResource.get().getPath(), language);
                         break;
                     default:
                         validationMessage = null;

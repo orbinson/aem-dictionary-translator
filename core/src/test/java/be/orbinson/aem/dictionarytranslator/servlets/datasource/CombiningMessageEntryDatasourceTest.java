@@ -1,5 +1,6 @@
 package be.orbinson.aem.dictionarytranslator.servlets.datasource;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.Mockito.mock;
@@ -7,6 +8,8 @@ import static org.mockito.Mockito.mock;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
@@ -33,6 +36,8 @@ import com.adobe.granite.ui.components.ds.SimpleDataSource;
 import com.day.cq.replication.Replicator;
 
 import be.orbinson.aem.dictionarytranslator.services.impl.CombiningMessageEntryResourceProvider;
+import be.orbinson.aem.dictionarytranslator.services.impl.CombiningMessageEntryResourceProvider.ValidationMessage;
+import be.orbinson.aem.dictionarytranslator.services.impl.CombiningMessageEntryResourceProvider.ValidationMessage.Severity;
 import be.orbinson.aem.dictionarytranslator.services.impl.DictionaryServiceImpl;
 import io.wcm.testing.mock.aem.junit5.AemContext;
 import io.wcm.testing.mock.aem.junit5.AemContextExtension;
@@ -150,4 +155,13 @@ class CombiningMessageEntryDatasourceTest {
         assertFalse(iterator.hasNext(), () -> "Iterator has at least one more element than expected: " + iterator.next());
     }
 
+    @Test
+    void testValidationMessageSortOrder() {
+        SortedSet<ValidationMessage> messages = new TreeSet<>();
+        messages.add(new ValidationMessage(Severity.WARNING, "de", "warn"));
+        messages.add(new ValidationMessage(Severity.ERROR, "de", "error"));
+        messages.add(new ValidationMessage(Severity.INFO, "de", "info"));
+        messages.add(new ValidationMessage(Severity.ERROR, "de", "error2"));
+        assertArrayEquals(new ValidationMessage.Severity[] { Severity.ERROR, Severity.ERROR, Severity.WARNING, Severity.INFO }, messages.stream().map(ValidationMessage::getSeverity).toArray());
+    }
 }
