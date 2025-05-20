@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 import org.apache.sling.api.resource.PersistenceException;
 import org.apache.sling.api.resource.Resource;
@@ -30,6 +29,7 @@ public interface DictionaryService {
      * Returns the ordinal of the dictionary resource. The lower the ordinal, the higher the precedence.
      * The ordinal is determined by the path of the dictionary resource and follows the logic from
      * <a href="https://sling.apache.org/documentation/bundles/internationalization-support-i18n.html#resourcebundle-hierarchies">ResourceBundle hierarchies</a>.
+     * The lowest ordinal is 0 and the highest depends on the number of search paths configured for the resource resolver.
      * @param dictionaryResource the dictionary resource
      * @return the ordinal of the dictionary resource
      */
@@ -181,11 +181,12 @@ public interface DictionaryService {
     DictionaryType getType(Resource dictionaryResource);
 
     /**
-     * Returns the dictionary resource having a lower or same ordinal, containing the given key and language. It does not evaluate the basename(s), though.
-     * @param dictionaryResource
-     * @param key
-     * @param language
+     * Returns the dictionary resource having a lower or same ordinal, containing the given key in the given language. It does not evaluate the basename(s), though.
+     * @param dictionaryResource the current dictionary resource
+     * @param language the language to check
+     * @param key the key to check
      * @return the dictionary resource having a higher or same precedence if it exists, otherwise an empty Optional
+     * @see #getOrdinal(Resource)
      */
     Optional<Resource> getConflictingDictionary(Resource dictionaryResource, String language, String key);
 }

@@ -1,14 +1,17 @@
 package be.orbinson.aem.dictionarytranslator.servlets.datasource;
 
-import be.orbinson.aem.dictionarytranslator.exception.DictionaryException;
-import be.orbinson.aem.dictionarytranslator.models.Dictionary;
-import be.orbinson.aem.dictionarytranslator.services.impl.CombiningMessageEntryResourceProvider;
-import com.adobe.granite.ui.components.Config;
-import com.adobe.granite.ui.components.ExpressionHelper;
-import com.adobe.granite.ui.components.ExpressionResolver;
-import com.adobe.granite.ui.components.ds.DataSource;
-import com.adobe.granite.ui.components.ds.SimpleDataSource;
-import com.adobe.granite.ui.components.ds.ValueMapResource;
+import java.io.IOException;
+import java.text.Collator;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+
+import javax.servlet.Servlet;
+import javax.servlet.ServletException;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jackrabbit.util.Text;
 import org.apache.sling.api.SlingHttpServletRequest;
@@ -21,17 +24,22 @@ import org.apache.sling.api.wrappers.ValueMapDecorator;
 import org.apache.sling.models.factory.ModelFactory;
 import org.apache.sling.servlets.annotations.SlingServletResourceTypes;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
-import javax.servlet.Servlet;
-import javax.servlet.ServletException;
-import java.io.IOException;
-import java.text.Collator;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import com.adobe.granite.ui.components.Config;
+import com.adobe.granite.ui.components.ExpressionHelper;
+import com.adobe.granite.ui.components.ExpressionResolver;
+import com.adobe.granite.ui.components.ds.DataSource;
+import com.adobe.granite.ui.components.ds.SimpleDataSource;
+import com.adobe.granite.ui.components.ds.ValueMapResource;
+import com.day.cq.i18n.I18n;
+
+import be.orbinson.aem.dictionarytranslator.exception.DictionaryException;
+import be.orbinson.aem.dictionarytranslator.models.Dictionary;
+import be.orbinson.aem.dictionarytranslator.services.impl.CombiningMessageEntryResourceProvider;
+import be.orbinson.aem.dictionarytranslator.services.impl.CombiningMessageEntryResourceProvider.ValidationMessage;
 
 /**
  * This data source has two different use cases:
@@ -101,7 +109,7 @@ public class CombiningMessageEntryDatasource extends SlingSafeMethodsServlet {
                 "disabled", disabled,
                 "required", required)
         );
-        return new ValueMapResource(resourceResolver, "", "granite/ui/components/coral/foundation/form/textfield", valueMap);
+        return new ValueMapResource(resourceResolver, name, "granite/ui/components/coral/foundation/form/textfield", valueMap);
     }
 
     private static Resource createHiddenFieldResource(ResourceResolver resourceResolver, String key, String value) {
@@ -113,6 +121,14 @@ public class CombiningMessageEntryDatasource extends SlingSafeMethodsServlet {
         return new ValueMapResource(resourceResolver, "", "granite/ui/components/coral/foundation/form/hidden", valueMap);
     }
 
+    private static Resource createFieldSetResource(ResourceResolver resourceResolver, Collection<Resource> childResources) {
+        ValueMap valueMap = new ValueMapDecorator(Map.of(
+                "jcr:title", "Validation messages"
+        ));
+        Resource items = new ValueMapResource(resourceResolver, "items", "nt:unstructured", null, childResources);
+        return new ValueMapResource(resourceResolver, "", "granite/ui/components/coral/foundation/form/fieldset", valueMap, Collections.singleton(items));
+    }
+
     private static void sortResourcesByProperty(String propertyName, Locale locale, List<Resource> resources) {
         Collator collator = Collator.getInstance(locale);
         resources.sort((o1, o2) -> {
@@ -122,7 +138,7 @@ public class CombiningMessageEntryDatasource extends SlingSafeMethodsServlet {
         });
     }
 
-    private static void createCombiningMessageEntryDataSource(Locale locale, Map<String, String> languageMap, ResourceResolver resourceResolver, String combiningMessageEntryPath, List<Resource> resourceList) {
+    private static void createCombiningMessageEntryDataSource(I18n i18n, Locale locale, Map<String, String> languageMap, ResourceResolver resourceResolver, String combiningMessageEntryPath, List<Resource> resourceList) {
         Resource combiningMessageEntryResource = resourceResolver.getResource(combiningMessageEntryPath);
         if (combiningMessageEntryResource != null) {
             ValueMap properties = combiningMessageEntryResource.getValueMap();
@@ -141,7 +157,25 @@ public class CombiningMessageEntryDatasource extends SlingSafeMethodsServlet {
             // make sure that key is always at the top
             resourceList.add(0, createTextFieldResource(resourceResolver, "Key", key, key, false, true));
             resourceList.add(1, createHiddenFieldResource(resourceResolver, "key", key));
+            Resource validationContainer = addValidationMessagesResource(i18n, resourceResolver, properties.get(CombiningMessageEntryResourceProvider.VALIDATION_MESSAGES, ValidationMessage[].class));
+            if (validationContainer != null) {
+                resourceList.add(2, validationContainer);
+            }
         }
+    }
+
+    private static Resource addValidationMessagesResource(I18n i18n, ResourceResolver resourceResolver, ValidationMessage... validationMessages) {
+        if (validationMessages == null || validationMessages.length == 0) {
+            return null;
+        }
+        List<Resource> validationResources = new ArrayList<>();
+        int index = 0;
+        for (ValidationMessage validationMessage : validationMessages) {
+            String label = new StringBuilder().append(validationMessage.getSeverity()).append(" in language ").append(validationMessage.getLanguage()).toString();
+            String text =  i18n.get(validationMessage.getI18nKey(), null, (Object[])validationMessage.getArguments());
+            validationResources.add(createTextFieldResource(resourceResolver, label, "items/item"+index++, text, false, true));
+        }
+        return createFieldSetResource(resourceResolver, validationResources);
     }
 
     @Override
@@ -152,7 +186,7 @@ public class CombiningMessageEntryDatasource extends SlingSafeMethodsServlet {
         // expose only data for one item or
         String combiningMessageEntryPath = request.getParameter("item");
         if (combiningMessageEntryPath != null) {
-            createCombiningMessageEntryDataSource(request.getLocale(), LanguageDatasource.getAllAvailableLanguages(request, response), resourceResolver, combiningMessageEntryPath, resourceList);
+            createCombiningMessageEntryDataSource(new I18n(request), request.getLocale(), LanguageDatasource.getAllAvailableLanguages(request, response), resourceResolver, combiningMessageEntryPath, resourceList);
         } else {
             // for the complete dictionary
             String dictionaryPath = request.getRequestPathInfo().getSuffix();

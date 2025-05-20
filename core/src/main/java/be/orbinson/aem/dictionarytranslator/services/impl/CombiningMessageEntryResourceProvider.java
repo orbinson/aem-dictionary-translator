@@ -59,9 +59,9 @@ public class CombiningMessageEntryResourceProvider extends ResourceProvider<Obje
 
     public static final class ValidationMessage implements Comparable<ValidationMessage> {
         enum Severity {
-            INFO("info"),
+            ERROR("error"), // most severe should have lowest ordinal
             WARNING("warning"),
-            ERROR("error");
+            INFO("info");
 
             private final String label;
 
@@ -107,7 +107,13 @@ public class CombiningMessageEntryResourceProvider extends ResourceProvider<Obje
 
         @Override
         public int compareTo(ValidationMessage o) {
-            return o.severity.compareTo(this.severity);
+            // must be consistent with equals
+            // lowest ordinal should be first
+            int result = severity.compareTo(this.severity) * -1;
+            if (result == 0) {
+                result = 1;
+            }
+            return result;
         }
 
         @Override
@@ -220,7 +226,7 @@ public class CombiningMessageEntryResourceProvider extends ResourceProvider<Obje
                         validationMessage = new ValidationMessage(ValidationMessage.Severity.ERROR, language, "Conflicting dictionary at {0} for language {1} with another translation for same basenames {2}", conflictingDictionaryResource.get().getPath(), language, conflictingDictionaryBasename);
                         break;
                     case POTENTIAL:
-                        validationMessage = new ValidationMessage(ValidationMessage.Severity.INFO, language, "Potential conflicting dictionary at {0} for language {1}, with another translation and potentially overlapping basenames (one side is null)", conflictingDictionaryResource.get().getPath(), language);
+                        validationMessage = new ValidationMessage(ValidationMessage.Severity.WARNING, language, "Potential conflicting dictionary at {0} for language {1}, with another translation and potentially overlapping basenames (one side is null)", conflictingDictionaryResource.get().getPath(), language);
                         break;
                     default:
                         validationMessage = null;
