@@ -3,7 +3,6 @@ package be.orbinson.aem.dictionarytranslator.models;
 import java.util.List;
 
 import org.apache.sling.api.resource.Resource;
-
 import org.osgi.annotation.versioning.ProviderType;
 
 import be.orbinson.aem.dictionarytranslator.exception.DictionaryException;
@@ -26,5 +25,4 @@ public interface Dictionary {
     int getKeyCount() throws DictionaryException;
     
     DictionaryService.DictionaryType getType();
-
 }
