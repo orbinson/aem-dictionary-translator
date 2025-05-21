@@ -223,7 +223,7 @@ public class CombiningMessageEntryResourceProvider extends ResourceProvider<Obje
                         validationMessage = new ValidationMessage(ValidationMessage.Severity.WARNING, language, "Conflicting dictionary at \"{0}\" for language {1} with another translation and partially overlapping basenames {2}.", conflictingDictionaryResource.get().getPath(), language, conflictingDictionaryBasename);
                         break;
                     case FULL:
-                        validationMessage = new ValidationMessage(ValidationMessage.Severity.WARNING, language, "Conflicting dictionary at \"{0}\" for language {1} with another translation for same basenames,", conflictingDictionaryResource.get().getPath(), language);
+                        validationMessage = new ValidationMessage(ValidationMessage.Severity.ERROR, language, "Conflicting dictionary at \"{0}\" for language {1} with another translation for same basenames.", conflictingDictionaryResource.get().getPath(), language);
                         break;
                     case POTENTIAL:
                         validationMessage = new ValidationMessage(ValidationMessage.Severity.WARNING, language, "Potential conflicting dictionary at \"{0}\" for language {1}, with another translation and potentially overlapping basenames (one side is null).", conflictingDictionaryResource.get().getPath(), language);
@@ -233,12 +233,11 @@ public class CombiningMessageEntryResourceProvider extends ResourceProvider<Obje
                 }
             }
         } else {
+            // TODO: check super languages
             validationMessage = null;
         }
         return Optional.ofNullable(validationMessage);
     }
-
-    
 
     private static String extractKeyFromPath(@NotNull String path) {
         return Text.unescapeIllegalJcrChars(Text.getName(path));
