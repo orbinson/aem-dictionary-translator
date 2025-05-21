@@ -88,7 +88,6 @@ public class CombiningMessageEntriesDatasourceForTable extends SlingSafeMethodsS
         }
     }
 
-   
     @Override
     protected void doGet(@NotNull SlingHttpServletRequest request, @NotNull SlingHttpServletResponse response) throws ServletException, IOException {
         List<Resource> resourceList = new ArrayList<>();
@@ -112,6 +111,9 @@ public class CombiningMessageEntriesDatasourceForTable extends SlingSafeMethodsS
                 }
                 resourceList = resourceList.subList(offset, Math.min(offset + limit, resourceList.size()));
             }
+        } else {
+            response.sendError(SlingHttpServletResponse.SC_BAD_REQUEST, "Missing mandatory suffix specifying the dictionary");
+            return;
         }
 
         DataSource dataSource = new SimpleDataSource(resourceList.iterator());
@@ -129,6 +131,8 @@ public class CombiningMessageEntriesDatasourceForTable extends SlingSafeMethodsS
                     setDataSource(resourceResolver, resourceList, dictionary);
                 }
             }
+        } else {
+            response.sendError(SlingHttpServletResponse.SC_NOT_FOUND, "Could not find dictionary resource at path: " + dictionaryPath);
         }
     }
 }
