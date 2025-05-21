@@ -12,6 +12,8 @@ import org.apache.sling.testing.mock.sling.ResourceResolverType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.osgi.util.converter.Converter;
+import org.osgi.util.converter.Converters;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -37,8 +39,11 @@ class UpdateMessageEntryServletTest {
     @BeforeEach
     void beforeEach() {
         context.registerService(Replicator.class, mock(Replicator.class));
-        dictionaryService = context.registerInjectActivateService(new DictionaryServiceImpl());
-        context.registerInjectActivateService(new CombiningMessageEntryResourceProvider());
+        DictionaryServiceImpl dictionaryService = new DictionaryServiceImpl();
+        context.registerInjectActivateService(dictionaryService);
+        Converter converter = Converters.standardConverter();
+        CombiningMessageEntryResourceProvider.Config config = converter.convert(Map.of("enableValidation", true)).to(CombiningMessageEntryResourceProvider.Config.class);
+        context.registerInjectActivateService(new CombiningMessageEntryResourceProvider(dictionaryService, config));
 
         servlet = context.registerInjectActivateService(new UpdateMessageEntryServlet());
     }

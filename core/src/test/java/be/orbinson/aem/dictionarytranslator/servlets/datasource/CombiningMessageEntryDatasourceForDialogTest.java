@@ -1,15 +1,10 @@
 package be.orbinson.aem.dictionarytranslator.servlets.datasource;
 
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.Mockito.mock;
 
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.Map;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
@@ -17,7 +12,6 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 
 import org.apache.commons.collections4.IteratorUtils;
-import org.apache.jackrabbit.vault.util.Text;
 import org.apache.sling.api.request.RequestDispatcherOptions;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.SyntheticResource;
@@ -28,22 +22,20 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.osgi.util.converter.Converter;
+import org.osgi.util.converter.Converters;
 
 import com.adobe.granite.ui.components.ExpressionResolver;
 import com.adobe.granite.ui.components.ds.DataSource;
 import com.adobe.granite.ui.components.ds.EmptyDataSource;
-import com.adobe.granite.ui.components.ds.SimpleDataSource;
 import com.day.cq.replication.Replicator;
 
 import be.orbinson.aem.dictionarytranslator.services.impl.CombiningMessageEntryResourceProvider;
 import be.orbinson.aem.dictionarytranslator.services.impl.DictionaryServiceImpl;
-import be.orbinson.aem.dictionarytranslator.services.impl.CombiningMessageEntryResourceProvider.ValidationMessage;
-import be.orbinson.aem.dictionarytranslator.services.impl.CombiningMessageEntryResourceProvider.ValidationMessage.Severity;
 import io.wcm.testing.mock.aem.junit5.AemContext;
 import io.wcm.testing.mock.aem.junit5.AemContextExtension;
-
 @ExtendWith({AemContextExtension.class, MockitoExtension.class})
-public class CombiningMessageEntryDatasourceForDialogTest {
+class CombiningMessageEntryDatasourceForDialogTest {
 
     private final AemContext context = new AemContext(ResourceResolverType.RESOURCEPROVIDER_MOCK);
     CombiningMessageEntryDatasourceForDialog servlet;
@@ -57,8 +49,11 @@ public class CombiningMessageEntryDatasourceForDialogTest {
     void beforeEach() {
         context.registerService(Replicator.class, mock(Replicator.class));
         expressionResolver = context.registerService(ExpressionResolver.class, expressionResolver);
-        context.registerInjectActivateService(new DictionaryServiceImpl());
-        context.registerInjectActivateService(new CombiningMessageEntryResourceProvider());
+        DictionaryServiceImpl dictionaryService = new DictionaryServiceImpl();
+        context.registerInjectActivateService(dictionaryService);
+        Converter converter = Converters.standardConverter();
+        CombiningMessageEntryResourceProvider.Config config = converter.convert(Map.of("enableValidation", true)).to(CombiningMessageEntryResourceProvider.Config.class);
+        context.registerInjectActivateService(new CombiningMessageEntryResourceProvider(dictionaryService, config));
         context.load().json("/content.json", "/content");
         // add additional message entry with key havgin special characters
         context.build().resource("/content/dictionaries/fruit/i18n/en/specialkey", "jcr:primaryType", "sling:MessageEntry",

@@ -24,8 +24,12 @@ import org.apache.sling.spi.resource.provider.ResourceContext;
 import org.apache.sling.spi.resource.provider.ResourceProvider;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.metatype.annotations.AttributeDefinition;
+import org.osgi.service.metatype.annotations.Designate;
+import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 
 import com.adobe.granite.ui.components.ds.ValueMapResource;
 
@@ -43,12 +47,23 @@ import be.orbinson.aem.dictionarytranslator.services.DictionaryService.Message;
  * It is used in the AEM UI to display the combined message entries for a given key.
  */
 @Component(
-        service = ResourceProvider.class,
+        service = { ResourceProvider.class, CombiningMessageEntryResourceProvider.class },
         property = {
                 ResourceProvider.PROPERTY_ROOT + "=" + CombiningMessageEntryResourceProvider.ROOT
         }
 )
+@Designate(ocd = CombiningMessageEntryResourceProvider.Config.class)
 public class CombiningMessageEntryResourceProvider extends ResourceProvider<Object> {
+
+    @ObjectClassDefinition(
+            name = "Orbinson AEM Dictionary Translator - Combining Message Entry Resource Provider",
+            description = "Configures aspects which affect the maintenance UI of individual dictionaries.")
+    public @interface Config {
+        @AttributeDefinition(
+                name = "Enable validation",
+                description = "Exposes information on conflicting items. Enabling this may have a negative impact on performance.")
+        boolean enableValidation() default true;
+    }
 
     enum OverlapType {
         NONE,
@@ -138,23 +153,30 @@ public class CombiningMessageEntryResourceProvider extends ResourceProvider<Obje
                     && Objects.equals(language, other.language) && severity == other.severity;
         }
 
-        
     }
 
-
     public static final String ROOT = "/mnt/dictionary";
-
     public static final String RESOURCE_TYPE = "aem-dictionary-translator/components/combining-message-entry";
 
+    /* Properties exposed in the combining message entry resource */
     public static final String KEY = "key";
     public static final String DICTIONARY_PATH = "dictionaryPath";
     public static final String LANGUAGES = "languages";
     public static final String MESSAGE_ENTRY_PATHS = "messageEntryPaths";
     public static final String VALIDATION_MESSAGES = "validationMessages";
 
-    @Reference
-    private DictionaryService dictionaryService;
+    private final DictionaryService dictionaryService;
+    private final Config config;
 
+    @Activate
+    public CombiningMessageEntryResourceProvider(@Reference DictionaryService dictionaryService, Config config) {
+        this.dictionaryService = dictionaryService;
+        this.config = config;
+    }
+
+    public boolean isValidationEnabled() {
+        return config.enableValidation();
+    }
 
     static OverlapType checkBasenameOverlap(String currentDictionaryBasename, String conflictingDictionaryBasename) {
         if (conflictingDictionaryBasename == null && currentDictionaryBasename == null) {
@@ -192,11 +214,11 @@ public class CombiningMessageEntryResourceProvider extends ResourceProvider<Obje
                     throw new ResourceNotFoundException("Unable to get message entries for language '" + language + "' in dictionary '" + dictionaryPath + "'", e);
                 }
                 messagePerLanguage.put(language, message);
-                if (message != null) {
+                if (message != null && config.enableValidation()) {
                     validateItem(dictionaryResource, language, key, message.getText()).ifPresent(validationMessages::add);
                 }
             }
-            return new ValueMapResource(resourceResolver, path, RESOURCE_TYPE, new ValueMapDecorator(createResourceProperties(path, dictionaryService.isEditableDictionary(dictionaryResource), messagePerLanguage, validationMessages)));
+            return new ValueMapResource(resourceResolver, path, RESOURCE_TYPE, new ValueMapDecorator(createResourceProperties(path, dictionaryService.isEditableDictionary(dictionaryResource), messagePerLanguage, config.enableValidation() ? Optional.of(validationMessages) : Optional.empty())));
         } else {
             throw new ResourceNotFoundException(path, "Unable to get underlying dictionary resource for path '" + dictionaryPath + "'");
         }
@@ -205,7 +227,6 @@ public class CombiningMessageEntryResourceProvider extends ResourceProvider<Obje
     private Optional<ValidationMessage> validateItem(Resource dictionaryResource, String language, String key, String message) {
         Optional<Resource> conflictingDictionaryResource = dictionaryService.getConflictingDictionary(dictionaryResource, language, key);
         final ValidationMessage validationMessage;
-        // check severity as well
         if (conflictingDictionaryResource.isPresent()) {
             // check if message is different from the one in the dictionary
             String otherMessage;
@@ -226,7 +247,7 @@ public class CombiningMessageEntryResourceProvider extends ResourceProvider<Obje
                         validationMessage = new ValidationMessage(ValidationMessage.Severity.ERROR, language, "Conflicting dictionary at \"{0}\" for language {1} with another translation for same basenames.", conflictingDictionaryResource.get().getPath(), language);
                         break;
                     case POTENTIAL:
-                        validationMessage = new ValidationMessage(ValidationMessage.Severity.WARNING, language, "Potential conflicting dictionary at \"{0}\" for language {1}, with another translation and potentially overlapping basenames (one side is null).", conflictingDictionaryResource.get().getPath(), language);
+                        validationMessage = new ValidationMessage(ValidationMessage.Severity.WARNING, language, "Potential conflicting dictionary at \"{0}\" for language {1} with another translation and potentially overlapping basenames (one side is null).", conflictingDictionaryResource.get().getPath(), language);
                         break;
                     default:
                         validationMessage = null;
@@ -243,7 +264,7 @@ public class CombiningMessageEntryResourceProvider extends ResourceProvider<Obje
         return Text.unescapeIllegalJcrChars(Text.getName(path));
     }
 
-    public static @NotNull Map<String, Object> createResourceProperties(@NotNull String path, boolean isEditable, @NotNull Map<String, Message> messagePerLanguage, SortedSet<ValidationMessage> validationMessages) {
+    public static @NotNull Map<String, Object> createResourceProperties(@NotNull String path, boolean isEditable, @NotNull Map<String, Message> messagePerLanguage, Optional<SortedSet<ValidationMessage>> validationMessages) {
         Map<String, Object> properties = new HashMap<>();
         properties.put(KEY, extractKeyFromPath(path));
         properties.put("path", path); // TODO: remove as it duplicates the resource path which is always available
@@ -264,9 +285,9 @@ public class CombiningMessageEntryResourceProvider extends ResourceProvider<Obje
         }
         // all paths to replicate
         properties.put(MESSAGE_ENTRY_PATHS, messageEntryPaths);
-        if (!validationMessages.isEmpty()) {
-            properties.put(VALIDATION_MESSAGES, validationMessages);
-        }
+        validationMessages.ifPresent(messages ->
+            properties.put(VALIDATION_MESSAGES, messages)
+        );
         return properties;
     }
 

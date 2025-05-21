@@ -21,11 +21,14 @@ import org.apache.sling.servlets.annotations.SlingServletResourceTypes;
 import org.jetbrains.annotations.NotNull;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.adobe.granite.ui.components.Config;
 import com.adobe.granite.ui.components.ExpressionHelper;
 import com.adobe.granite.ui.components.ExpressionResolver;
 import com.adobe.granite.ui.components.ds.DataSource;
+import com.adobe.granite.ui.components.ds.EmptyDataSource;
 import com.adobe.granite.ui.components.ds.SimpleDataSource;
 import com.adobe.granite.ui.components.ds.ValueMapResource;
 import com.day.cq.commons.jcr.JcrConstants;
@@ -47,18 +50,25 @@ import be.orbinson.aem.dictionarytranslator.services.impl.CombiningMessageEntryR
         methods = "GET"
 )
 public class CombiningMessageEntriesDatasourceForTable extends SlingSafeMethodsServlet {
-    
+    private static final long serialVersionUID = 1L;
+
+    private static final Logger LOG = LoggerFactory.getLogger(CombiningMessageEntriesDatasourceForTable.class);
+
     @Reference
     private transient ModelFactory modelFactory;
 
     @Reference
     private ExpressionResolver expressionResolver;
 
-    private static void setColumnsDataSource(ResourceResolver resourceResolver, List<Resource> resourceList, Dictionary dictionary, Map<String, String> languageMap) {
+    @Reference
+    private CombiningMessageEntryResourceProvider combiningMessageEntryResourceProvider;
+
+    private void setColumnsDataSource(ResourceResolver resourceResolver, List<Resource> resourceList, Dictionary dictionary, Map<String, String> languageMap) {
         resourceList.add(getColumn(resourceResolver, "select", true));
         resourceList.add(getColumn(resourceResolver, JcrConstants.JCR_TITLE, "Key"));
-        resourceList.add(getColumn(resourceResolver, JcrConstants.JCR_TITLE, "Validation"));
-
+        if (combiningMessageEntryResourceProvider.isValidationEnabled()) {
+            resourceList.add(getColumn(resourceResolver, JcrConstants.JCR_TITLE, "Validation"));
+        }
         dictionary.getLanguages().forEach(language -> {
                     String title = languageMap.getOrDefault(language, language);
                     resourceList.add(getColumn(resourceResolver, JcrConstants.JCR_TITLE, title));
@@ -88,38 +98,6 @@ public class CombiningMessageEntriesDatasourceForTable extends SlingSafeMethodsS
         }
     }
 
-    @Override
-    protected void doGet(@NotNull SlingHttpServletRequest request, @NotNull SlingHttpServletResponse response) throws ServletException, IOException {
-        List<Resource> resourceList = new ArrayList<>();
-        ResourceResolver resourceResolver = request.getResourceResolver();
-        
-        String dictionaryPath = request.getRequestPathInfo().getSuffix();
-        if (dictionaryPath != null) {
-            try {
-                createDictionaryDataSource(request, response, resourceResolver, dictionaryPath, resourceList);
-            } catch (DictionaryException e) {
-                response.sendError(SlingHttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
-                return;
-            }
-            if ("list".equals(request.getResource().getName())) {
-                Config dsCfg = new Config(request.getResource().getChild("datasource"));
-                ExpressionHelper expressionHelper = new ExpressionHelper(expressionResolver, request);
-                Integer limit = expressionHelper.get(dsCfg.get("limit"), Integer.class);
-                Integer offset = expressionHelper.get(dsCfg.get("offset"), Integer.class);
-                if (offset > resourceList.size()) {
-                    offset = 0;
-                }
-                resourceList = resourceList.subList(offset, Math.min(offset + limit, resourceList.size()));
-            }
-        } else {
-            response.sendError(SlingHttpServletResponse.SC_BAD_REQUEST, "Missing mandatory suffix specifying the dictionary");
-            return;
-        }
-
-        DataSource dataSource = new SimpleDataSource(resourceList.iterator());
-        request.setAttribute(DataSource.class.getName(), dataSource);
-    }
-
     private void createDictionaryDataSource(@NotNull SlingHttpServletRequest request, @NotNull SlingHttpServletResponse response, ResourceResolver resourceResolver, String dictionaryPath, List<Resource> resourceList) throws DictionaryException, ServletException, IOException {
         Resource dictionaryResource = resourceResolver.getResource(dictionaryPath);
         if (dictionaryResource != null) {
@@ -132,7 +110,40 @@ public class CombiningMessageEntriesDatasourceForTable extends SlingSafeMethodsS
                 }
             }
         } else {
-            response.sendError(SlingHttpServletResponse.SC_NOT_FOUND, "Could not find dictionary resource at path: " + dictionaryPath);
+            throw new DictionaryException("Could not find dictionary resource at path: " + dictionaryPath);
         }
     }
+
+    @Override
+    protected void doGet(@NotNull SlingHttpServletRequest request, @NotNull SlingHttpServletResponse response) throws ServletException, IOException {
+        List<Resource> resourceList = new ArrayList<>();
+        ResourceResolver resourceResolver = request.getResourceResolver();
+        DataSource dataSource;
+        String dictionaryPath = request.getRequestPathInfo().getSuffix();
+        if (dictionaryPath != null) {
+            try {
+                createDictionaryDataSource(request, response, resourceResolver, dictionaryPath, resourceList);
+                if ("list".equals(request.getResource().getName())) {
+                    Config dsCfg = new Config(request.getResource().getChild("datasource"));
+                    ExpressionHelper expressionHelper = new ExpressionHelper(expressionResolver, request);
+                    Integer limit = expressionHelper.get(dsCfg.get("limit"), Integer.class);
+                    Integer offset = expressionHelper.get(dsCfg.get("offset"), Integer.class);
+                    if (offset > resourceList.size()) {
+                        offset = 0;
+                    }
+                    resourceList = resourceList.subList(offset, Math.min(offset + limit, resourceList.size()));
+                }
+                dataSource = new SimpleDataSource(resourceList.iterator());
+            } catch (DictionaryException|IllegalStateException e) {
+                LOG.error("Error creating dictionary data source", e);
+                dataSource = EmptyDataSource.instance();
+            }
+        } else {
+            LOG.error("Missing mandatory suffix specifying the dictionary");
+            dataSource = EmptyDataSource.instance();
+        }
+
+        request.setAttribute(DataSource.class.getName(), dataSource);
+    }
+
 }

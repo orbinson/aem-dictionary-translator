@@ -28,6 +28,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.osgi.util.converter.Converter;
+import org.osgi.util.converter.Converters;
 
 import com.adobe.granite.ui.components.ExpressionResolver;
 import com.adobe.granite.ui.components.ds.DataSource;
@@ -35,6 +37,7 @@ import com.adobe.granite.ui.components.ds.EmptyDataSource;
 import com.adobe.granite.ui.components.ds.SimpleDataSource;
 import com.day.cq.replication.Replicator;
 
+import be.orbinson.aem.dictionarytranslator.services.DictionaryService;
 import be.orbinson.aem.dictionarytranslator.services.impl.CombiningMessageEntryResourceProvider;
 import be.orbinson.aem.dictionarytranslator.services.impl.CombiningMessageEntryResourceProvider.ValidationMessage;
 import be.orbinson.aem.dictionarytranslator.services.impl.CombiningMessageEntryResourceProvider.ValidationMessage.Severity;
@@ -57,8 +60,11 @@ class CombiningMessageEntriesDatasourceForTableTest {
     void beforeEach() {
         context.registerService(Replicator.class, mock(Replicator.class));
         expressionResolver = context.registerService(ExpressionResolver.class, expressionResolver);
-        context.registerInjectActivateService(new DictionaryServiceImpl());
-        context.registerInjectActivateService(new CombiningMessageEntryResourceProvider());
+        DictionaryService dictionaryService = new DictionaryServiceImpl();
+        context.registerInjectActivateService(dictionaryService);
+        Converter converter = Converters.standardConverter();
+        CombiningMessageEntryResourceProvider.Config config = converter.convert(Map.of("enableValidation", true)).to(CombiningMessageEntryResourceProvider.Config.class);
+        context.registerInjectActivateService(new CombiningMessageEntryResourceProvider(dictionaryService, config));
         context.load().json("/content.json", "/content");
         // add additional message entry with key havgin special characters
         context.build().resource("/content/dictionaries/fruit/i18n/en/specialkey", "jcr:primaryType", "sling:MessageEntry",

@@ -23,8 +23,11 @@ import org.apache.sling.api.wrappers.ValueMapDecorator;
 import org.apache.sling.servlets.annotations.SlingServletResourceTypes;
 import org.jetbrains.annotations.NotNull;
 import org.osgi.service.component.annotations.Component;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.adobe.granite.ui.components.ds.DataSource;
+import com.adobe.granite.ui.components.ds.EmptyDataSource;
 import com.adobe.granite.ui.components.ds.SimpleDataSource;
 import com.adobe.granite.ui.components.ds.ValueMapResource;
 import com.day.cq.commons.jcr.JcrConstants;
@@ -43,7 +46,9 @@ import be.orbinson.aem.dictionarytranslator.services.impl.CombiningMessageEntryR
 )
 public class CombiningMessageEntryDatasourceForDialog extends SlingSafeMethodsServlet {
 
+    private static final long serialVersionUID = 1L;
     public static final String FIELD_LABEL = "fieldLabel";
+    private static final Logger LOG = LoggerFactory.getLogger(CombiningMessageEntryDatasourceForDialog.class);
 
     private static Resource createTextFieldResource(ResourceResolver resourceResolver, String label, String name, String value) {
         return createTextFieldResource(resourceResolver, label, name, value, false, false);
@@ -141,16 +146,16 @@ public class CombiningMessageEntryDatasourceForDialog extends SlingSafeMethodsSe
     protected void doGet(@NotNull SlingHttpServletRequest request, @NotNull SlingHttpServletResponse response) throws ServletException, IOException {
         List<Resource> resourceList = new ArrayList<>();
         ResourceResolver resourceResolver = request.getResourceResolver();
-
+        final DataSource dataSource;
         // expose only data for one item or
         String combiningMessageEntryPath = request.getParameter("item");
         if (combiningMessageEntryPath != null) {
             createCombiningMessageEntryDataSource(new I18n(request), request.getLocale(), LanguageDatasource.getAllAvailableLanguages(request, response), resourceResolver, combiningMessageEntryPath, resourceList);
+            dataSource = new SimpleDataSource(resourceList.iterator());
         } else {
-            response.sendError(400, "Missing mandatory parameter 'item'");
+            LOG.error("No item parameter found in request");
+            dataSource = EmptyDataSource.instance();
         }
-
-        DataSource dataSource = new SimpleDataSource(resourceList.iterator());
         request.setAttribute(DataSource.class.getName(), dataSource);
     }
 }
