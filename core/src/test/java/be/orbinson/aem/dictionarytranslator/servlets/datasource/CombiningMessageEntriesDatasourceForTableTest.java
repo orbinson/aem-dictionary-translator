@@ -43,10 +43,10 @@ import io.wcm.testing.mock.aem.junit5.AemContext;
 import io.wcm.testing.mock.aem.junit5.AemContextExtension;
 
 @ExtendWith({AemContextExtension.class, MockitoExtension.class})
-class CombiningMessageEntryDatasourceTest {
+class CombiningMessageEntriesDatasourceForTableTest {
 
     private final AemContext context = new AemContext(ResourceResolverType.RESOURCEPROVIDER_MOCK);
-    CombiningMessageEntryDatasource servlet;
+    CombiningMessageEntriesDatasourceForTable servlet;
 
     @Mock
     ExpressionResolver expressionResolver;
@@ -64,7 +64,7 @@ class CombiningMessageEntryDatasourceTest {
         context.build().resource("/content/dictionaries/fruit/i18n/en/specialkey", "jcr:primaryType", "sling:MessageEntry",
                 "sling:message", "Cherry",
                 "sling:key", KEY_SPECIAL_CHARACTERS);
-        servlet = context.registerInjectActivateService(new CombiningMessageEntryDatasource());
+        servlet = context.registerInjectActivateService(new CombiningMessageEntriesDatasourceForTable());
         context.request().setRequestDispatcherFactory(new MockRequestDispatcherFactory() {
 
             @Override
@@ -115,11 +115,11 @@ class CombiningMessageEntryDatasourceTest {
 
         DataSource dataSource = (DataSource)context.request().getAttribute(DataSource.class.getName());
 
-        assertDataSourceEquals(dataSource, CombiningMessageEntryDatasource.getColumn(context.resourceResolver(), "select", true),
-                CombiningMessageEntryDatasource.getColumn(context.resourceResolver(), "jcr:title", "Key"),
-                CombiningMessageEntryDatasource.getColumn(context.resourceResolver(), "jcr:title", "Validation"),
-                CombiningMessageEntryDatasource.getColumn(context.resourceResolver(), "jcr:title", "en"),
-                CombiningMessageEntryDatasource.getColumn(context.resourceResolver(), "jcr:title", "nl_BE"));
+        assertDataSourceEquals(dataSource, CombiningMessageEntriesDatasourceForTable.getColumn(context.resourceResolver(), "select", true),
+                CombiningMessageEntriesDatasourceForTable.getColumn(context.resourceResolver(), "jcr:title", "Key"),
+                CombiningMessageEntriesDatasourceForTable.getColumn(context.resourceResolver(), "jcr:title", "Validation"),
+                CombiningMessageEntriesDatasourceForTable.getColumn(context.resourceResolver(), "jcr:title", "en"),
+                CombiningMessageEntriesDatasourceForTable.getColumn(context.resourceResolver(), "jcr:title", "nl_BE"));
     }
 
     @Test

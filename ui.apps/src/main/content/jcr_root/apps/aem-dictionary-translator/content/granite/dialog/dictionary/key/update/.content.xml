@@ -33,7 +33,7 @@
                                             sling:resourceType="granite/ui/components/coral/foundation/form/responses/reload"/>
                                     <datasource
                                             jcr:primaryType="nt:unstructured"
-                                            sling:resourceType="aem-dictionary-translator/datasource/combining-message-entry"/>
+                                            sling:resourceType="aem-dictionary-translator/datasource/combining-message-entry-for-dialog"/>
                                 </form>
                             </items>
                         </column>
