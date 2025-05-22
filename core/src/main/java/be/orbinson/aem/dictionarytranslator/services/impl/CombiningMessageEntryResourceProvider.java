@@ -62,7 +62,7 @@ public class CombiningMessageEntryResourceProvider extends ResourceProvider<Obje
         @AttributeDefinition(
                 name = "Enable validation",
                 description = "Exposes information on conflicting items. Enabling this may have a negative impact on performance.")
-        boolean enableValidation() default true;
+        boolean enableValidation() default false;
     }
 
     enum OverlapType {
