@@ -13,6 +13,7 @@ export default defineConfig({
         ["playwright-ctrf-json-reporter", {}]
     ],
     use: {
+        screenshot: "only-on-failure",
         baseURL: "http://localhost:4502",
         trace: "on-first-retry",
         httpCredentials: {
