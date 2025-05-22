@@ -14,6 +14,9 @@ import java.util.Optional;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import org.apache.commons.lang3.text.translate.AggregateTranslator;
+import org.apache.commons.lang3.text.translate.JavaUnicodeEscaper;
+import org.apache.commons.lang3.text.translate.UnicodeUnescaper;
 import org.apache.jackrabbit.util.Text;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceNotFoundException;
@@ -260,8 +263,28 @@ public class CombiningMessageEntryResourceProvider extends ResourceProvider<Obje
         return Optional.ofNullable(validationMessage);
     }
 
-    private static String extractKeyFromPath(@NotNull String path) {
-        return Text.unescapeIllegalJcrChars(Text.getName(path));
+    static String extractKeyFromPath(@NotNull String path) {
+        return new UnicodeUnescaper().translate(Text.getName(path));
+    }
+
+    /**
+     * Creates a resource path for the given dictionary path and key.
+     * The key is escaped with the help of unicode escape sequences for {@code /} and {@code %} in order to
+     * <ul>
+     * <li>allow to reconstruct the dictionary path from the combined message entry path</li>
+     * <li>prevent the URITemplate heuristic in {@code /libs/clientlibs/granite/uritemplate/URITemplate.js#isEncoded(String)} from not applying URL encoding to such values if used in request parameters</li>
+     * </ul>
+     *
+     * @param dictionaryPath the dictionary path
+     * @param key            the key
+     * @return the path
+     */
+    public static String createPath(String dictionaryPath, String key) {
+        if (!dictionaryPath.startsWith("/")) {
+            throw new IllegalArgumentException("dictionaryPath must start with a slash (i.e. must be absolute)");
+        }
+        AggregateTranslator escaper = new AggregateTranslator(JavaUnicodeEscaper.between('%', '%'), JavaUnicodeEscaper.between('/', '/'));
+        return ROOT + dictionaryPath + "/" + escaper.translate(key);
     }
 
     public static @NotNull Map<String, Object> createResourceProperties(@NotNull String path, boolean isEditable, @NotNull Map<String, Message> messagePerLanguage, Optional<SortedSet<ValidationMessage>> validationMessages) {

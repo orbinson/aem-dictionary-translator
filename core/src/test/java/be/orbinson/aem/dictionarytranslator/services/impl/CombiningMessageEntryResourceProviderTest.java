@@ -6,9 +6,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.mock;
 
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ValueMap;
 import org.apache.sling.testing.mock.sling.ResourceResolverType;
@@ -82,5 +85,15 @@ class CombiningMessageEntryResourceProviderTest {
     void listChildrenShouldNotFailOnResource() {
         assertDoesNotThrow(() -> context.resourceResolver().getResource("/mnt/dictionary/content/dictionaries/fruit/i18n/apple").listChildren());
     }
-    
+
+    @Test
+    void testPathEscaping() {
+        String key = "key/with%23special%20characters&=";
+        String escapedPath = CombiningMessageEntryResourceProvider.createPath("/my/path", key);
+        assertEquals(key, CombiningMessageEntryResourceProvider.extractKeyFromPath(escapedPath));
+        assertEquals(5, StringUtils.countMatches(escapedPath, '/')); // no additional slash in the key part of the path
+        assertEquals(0, StringUtils.countMatches(escapedPath, '%')); // no percent sign at all in the path
+        // make sure the heuristic in /libs/clientlibs/granite/uritemplate/URITemplate.js in its "isEncoded(String)" method returns false
+        assertEquals(escapedPath, URLDecoder.decode(escapedPath, StandardCharsets.UTF_8));
+    }
 }
