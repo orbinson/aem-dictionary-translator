@@ -88,7 +88,7 @@ public class CombiningMessageEntriesDatasourceForTable extends SlingSafeMethodsS
     private static void setDataSource(ResourceResolver resourceResolver, List<Resource> resourceList, Dictionary dictionary) throws DictionaryException {
         for (String key : dictionary.getKeys()) {
             // the escaping of the key is necessary as it may contain "/" which has a special meaning (even outside the JCR provider)
-            String path = CombiningMessageEntryResourceProvider.ROOT + dictionary.getResource().getPath() + '/' + Text.escapeIllegalJcrChars(key);
+            String path = CombiningMessageEntryResourceProvider.createPath(dictionary.getResource().getPath(), key);
             Resource keyResource = resourceResolver.getResource(path);
             if (keyResource != null) {
                 resourceList.add(keyResource);
