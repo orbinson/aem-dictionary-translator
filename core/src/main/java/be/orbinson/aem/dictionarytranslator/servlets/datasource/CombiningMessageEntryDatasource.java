@@ -69,12 +69,14 @@ public class CombiningMessageEntryDatasource extends SlingSafeMethodsServlet {
     static ValueMapResource getColumn(ResourceResolver resourceResolver, String key, Object value) {
         ValueMap valueMap = new ValueMapDecorator(Map.of(
                 key, value,
-                "sortable", true
+                "sortable", true,
+                "name", value // sorting needs a name or a resource name
         ));
         return new ValueMapResource(resourceResolver, "", "", valueMap);
     }
 
     private static void setDataSource(ResourceResolver resourceResolver, List<Resource> resourceList, Dictionary dictionary) throws DictionaryException {
+       // TODO: consider sort columns and order as well as offset and limit
         for (String key : dictionary.getKeys()) {
             // the escaping of the key is necessary as it may contain "/" which has a special meaning (even outside the JCR provider)
             String path = CombiningMessageEntryResourceProvider.ROOT + dictionary.getResource().getPath() + '/' + Text.escapeIllegalJcrChars(key);
