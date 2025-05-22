@@ -93,13 +93,13 @@
                     path="${requestPathInfo.suffix}">
                 <datasource
                         jcr:primaryType="nt:unstructured"
-                        sling:resourceType="aem-dictionary-translator/datasource/combining-message-entry"
+                        sling:resourceType="aem-dictionary-translator/datasource/combining-message-entries-for-table"
                         itemResourceType="aem-dictionary-translator/components/combining-message-entry"
                         offset="${requestPathInfo.selectors[0]}"
                         limit="${empty requestPathInfo.selectors[1] ? '21' : requestPathInfo.selectors[1] + 1}"/>
                 <columnsdatasource
                         jcr:primaryType="nt:unstructured"
-                        sling:resourceType="aem-dictionary-translator/datasource/combining-message-entry"/>
+                        sling:resourceType="aem-dictionary-translator/datasource/combining-message-entries-for-table"/>
             </list>
         </views>
     </jcr:content>

@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Support JSON file based dictionaries in read-only mode [#26](https://github.com/orbinson/aem-dictionary-translator/issues/26)
+- Expose conflicting dictionary entries [#161](https://github.com/orbinson/aem-dictionary-translator/issues/161)
 
 ## [1.3.3] - 2025-03-07
 

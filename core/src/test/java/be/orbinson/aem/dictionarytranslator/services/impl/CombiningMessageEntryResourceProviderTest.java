@@ -15,6 +15,8 @@ import org.apache.sling.testing.mock.sling.ResourceResolverType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.osgi.util.converter.Converter;
+import org.osgi.util.converter.Converters;
 
 import com.day.cq.replication.Replicator;
 
@@ -31,9 +33,12 @@ class CombiningMessageEntryResourceProviderTest {
     @BeforeEach
     void setup() {
         context.registerService(Replicator.class, mock(Replicator.class));
-        context.registerInjectActivateService(new DictionaryServiceImpl());
 
-        resourceProvider = context.registerInjectActivateService(new CombiningMessageEntryResourceProvider());
+        DictionaryServiceImpl dictionaryService = new DictionaryServiceImpl();
+        context.registerInjectActivateService(dictionaryService);
+        Converter converter = Converters.standardConverter();
+        CombiningMessageEntryResourceProvider.Config config = converter.convert(Map.of("enableValidation", true)).to(CombiningMessageEntryResourceProvider.Config.class);
+        resourceProvider = context.registerInjectActivateService(new CombiningMessageEntryResourceProvider(dictionaryService, config));
 
         context.load().json("/content.json", "/content");
     }
@@ -58,7 +63,8 @@ class CombiningMessageEntryResourceProviderTest {
                 "dictionaryPath", "/content/dictionaries/fruit/i18n",
                 "messageEntryPaths", new String[]{
                         "/content/dictionaries/fruit/i18n/en/apple", "/content/dictionaries/fruit/i18n/nl_be/apple"
-                }
+                },
+                "validationMessages", new CombiningMessageEntryResourceProvider.ValidationMessage[]{}
         );
         expectedProperties.forEach((key, value) -> {
             Object actualValue = properties.get(key);
