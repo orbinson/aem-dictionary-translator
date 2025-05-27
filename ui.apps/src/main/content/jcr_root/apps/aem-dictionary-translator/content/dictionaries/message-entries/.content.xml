@@ -89,7 +89,8 @@
                     layoutId="list"
                     selectionMode="row"
                     limit="20"
-                    src="/apps/aem-dictionary-translator/content/dictionaries/message-entries/jcr:content/views/list{.offset,limit}.html${requestPathInfo.suffix}"
+                    sortMode="remote"
+                    src="/apps/aem-dictionary-translator/content/dictionaries/message-entries/jcr:content/views/list{.offset,limit}.html${requestPathInfo.suffix}{?sortName,sortDir}"
                     path="${requestPathInfo.suffix}">
                 <datasource
                         jcr:primaryType="nt:unstructured"

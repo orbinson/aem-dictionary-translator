@@ -10,15 +10,22 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.mock;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ValueMap;
 import org.apache.sling.api.resource.observation.ResourceChange;
 import org.apache.sling.api.resource.observation.ResourceChange.ChangeType;
+import org.apache.sling.testing.resourceresolver.MockFindQueryResources;
+import org.apache.sling.testing.resourceresolver.MockFindResourcesHandler;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -37,38 +44,49 @@ class CreateMessageEntryServletTest {
 
     DictionaryServiceImpl dictionaryService;
 
+    List<String> dictionaryPaths;
+
     @BeforeEach
     void beforeEach() {
         context.registerService(Replicator.class, mock(Replicator.class));
-        dictionaryService = context.registerInjectActivateService(new DictionaryServiceImpl());
-
+        dictionaryService = context.registerInjectActivateService(new DictionaryServiceImpl(true));
+        context.request().setMethod("POST");
         servlet = context.registerInjectActivateService(new CreateMessageEntryServlet());
+
+        dictionaryPaths = new ArrayList<>();
+        MockFindResourcesHandler handler = new MockFindResourcesHandler() {
+            @Override
+            public @Nullable Iterator<Resource> findResources(@NotNull String query, String language) {
+                return dictionaryPaths.stream().map(p -> context.resourceResolver().getResource(p)).iterator();
+            }
+        };
+        MockFindQueryResources.addFindResourceHandler(context.resourceResolver(), handler);
     }
 
     @Test
-    void doPostWithoutParams() throws IOException {
+    void doPostWithoutParams() throws IOException, ServletException {
         context.request().setParameterMap(Map.of());
 
-        servlet.doPost(context.request(), context.response());
+        servlet.service(context.request(), context.response());
 
         assertEquals(HttpServletResponse.SC_BAD_REQUEST, context.response().getStatus());
     }
 
     @Test
-    void createMessageEntryInNonExistingDictionary() throws IOException {
+    void createMessageEntryInNonExistingDictionary() throws IOException, ServletException {
         context.request().setParameterMap(Map.of(
                 "dictionary", "/content/dictionaries/fruit/i18n",
                 "key", "greeting",
                 "en", "Hello"
         ));
 
-        servlet.doPost(context.request(), context.response());
+        servlet.service(context.request(), context.response());
 
         assertEquals(HttpServletResponse.SC_BAD_REQUEST, context.response().getStatus());
     }
 
     @Test
-    void doPostWithValidParams() throws IOException {
+    void doPostWithValidParams() throws IOException, ServletException {
         context.create().resource(
                 "/content/dictionaries/fruit/i18n/en",
                 Map.of("jcr:language", "en")
@@ -78,6 +96,10 @@ class CreateMessageEntryServletTest {
                 Map.of("jcr:language", "fr")
         );
 
+        context.resourceResolver().commit(); // expose to other resource resolvers
+        dictionaryPaths.add("/content/dictionaries/fruit/i18n/en");
+        dictionaryPaths.add("/content/dictionaries/fruit/i18n/fr");
+        
         context.request().setParameterMap(Map.of(
                 "dictionary", "/content/dictionaries/fruit/i18n",
                 "key", "apple",
@@ -85,25 +107,32 @@ class CreateMessageEntryServletTest {
                 "fr", "Pomme"
         ));
 
-        servlet.doPost(context.request(), context.response());
+        servlet.service(context.request(), context.response());
 
         assertEquals(HttpServletResponse.SC_OK, context.response().getStatus());
 
-        ValueMap properties = context.resourceResolver().getResource("/content/dictionaries/fruit/i18n/en/apple").getValueMap();
+        Resource resource = context.resourceResolver().getResource("/content/dictionaries/fruit/i18n/en/apple");
+        assertNotNull(resource);
+        ValueMap properties = resource.getValueMap();
         assertEquals(SLING_MESSAGEENTRY, properties.get(JCR_PRIMARYTYPE));
         assertEquals("apple", properties.get(SLING_KEY));
         assertEquals("Apple", properties.get(SLING_MESSAGE));
 
-        properties = context.resourceResolver().getResource("/content/dictionaries/fruit/i18n/fr/apple").getValueMap();
+        resource = context.resourceResolver().getResource("/content/dictionaries/fruit/i18n/fr/apple");
+        assertNotNull(resource);
+        properties = resource.getValueMap();
         assertEquals(SLING_MESSAGEENTRY, properties.get(JCR_PRIMARYTYPE));
         assertEquals("apple", properties.get(SLING_KEY));
         assertEquals("Pomme", properties.get(SLING_MESSAGE));
     }
 
     @Test
-    void doPostWithEmptyMessage() throws IOException {
+    void doPostWithEmptyMessage() throws IOException, ServletException {
         context.create().resource("/content/dictionaries/i18n/en", Map.of("jcr:language", "en"));
         context.create().resource("/content/dictionaries/i18n/fr", Map.of("jcr:language", "fr"));
+        context.resourceResolver().commit(); // expose to other resource resolvers
+        dictionaryPaths.add("/content/dictionaries/i18n/en");
+        dictionaryPaths.add("/content/dictionaries/i18n/fr");
 
         context.request().setParameterMap(Map.of(
                 "dictionary", "/content/dictionaries/i18n",
@@ -112,7 +141,7 @@ class CreateMessageEntryServletTest {
                 "fr", ""
         ));
 
-        servlet.doPost(context.request(), context.response());
+        servlet.service(context.request(), context.response());
 
         assertEquals(HttpServletResponse.SC_OK, context.response().getStatus());
 
@@ -124,17 +153,20 @@ class CreateMessageEntryServletTest {
     }
 
     @Test
-    void doPostCaseSensitiveKeys() throws IOException {
+    void doPostCaseSensitiveKeys() throws IOException, ServletException {
         context.create().resource("/content/dictionaries/i18n/en", Map.of("jcr:language", "en"));
         context.create().resource("/content/dictionaries/i18n/fr", Map.of("jcr:language", "fr"));
-
+        context.resourceResolver().commit(); // expose to other resource resolvers
+        dictionaryPaths.add("/content/dictionaries/i18n/en");
+        dictionaryPaths.add("/content/dictionaries/i18n/fr");
+        
         context.request().setParameterMap(Map.of(
                 "dictionary", "/content/dictionaries/i18n",
                 "key", "greeting",
                 "en", "Hello",
                 "fr", ""
         ));
-        servlet.doPost(context.request(), context.response());
+        servlet.service(context.request(), context.response());
         assertEquals(HttpServletResponse.SC_OK, context.response().getStatus());
 
         context.request().setParameterMap(Map.of(
@@ -143,7 +175,7 @@ class CreateMessageEntryServletTest {
                 "en", "Hello2",
                 "fr", ""
         ));
-        servlet.doPost(context.request(), context.response());
+        servlet.service(context.request(), context.response());
 
         assertEquals(HttpServletResponse.SC_OK, context.response().getStatus());
 
@@ -163,10 +195,13 @@ class CreateMessageEntryServletTest {
     }
 
     @Test
-    void createMessageEntryThatAlreadyExists() throws IOException {
+    void createMessageEntryThatAlreadyExists() throws IOException, ServletException {
         context.create().resource("/content/dictionaries/i18n/en", Map.of("jcr:language", "en"));
         context.create().resource("/content/dictionaries/i18n/fr", Map.of("jcr:language", "fr"));
-
+        context.resourceResolver().commit(); // expose to other resource resolvers
+        dictionaryPaths.add("/content/dictionaries/i18n/en");
+        dictionaryPaths.add("/content/dictionaries/i18n/fr");
+        
         context.request().setParameterMap(Map.of(
                 "dictionary", "/content/dictionaries/i18n",
                 "key", "greeting",
@@ -174,13 +209,13 @@ class CreateMessageEntryServletTest {
                 "fr", "Bonjour"
         ));
 
-        servlet.doPost(context.request(), context.response());
+        servlet.service(context.request(), context.response());
 
         assertEquals(HttpServletResponse.SC_OK, context.response().getStatus());
 
         // invalidate cache
         dictionaryService.onChange(List.of(new ResourceChange(ChangeType.ADDED, "/content/dictionaries/i18n/en", false)));
-        servlet.doPost(context.request(), context.response());
+        servlet.service(context.request(), context.response());
 
         assertEquals(HttpServletResponse.SC_BAD_REQUEST, context.response().getStatus());
     }

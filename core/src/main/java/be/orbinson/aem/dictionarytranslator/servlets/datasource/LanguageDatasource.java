@@ -1,10 +1,17 @@
 package be.orbinson.aem.dictionarytranslator.servlets.datasource;
 
-import be.orbinson.aem.dictionarytranslator.services.DictionaryService;
-import com.adobe.granite.ui.components.Config;
-import com.adobe.granite.ui.components.ds.DataSource;
-import com.adobe.granite.ui.components.ds.SimpleDataSource;
-import com.adobe.granite.ui.components.ds.ValueMapResource;
+import java.io.IOException;
+import java.text.Collator;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+
+import javax.servlet.Servlet;
+import javax.servlet.ServletException;
+
 import org.apache.commons.collections4.IteratorUtils;
 import org.apache.commons.collections4.iterators.TransformIterator;
 import org.apache.jackrabbit.oak.spi.security.authorization.accesscontrol.AccessControlConstants;
@@ -18,23 +25,18 @@ import org.apache.sling.api.servlets.SlingSafeMethodsServlet;
 import org.apache.sling.api.wrappers.ValueMapDecorator;
 import org.apache.sling.servlets.annotations.SlingServletResourceTypes;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.servlet.Servlet;
-import javax.servlet.ServletException;
-import java.io.IOException;
-import java.text.Collator;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
+import com.adobe.granite.ui.components.Config;
+import com.adobe.granite.ui.components.ds.DataSource;
+import com.adobe.granite.ui.components.ds.SimpleDataSource;
+import com.adobe.granite.ui.components.ds.ValueMapResource;
+
+import be.orbinson.aem.dictionarytranslator.services.DictionaryService;
+import be.orbinson.aem.dictionarytranslator.services.impl.LanguageDictionaryImpl;
 
 @Component(service = Servlet.class)
 @SlingServletResourceTypes(
@@ -49,7 +51,7 @@ public class LanguageDatasource extends SlingSafeMethodsServlet {
     @Reference
     transient DictionaryService dictionaryService;
 
-    public static Map<String, String> getAllAvailableLanguages(SlingHttpServletRequest request, @NotNull SlingHttpServletResponse response) throws ServletException, IOException {
+    public static Map<Locale, String> getAllAvailableLanguages(SlingHttpServletRequest request, @NotNull SlingHttpServletResponse response) throws ServletException, IOException {
         // TranslationConfig.getLanguages(ResourceResolver) does never return the country label,
         // therefore use the data source which is also used in the Page Properties dialog (Advanced Tab in Language)
         RequestDispatcherOptions options = new RequestDispatcherOptions();
@@ -60,12 +62,12 @@ public class LanguageDatasource extends SlingSafeMethodsServlet {
         return toLanguageMap(resources);
     }
 
-    private static Map<String, String> toLanguageMap(List<ValueTextResource> resources) {
+    private static Map<Locale, String> toLanguageMap(List<ValueTextResource> resources) {
         return resources.stream()
                 // the upstream data source does not filter access control child resource
                 .filter(r -> !AccessControlConstants.REP_POLICY.equals(r.getValue()))
                 .collect(Collectors.toMap(
-                        ValueTextResource::getValue,
+                        r -> LanguageDictionaryImpl.toLocale(r.getValue()),
                         r -> r.getText() + " (" + r.getValue() + ")",
                         (oldValue, newValue) -> {
                             LOG.warn("Duplicate language/country code: {}", oldValue);
@@ -73,30 +75,20 @@ public class LanguageDatasource extends SlingSafeMethodsServlet {
                         }));
     }
 
-    private Set<String> getDictionaryLanguages(ResourceResolver resourceResolver, @Nullable String dictionaryPath) {
-        if (dictionaryPath != null) {
-            Resource dictionaryResource = resourceResolver.getResource(dictionaryPath);
-            if (dictionaryResource != null) {
-                return new HashSet<>(dictionaryService.getLanguages(dictionaryResource));
-            }
-        }
-        return new HashSet<>();
-    }
-
     @Override
     protected void doGet(@NotNull SlingHttpServletRequest request, @NotNull SlingHttpServletResponse response) throws ServletException, IOException {
         // populate language map and filter
         String dictionaryPath = request.getRequestPathInfo().getSuffix();
 
-        Map<String, String> languageMap = getAllAvailableLanguages(request, response);
-        Set<String> dictionaryLanguages = getDictionaryLanguages(request.getResourceResolver(), dictionaryPath);
-        Predicate<String> languageFilter;
+        Map<Locale, String> languageMap = getAllAvailableLanguages(request, response);
+        Set<Locale> dictionaryLanguages = dictionaryService.getDictionaries(request.getResourceResolver(), dictionaryPath).stream().map(d -> d.getLanguage()).collect(Collectors.toSet());
+        Predicate<Locale> languageFilter;
         // evaluate data source configuration
         Config dsCfg = new Config(request.getResource().getChild("datasource"));
         if (dsCfg.get("hideNonDictionaryLanguages", false)) {
             languageFilter = dictionaryLanguages::contains;
             // add missing languages to dictionary
-            dictionaryLanguages.forEach(l -> languageMap.putIfAbsent(l, l));
+            dictionaryLanguages.forEach(l -> languageMap.putIfAbsent(l, l.toLanguageTag()));
         } else {
             languageFilter = l -> !dictionaryLanguages.contains(l);
         }
@@ -106,9 +98,9 @@ public class LanguageDatasource extends SlingSafeMethodsServlet {
                 .filter(e -> languageFilter.test(e.getKey()))
                 .map(e -> {
                     if (emitTextFieldResources) {
-                        return TextFieldResource.create(request.getLocale(), request.getResourceResolver(), e.getKey(), e.getValue());
+                        return TextFieldResource.create(request.getLocale(), request.getResourceResolver(), e.getKey().toLanguageTag(), e.getValue());
                     } else {
-                        return ValueTextResource.create(request.getLocale(), request.getResourceResolver(), e.getKey(), e.getValue());
+                        return ValueTextResource.create(request.getLocale(), request.getResourceResolver(), e.getKey().toLanguageTag(), e.getValue());
                     }
                 }).sorted().collect(Collectors.toList());
         // sort by display names

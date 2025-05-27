@@ -22,10 +22,11 @@ test("Create new dictionary", async ({ page }) => {
 
     // fill in the form in the modal
     await page.getByLabel("Name *").fill("new-dictionary");
-    await page.getByLabel("Add").click();
+    await page.getByLabel("Add").first().click();
     await page.getByLabel("Dutch (Belgium) (nl_be)", { exact: true }).click();
     await page.getByRole("option", { name: "English (en)" }).click();
-    await page.getByLabel("Basename", { exact: true }).fill("new-dictionary-basename");
+    await page.getByLabel("Add").last().click();
+    await page.getByRole("textbox").last().fill("new-dictionary-basename");
 
     // submit the form and wait for the page to reload
     await Promise.all([
@@ -34,7 +35,7 @@ test("Create new dictionary", async ({ page }) => {
     ]);
 
     // check if the new dictionary is visible in the table
-    await expect(page.getByRole("row", { name: "/content/dictionaries/new-dictionary/i18n" })).toBeVisible();
+    await expect(page.getByRole("row", { name: "/content/dictionaries/new-dictionary" })).toBeVisible();
     await expect(page.getByRole("gridcell", { name: "new-dictionary-basename", exact: true })).toBeVisible();
 });
 

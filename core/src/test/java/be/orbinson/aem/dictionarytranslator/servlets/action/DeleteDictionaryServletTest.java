@@ -12,6 +12,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Map;
@@ -38,17 +39,18 @@ class DeleteDictionaryServletTest {
         replicator = context.registerService(Replicator.class, replicator);
         context.registerInjectActivateService(new DictionaryServiceImpl());
         servlet = context.registerInjectActivateService(new DeleteDictionaryServlet());
+        context.request().setMethod("POST");
     }
 
     @Test
-    void doPostWithoutParams() throws IOException {
-        servlet.doPost(context.request(), context.response());
+    void doPostWithoutParams() throws IOException, ServletException {
+        servlet.service(context.request(), context.response());
 
         assertEquals(HttpServletResponse.SC_BAD_REQUEST, context.response().getStatus());
     }
 
     @Test
-    void deleteExistingDictionary() throws IOException, ReplicationException {
+    void deleteExistingDictionary() throws IOException, ReplicationException, ServletException {
         String dictionaryToDelete = "/content/dictionaries/site-a/i18n";
         context.create().resource(dictionaryToDelete);
         String dictionaryToKeep = "/content/dictionaries/site-b/i18n";
@@ -58,7 +60,7 @@ class DeleteDictionaryServletTest {
                 DeleteDictionaryServlet.DICTIONARIES_PARAM, new String[]{dictionaryToDelete}
         ));
 
-        servlet.doPost(context.request(), context.response());
+        servlet.service(context.request(), context.response());
 
         assertNull(context.resourceResolver().getResource(dictionaryToDelete));
         verify(replicator).replicate(any(), eq(ReplicationActionType.DEACTIVATE), eq(dictionaryToDelete));

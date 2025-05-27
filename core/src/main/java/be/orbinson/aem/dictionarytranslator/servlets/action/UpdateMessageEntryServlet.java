@@ -3,6 +3,8 @@ package be.orbinson.aem.dictionarytranslator.servlets.action;
 import be.orbinson.aem.dictionarytranslator.exception.DictionaryException;
 import be.orbinson.aem.dictionarytranslator.services.impl.CombiningMessageEntryResourceProvider;
 import be.orbinson.aem.dictionarytranslator.services.DictionaryService;
+import be.orbinson.aem.dictionarytranslator.services.LanguageDictionary;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
@@ -22,6 +24,7 @@ import javax.jcr.RepositoryException;
 import javax.servlet.Servlet;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Locale;
 
 @Component(service = Servlet.class)
 @SlingServletResourceTypes(
@@ -29,7 +32,7 @@ import java.io.IOException;
         resourceTypes = "aem-dictionary-translator/servlet/action/update-message-entry",
         methods = "POST"
 )
-public class UpdateMessageEntryServlet extends SlingAllMethodsServlet {
+public class UpdateMessageEntryServlet extends AbstractDictionaryServlet {
 
     private static final Logger LOG = LoggerFactory.getLogger(UpdateMessageEntryServlet.class);
 
@@ -38,50 +41,43 @@ public class UpdateMessageEntryServlet extends SlingAllMethodsServlet {
 
     @Override
     protected void doPost(SlingHttpServletRequest request, @NotNull SlingHttpServletResponse response) throws IOException {
-        String combiningMessageEntryPath = request.getParameter("item"); // only single items are supported
+        String combiningMessageEntryPath = getMandatoryParameter(request, "item", false); // only single items are supported
 
-        if (StringUtils.isEmpty(combiningMessageEntryPath)) {
-            HtmlResponse htmlResponse = new HtmlResponse();
-            htmlResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST, "item parameter is required");
-            htmlResponse.send(response, true);
-        } else {
-            ResourceResolver resourceResolver = request.getResourceResolver();
-            try {
-                Resource combiningMessageEntryResource = resourceResolver.getResource(combiningMessageEntryPath);
-                if (combiningMessageEntryResource != null) {
-                    // javasecurity:S5145
-                    LOG.debug("Update message entry for path '{}'", combiningMessageEntryPath);
-                    updateCombiningMessageEntry(request, resourceResolver, combiningMessageEntryResource);
-                } else {
-                    // javasecurity:S5145
-                    HtmlResponse htmlResponse = new HtmlResponse();
-                    htmlResponse.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, String.format("Message entry does not exist '%s'", combiningMessageEntryPath));
-                    htmlResponse.send(response, true);
-                }
-            } catch (Exception e) {
+        ResourceResolver resourceResolver = request.getResourceResolver();
+        try {
+            Resource combiningMessageEntryResource = resourceResolver.getResource(combiningMessageEntryPath);
+            if (combiningMessageEntryResource != null) {
+                // javasecurity:S5145
+                LOG.debug("Update message entry for path '{}'", combiningMessageEntryPath);
+                updateCombiningMessageEntry(request, resourceResolver, combiningMessageEntryResource);
+            } else {
+                // javasecurity:S5145
                 HtmlResponse htmlResponse = new HtmlResponse();
-                htmlResponse.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, String.format("Unable to update message entry '%s': %s", combiningMessageEntryPath, e.getMessage()));
+                htmlResponse.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, String.format("No dictionaries to update exist for '%s'", combiningMessageEntryPath));
                 htmlResponse.send(response, true);
             }
+        } catch (Exception e) {
+            HtmlResponse htmlResponse = new HtmlResponse();
+            htmlResponse.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, String.format("Unable to update message entry '%s': %s", combiningMessageEntryPath, e.getMessage()));
+            htmlResponse.send(response, true);
         }
     }
 
     private void updateCombiningMessageEntry(SlingHttpServletRequest request, ResourceResolver resourceResolver, Resource combiningMessageEntryResource) throws DictionaryException, PersistenceException, RepositoryException {
-        String key = request.getParameter("key");
+        String key = getMandatoryParameter(request, "key", false);
         String dictionaryPath = combiningMessageEntryResource.getValueMap().get(CombiningMessageEntryResourceProvider.DICTIONARY_PATH, String.class);
         if (StringUtils.isNotBlank(dictionaryPath)) {
-            Resource dictionaryResource = resourceResolver.getResource(dictionaryPath);
+            // check languages
             String[] languages = combiningMessageEntryResource.getValueMap().get(CombiningMessageEntryResourceProvider.LANGUAGES, new String[0]);
             for (String language : languages) {
-                String message = request.getParameter(language);
-                if (message == null) {
-                    throw new DictionaryException("Unable to get message for language '" + language + "'");
-                }
-                dictionaryService.createOrUpdateMessageEntry(dictionaryResource, language, key, message);
+                String message = getMandatoryParameter(request, language, true); // ensure the parameter exists
+                LanguageDictionary dictionary = dictionaryService.getDictionary(resourceResolver, dictionaryPath, Locale.forLanguageTag(language))
+                        .orElseThrow(() -> new DictionaryException("Could not find dictionary for language '" + language + "' below path: " + dictionaryPath));
+                dictionary.createOrUpdateEntry(resourceResolver, key, message);
             }
             resourceResolver.commit();
         } else {
-            throw new DictionaryException("Could not find dictionary path");
+            throw new DictionaryException("Could not find dictionary path in resource: " + combiningMessageEntryResource.getPath());
         }
     }
 

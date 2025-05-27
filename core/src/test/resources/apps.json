@@ -51,13 +51,10 @@
             "list": {
               "jcr:primaryType": "nt:unstructured",
               "src": "/apps/aem-dictionary-translator/content/dictionaries/jcr:content/views/list{.offset,limit}.html${requestPathInfo.suffix}",
-              "limit": "20",
               "sling:resourceType": "granite/ui/components/coral/foundation/table",
               "datasource": {
                 "jcr:primaryType": "nt:unstructured",
-                "offset": "${requestPathInfo.selectors[0]}",
                 "itemResourceType": "aem-dictionary-translator/components/dictionary",
-                "limit": "${empty requestPathInfo.selectors[1] ? '21' : requestPathInfo.selectors[1] + 1}",
                 "sling:resourceType": "aem-dictionary-translator/datasource/dictionary"
               }
             }

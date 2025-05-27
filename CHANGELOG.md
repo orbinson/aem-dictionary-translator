@@ -13,11 +13,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Export logic was not executable twice [#170](https://github.com/orbinson/aem-dictionary-translator/issues/170)
 - CombiningMessageEntryDatasource returns too many items for dialog [#174](https://github.com/orbinson/aem-dictionary-translator/issues/174)
 - Add missing unit tests for data source [#136](https://github.com/orbinson/aem-dictionary-translator/issues/136)
+- Support multiple base names per language, not one per dictionary [#163](https://github.com/orbinson/aem-dictionary-translator/issues/163)
+- DictionaryServiceImpl does not handle underscored locale formats [#183](https://github.com/orbinson/aem-dictionary-translator/issues/183)
+- Pagination inside dictionaries breaks sorting [#179](https://github.com/orbinson/aem-dictionary-translator/issues/179)
+- Leading/trailing and multiple subsequent spaces are not properly escaped and therefore swallowed [#187](https://github.com/orbinson/aem-dictionary-translator/issues/187)
 
 ### Added
 
 - Support JSON file based dictionaries in read-only mode [#26](https://github.com/orbinson/aem-dictionary-translator/issues/26)
 - Expose conflicting dictionary entries [#161](https://github.com/orbinson/aem-dictionary-translator/issues/161)
+
+### Changed
+
+- Speed up the lookup of language resources [#182](https://github.com/orbinson/aem-dictionary-translator/issues/182)
 
 ## [1.3.3] - 2025-03-07
 

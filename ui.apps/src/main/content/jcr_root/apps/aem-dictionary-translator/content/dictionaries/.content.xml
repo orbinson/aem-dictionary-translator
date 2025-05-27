@@ -171,7 +171,8 @@
                     selectionMode="row"
                     selectionCount="single"
                     limit="20"
-                    src="/apps/aem-dictionary-translator/content/dictionaries/jcr:content/views/list{.offset,limit}.html${requestPathInfo.suffix}">
+                    sortMode="remote"
+                    src="/apps/aem-dictionary-translator/content/dictionaries/jcr:content/views/list{.offset,limit}.html${requestPathInfo.suffix}{?sortName,sortDir}">
                 <datasource
                         jcr:primaryType="nt:unstructured"
                         sling:resourceType="aem-dictionary-translator/datasource/dictionary"
@@ -181,16 +182,16 @@
                 <columns jcr:primaryType="nt:unstructured">
                     <select
                             jcr:primaryType="nt:unstructured"/>
-                    <dictionary
+                    <path
                             jcr:primaryType="nt:unstructured"
-                            jcr:title="Dictionary"
+                            jcr:title="Dictionary Parent Path"
                             sortable="true"/>
                     <languages
                             jcr:primaryType="nt:unstructured"
                             jcr:title="Languages"/>
-                    <basename
+                    <baseNames
                             jcr:primaryType="nt:unstructured"
-                            jcr:title="Basename"
+                            jcr:title="Base Name(s)"
                             sortable="true"/>
                     <type
                             jcr:primaryType="nt:unstructured"
