@@ -33,18 +33,18 @@ import io.wcm.testing.mock.aem.junit5.AemContext;
 import io.wcm.testing.mock.aem.junit5.AemContextExtension;
 
 @ExtendWith({AemContextExtension.class, MockitoExtension.class})
-class LanguageDictionaryImplTest {
+class DictionaryImplTest {
 
     private final AemContext context = new AemContext();
 
-    private LanguageDictionaryImpl dictionary;
+    private DictionaryImpl dictionary;
 
     @BeforeEach
     void setup() {
         context.load().json("/content.json", "/content");
         context.currentResource("/content/dictionaries/fruit/i18n/nl_be");
         
-        dictionary = new LanguageDictionaryImpl(context.currentResource(), context::resourceResolver) {
+        dictionary = new DictionaryImpl(context.currentResource(), context::resourceResolver) {
             @Override
             public Type getType() {
                 throw new UnsupportedOperationException("Not implemented in test");

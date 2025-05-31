@@ -23,7 +23,7 @@ import org.slf4j.LoggerFactory;
 
 import be.orbinson.aem.dictionarytranslator.exception.DictionaryException;
 import be.orbinson.aem.dictionarytranslator.services.DictionaryService;
-import be.orbinson.aem.dictionarytranslator.services.LanguageDictionary;
+import be.orbinson.aem.dictionarytranslator.services.Dictionary;
 
 @Component(service = Servlet.class)
 @SlingServletResourceTypes(
@@ -50,14 +50,14 @@ public class CreateMessageEntryServlet extends AbstractDictionaryServlet {
     private void createMessageEntry(SlingHttpServletRequest request, @NotNull SlingHttpServletResponse response, String path, String key) throws IOException {
         ResourceResolver resourceResolver = request.getResourceResolver();
         try {
-            Collection<LanguageDictionary> dictionaries = dictionaryService.getDictionaries(resourceResolver, path);
+            Collection<Dictionary> dictionaries = dictionaryService.getDictionaries(resourceResolver, path);
             if (dictionaries.isEmpty()) {
                 HtmlResponse htmlResponse = new HtmlResponse();
                 htmlResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST, String.format("No dictionaries found at path '%s'", path));
                 htmlResponse.send(response, true);
                 return;
             }
-            for (LanguageDictionary languageDictionary : dictionaries) {
+            for (Dictionary languageDictionary : dictionaries) {
                 if (!languageDictionary.getEntries().containsKey(key)) {
                     String message = getOptionalParameter(request, languageDictionary.getLanguage().toLanguageTag(), true).orElse(null);
                     if (message != null) {

@@ -27,17 +27,17 @@ public interface DictionaryService {
     /** 
      * Returns all dictionaries present in the system. Leverages a query to find all dictionaries.
      * @param resourceResolver
-     * @return
+     * @return all dictionaries present in the system, sorted by their language (i.e. the locale's language tag)
      */
-    Collection<LanguageDictionary> getAllDictionaries(ResourceResolver resourceResolver);
+    Collection<Dictionary> getAllDictionaries(ResourceResolver resourceResolver);
 
     /** 
      * Returns all dictionaries present in the system in a map where the key is the parent path of the dictionary and the value is a sorted map of dictionaries by locale.
      * Internally calls {@link #getAllDictionaries(ResourceResolver)}.
      * @param resourceResolver
-     * @return
+     * @return a map where the key is the parent path of the dictionary and the value is a sorted map of dictionaries by locale.
      */
-    Map<String, SortedMap<Locale, LanguageDictionary>> getAllDictionariesByParentPath(ResourceResolver resourceResolver);
+    Map<String, SortedMap<Locale, Dictionary>> getAllDictionariesByParentPath(ResourceResolver resourceResolver);
 
     /**
      * Returns the dictionary resource for the given parent path and language. 
@@ -47,7 +47,7 @@ public interface DictionaryService {
      * @param language
      * @return the dictionary resource or an empty Optional if no dictionary was found
      */
-    Optional<LanguageDictionary> getDictionary(ResourceResolver resourceResolver, String parentPath, Locale language);
+    Optional<Dictionary> getDictionary(ResourceResolver resourceResolver, String parentPath, Locale language);
 
     /**
      * Returns all dictionaries present in the system which are direct children of the given parent path.
@@ -56,24 +56,25 @@ public interface DictionaryService {
      * @param parentPath
      * @return the dictionaries sorted by their language (i.e. the locale's language tag)
      */
-    Collection<LanguageDictionary> getDictionaries(ResourceResolver resourceResolver, String parentPath);
+    Collection<Dictionary> getDictionaries(ResourceResolver resourceResolver, String parentPath);
 
     /**
      * Returns all dictionaries present in the system which are direct children of the given parent path.
      * May internally call {@link #getAllDictionaries(ResourceResolver)} in case no dictionaries with the given parent path are found in the cache.
      * @param resourceResolver
+     * @param parentPath
      * @return a map where the key is the locale of the dictionary and the value is the dictionary itself.
      */
-   SortedMap<Locale, LanguageDictionary> getDictionariesByLanguage(ResourceResolver resourceResolver, String parentPath);
+   SortedMap<Locale, Dictionary> getDictionariesByLanguage(ResourceResolver resourceResolver, String parentPath);
 
     /**
      * Returns the dictionary having a lower or same ordinal, containing the given key in the given language. It does not evaluate the base name(s), though.
      * @param resourceResolver the resource resolver to use
-     * @param dictionaryResource the current dictionary to compare against
+     * @param dictionary the dictionary to check, must not be null
      * @param key the key to check
      * @return the dictionary resource having a higher or same precedence if it exists, otherwise an empty Optional
      */
-    Optional<LanguageDictionary> getConflictingDictionary(ResourceResolver resourceResolver, LanguageDictionary dictionary, String key);
+    Optional<Dictionary> getConflictingDictionary(ResourceResolver resourceResolver, Dictionary dictionary, String key);
 
     // write operations
     /**
@@ -83,7 +84,6 @@ public interface DictionaryService {
      * @param resourceResolver
      * @param parentPath
      * @param languages
-     * @param baseNames
      * @throws PersistenceException
      * @throws DictionaryException in case at least one of the languages already exists below the parent path
      */

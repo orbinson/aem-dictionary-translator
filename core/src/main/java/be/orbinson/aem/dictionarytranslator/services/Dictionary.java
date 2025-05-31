@@ -14,7 +14,12 @@ import com.day.cq.replication.Replicator;
 
 import be.orbinson.aem.dictionarytranslator.exception.DictionaryException;
 
-public interface LanguageDictionary {
+/**
+ * Represents a dictionary resource subtree in AEM.
+ * A dictionary is a resource subtree that contains message entries for a specific language.
+ * @see <a href="https://sling.apache.org/documentation/bundles/internationalization-support-i18n.html">Sling i18n</a>
+ */
+public interface Dictionary {
 
     /**
      * Returns the path of the underlying dictionary resource.
@@ -122,8 +127,6 @@ public interface LanguageDictionary {
 
     /**
      * Returns all message entries for the given language below the given dictionary resource.
-     * @param dictionaryResource
-     * @param language
      * @return all message entries for the given language. The key of the map is the key of the message entry and the value is a {@link Message} object containing the actual text and other metadata.
      * @throws DictionaryException if the dictionary for the given language does not exist
      */
@@ -137,7 +140,7 @@ public interface LanguageDictionary {
      * @throws PersistenceException in case creating a new resource failed
      * @throws DictionaryException in case the language does not exist below the given dictionary resource
      * @throws UnsupportedOperationException in case the dictionary is not editable
-     * @see #isEditable()
+     * @see #isEditable(ResourceResolver)
      */
     void createOrUpdateEntry(ResourceResolver resourceResolver, String key, String message) throws PersistenceException, DictionaryException;
 
@@ -151,7 +154,7 @@ public interface LanguageDictionary {
      * @throws ReplicationException in case deactivation failed
      * @throws DictionaryException if either language or key does not exist below the given dictionary resource
      * @throws UnsupportedOperationException in case the dictionary is not editable
-     * @see #isEditable()
+     * @see #isEditable(ResourceResolver)
      */
     void deleteEntry(Replicator replicator, ResourceResolver resourceResolver, String key)  throws PersistenceException, ReplicationException, DictionaryException;
 

@@ -39,7 +39,7 @@ import com.day.cq.replication.ReplicationException;
 import com.day.cq.replication.Replicator;
 
 import be.orbinson.aem.dictionarytranslator.exception.DictionaryException;
-import be.orbinson.aem.dictionarytranslator.services.LanguageDictionary;
+import be.orbinson.aem.dictionarytranslator.services.Dictionary;
 import io.wcm.testing.mock.aem.junit5.AemContext;
 import io.wcm.testing.mock.aem.junit5.AemContextExtension;
 
@@ -77,12 +77,12 @@ class DictionaryServiceImplTest {
 
     @Test
     void dictionaryListShouldNotContainDuplicates() {
-        Collection<LanguageDictionary> dictionaries = dictionaryService.getAllDictionaries(context.resourceResolver());
+        Collection<Dictionary> dictionaries = dictionaryService.getAllDictionaries(context.resourceResolver());
 
         assertEquals(List.of("/content/dictionaries/fruit/i18n/en", 
                 "/content/dictionaries/fruit/i18n/nl_be",
                 "/content/dictionaries/vegetables/i18n/en"), 
-                dictionaries.stream().map(LanguageDictionary::getPath).collect(Collectors.toList()));
+                dictionaries.stream().map(Dictionary::getPath).collect(Collectors.toList()));
     }
 
 
@@ -104,7 +104,7 @@ class DictionaryServiceImplTest {
         // return additional path in context.resourceResolver().findResources()
         dictionaryPaths.add("/content/dictionaries/fruit/i18n/fr");
 
-        LanguageDictionary dictionary = dictionaryService.getDictionary(context.resourceResolver(), "/content/dictionaries/fruit/i18n", Locale.FRENCH).orElse(null);
+        Dictionary dictionary = dictionaryService.getDictionary(context.resourceResolver(), "/content/dictionaries/fruit/i18n", Locale.FRENCH).orElse(null);
         assertNotNull(dictionary);
         assertIterableEquals(List.of("/content/dictionaries/fruit/i18n"), dictionary.getBaseNames());
     }
@@ -179,7 +179,7 @@ class DictionaryServiceImplTest {
         dictionaryPaths.add("/apps/dictionaries/fruit/i18n/nl_be");
         dictionaryPaths.add("/apps/dictionaries/vegetables/i18n/en");
 
-        LanguageDictionary dictionary = dictionaryService.getDictionary(context.resourceResolver(), "/content/dictionaries/fruit/i18n", Locale.ENGLISH).orElse(null);
+        Dictionary dictionary = dictionaryService.getDictionary(context.resourceResolver(), "/content/dictionaries/fruit/i18n", Locale.ENGLISH).orElse(null);
         assertNotNull(dictionary);
         assertEquals("/apps/dictionaries/fruit/i18n/en", dictionaryService.getConflictingDictionary(context.resourceResolver(), dictionary, "apple").get().getPath());
     }
@@ -192,7 +192,7 @@ class DictionaryServiceImplTest {
         dictionaryPaths.add("/apps/dictionaries/fruit/i18n/nl_be");
         dictionaryPaths.add("/apps/dictionaries/vegetables/i18n/en");
 
-        LanguageDictionary dictionary = dictionaryService.getDictionary(context.resourceResolver(), "/apps/dictionaries/fruit/i18n", Locale.ENGLISH).orElse(null);
+        Dictionary dictionary = dictionaryService.getDictionary(context.resourceResolver(), "/apps/dictionaries/fruit/i18n", Locale.ENGLISH).orElse(null);
         assertNotNull(dictionary);
         assertEquals(Optional.empty(), dictionaryService.getConflictingDictionary(context.resourceResolver(), dictionary, "apple"));
     }

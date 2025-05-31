@@ -12,23 +12,23 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import be.orbinson.aem.dictionarytranslator.exception.DictionaryException;
-import be.orbinson.aem.dictionarytranslator.services.LanguageDictionary;
-import be.orbinson.aem.dictionarytranslator.services.LanguageDictionary.Message;
+import be.orbinson.aem.dictionarytranslator.services.Dictionary;
+import be.orbinson.aem.dictionarytranslator.services.Dictionary.Message;
 import io.wcm.testing.mock.aem.junit5.AemContext;
 import io.wcm.testing.mock.aem.junit5.AemContextExtension;
 
 @ExtendWith({ AemContextExtension.class, MockitoExtension.class })
-class SlingMessageLanguageDictionaryImplTest {
+class SlingMessageDictionaryImplTest {
 
     private final AemContext context = new AemContext();
 
-    private LanguageDictionary dictionary;
+    private Dictionary dictionary;
 
     @BeforeEach
     void setUp() {
         context.load().json("/content.json", "/content");
         context.currentResource("/content/dictionaries/fruit/i18n/en");
-        dictionary = new SlingMessageLanguageDictionaryImpl(context.currentResource(), context::resourceResolver);
+        dictionary = new SlingMessageDictionaryImpl(context.currentResource(), context::resourceResolver);
     }
 
     @Test

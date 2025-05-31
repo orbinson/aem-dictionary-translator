@@ -24,13 +24,13 @@ import com.day.cq.replication.Replicator;
 
 import be.orbinson.aem.dictionarytranslator.exception.DictionaryException;
 
-public class JsonFileLanguageDictionary extends LanguageDictionaryImpl {
+public class JsonFileDictionary extends DictionaryImpl {
 
-    protected JsonFileLanguageDictionary(Resource dictionaryResource, Supplier<ResourceResolver> resourceResolverSupplier) {
+    protected JsonFileDictionary(Resource dictionaryResource, Supplier<ResourceResolver> resourceResolverSupplier) {
         super(dictionaryResource, resourceResolverSupplier);
     }
 
-    private static final Logger LOG = LoggerFactory.getLogger(JsonFileLanguageDictionary.class);
+    private static final Logger LOG = LoggerFactory.getLogger(JsonFileDictionary.class);
     
     @Override
     public Type getType() {

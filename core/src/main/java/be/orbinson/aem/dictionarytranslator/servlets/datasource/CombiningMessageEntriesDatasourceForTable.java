@@ -35,7 +35,7 @@ import com.day.cq.commons.jcr.JcrConstants;
 
 import be.orbinson.aem.dictionarytranslator.exception.DictionaryException;
 import be.orbinson.aem.dictionarytranslator.services.DictionaryService;
-import be.orbinson.aem.dictionarytranslator.services.LanguageDictionary;
+import be.orbinson.aem.dictionarytranslator.services.Dictionary;
 import be.orbinson.aem.dictionarytranslator.services.impl.CombiningMessageEntryResourceProvider;
 import be.orbinson.aem.dictionarytranslator.services.impl.CombiningMessageEntryResourceProvider.ValidationMessage;
 
@@ -109,9 +109,9 @@ public class CombiningMessageEntriesDatasourceForTable extends SortedAndPaginate
     }
 
     private void createDictionaryDataSource(@NotNull SlingHttpServletRequest request, @NotNull SlingHttpServletResponse response, ResourceResolver resourceResolver, String dictionaryPath, Collection<Resource> resourceList) throws DictionaryException, ServletException, IOException {
-        Collection<LanguageDictionary> dictionaries = dictionaryService.getDictionaries(resourceResolver, dictionaryPath);
+        Collection<Dictionary> dictionaries = dictionaryService.getDictionaries(resourceResolver, dictionaryPath);
         if ("columnsdatasource".equals(request.getResource().getName())) {
-            setColumnsDataSource(resourceResolver, resourceList, dictionaries.stream().map(LanguageDictionary::getLanguage).collect(Collectors.toList()), LanguageDatasource.getAllAvailableLanguages(request, response));
+            setColumnsDataSource(resourceResolver, resourceList, dictionaries.stream().map(Dictionary::getLanguage).collect(Collectors.toList()), LanguageDatasource.getAllAvailableLanguages(request, response));
         } else {
             // sort by key by default
             Collection<String> keys = dictionaries.stream().flatMap(

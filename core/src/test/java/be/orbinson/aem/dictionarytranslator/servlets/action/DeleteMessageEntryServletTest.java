@@ -38,7 +38,7 @@ import com.day.cq.replication.ReplicationException;
 import com.day.cq.replication.Replicator;
 
 import be.orbinson.aem.dictionarytranslator.services.DictionaryService;
-import be.orbinson.aem.dictionarytranslator.services.LanguageDictionary.Message;
+import be.orbinson.aem.dictionarytranslator.services.Dictionary.Message;
 import be.orbinson.aem.dictionarytranslator.services.impl.CombiningMessageEntryResourceProvider;
 import be.orbinson.aem.dictionarytranslator.services.impl.DictionaryServiceImpl;
 import be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants;

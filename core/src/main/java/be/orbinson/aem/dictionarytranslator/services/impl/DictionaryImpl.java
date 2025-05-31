@@ -22,7 +22,7 @@ import org.slf4j.LoggerFactory;
 import com.day.cq.commons.jcr.JcrConstants;
 
 import be.orbinson.aem.dictionarytranslator.exception.DictionaryException;
-import be.orbinson.aem.dictionarytranslator.services.LanguageDictionary;
+import be.orbinson.aem.dictionarytranslator.services.Dictionary;
 
 /**
  * Each dictionary is backed by only a singleton instance of this class.
@@ -34,9 +34,9 @@ import be.orbinson.aem.dictionarytranslator.services.LanguageDictionary;
  * 
  * Reading is done initially with the given resource resolver, lazy loading is achieved with a system resolver 
  */
-public abstract class LanguageDictionaryImpl implements LanguageDictionary {
+public abstract class DictionaryImpl implements Dictionary {
 
-    private static final Logger LOG = LoggerFactory.getLogger(LanguageDictionaryImpl.class);
+    private static final Logger LOG = LoggerFactory.getLogger(DictionaryImpl.class);
     static final String SLING_BASENAME = "sling:basename";
 
     protected final String path;
@@ -46,7 +46,7 @@ public abstract class LanguageDictionaryImpl implements LanguageDictionary {
     private Map<String, Message> messages;
     private final Supplier<ResourceResolver> resourceResolverSupplier;
 
-    protected LanguageDictionaryImpl(Resource dictionaryResource, Supplier<ResourceResolver> resourceResolverSupplier) {
+    protected DictionaryImpl(Resource dictionaryResource, Supplier<ResourceResolver> resourceResolverSupplier) {
         this.path = dictionaryResource.getPath();
         this.ordinal = getOrdinal(path, dictionaryResource.getResourceResolver().getSearchPath());
         ValueMap properties = dictionaryResource.getValueMap();

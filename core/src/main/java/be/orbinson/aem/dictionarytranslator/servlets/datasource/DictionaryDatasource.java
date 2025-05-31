@@ -32,8 +32,8 @@ import com.adobe.granite.ui.components.ds.ValueMapResource;
 
 import be.orbinson.aem.dictionarytranslator.exception.DictionaryException;
 import be.orbinson.aem.dictionarytranslator.services.DictionaryService;
-import be.orbinson.aem.dictionarytranslator.services.LanguageDictionary;
-import be.orbinson.aem.dictionarytranslator.services.LanguageDictionary.Type;
+import be.orbinson.aem.dictionarytranslator.services.Dictionary;
+import be.orbinson.aem.dictionarytranslator.services.Dictionary.Type;
 
 /**
  * This data source is used to populate the table of dictionaries (only for the actual rows, the header is populated statically without a data source)
@@ -72,8 +72,8 @@ public class DictionaryDatasource extends SortedAndPaginatedDataSource {
     @Override
     protected void populateResources(@NotNull SlingHttpServletRequest request, @NotNull SlingHttpServletResponse response,
             ResourceResolver resolver, Collection<Resource> resources) throws DictionaryException, ServletException, IOException {
-        Map<String, SortedMap<Locale, LanguageDictionary>> dictionaries = dictionaryService.getAllDictionariesByParentPath(resolver);
-        for (Entry<String, SortedMap<Locale,LanguageDictionary>> entry : dictionaries.entrySet()) {
+        Map<String, SortedMap<Locale, Dictionary>> dictionaries = dictionaryService.getAllDictionariesByParentPath(resolver);
+        for (Entry<String, SortedMap<Locale,Dictionary>> entry : dictionaries.entrySet()) {
             Resource dictionaryResource = new ValueMapResource(
                     resolver,
                     entry.getKey(), "aem-dictionary-translator/components/dictionary", new ValueMapDecorator(createProperties(resolver, entry.getValue()))
@@ -82,7 +82,7 @@ public class DictionaryDatasource extends SortedAndPaginatedDataSource {
         }
     }
 
-    private Map<String, Object> createProperties(ResourceResolver resourceResolver, Map<Locale, LanguageDictionary> dictionaries) {
+    private Map<String, Object> createProperties(ResourceResolver resourceResolver, Map<Locale, Dictionary> dictionaries) {
         // count unique keys across all dictionaries
         long numEntries = dictionaries.values().stream().flatMap(d -> {
             try {
@@ -97,7 +97,7 @@ public class DictionaryDatasource extends SortedAndPaginatedDataSource {
                 .flatMap(d -> d.getBaseNames().stream())
                 .collect(Collectors.toSet());
         Set<Type> types = dictionaries.values().stream()
-                .map(LanguageDictionary::getType)
+                .map(Dictionary::getType)
                 .collect(Collectors.toSet());
         Type type = types.size() == 1 ? types.iterator().next() : Type.MIXED; // if all dictionaries have the same type, use it, otherwise use artificial type MIXED
         return Map.of(

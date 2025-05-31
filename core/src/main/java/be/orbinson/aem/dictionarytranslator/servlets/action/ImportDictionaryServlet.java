@@ -34,8 +34,8 @@ import org.osgi.service.component.annotations.Reference;
 
 import be.orbinson.aem.dictionarytranslator.exception.DictionaryException;
 import be.orbinson.aem.dictionarytranslator.services.DictionaryService;
-import be.orbinson.aem.dictionarytranslator.services.LanguageDictionary;
-import be.orbinson.aem.dictionarytranslator.services.impl.LanguageDictionaryImpl;
+import be.orbinson.aem.dictionarytranslator.services.Dictionary;
+import be.orbinson.aem.dictionarytranslator.services.impl.DictionaryImpl;
 
 @Component(service = Servlet.class)
 @SlingServletResourceTypes(
@@ -81,7 +81,7 @@ public class ImportDictionaryServlet extends AbstractDictionaryServlet {
             validateCsvHeaders(headers);
             headers.remove(KEY_HEADER);
 
-            Map<Locale, LanguageDictionary> dictionaries = dictionaryService.getDictionariesByLanguage(resourceResolver, dictionaryPath);
+            Map<Locale, Dictionary> dictionaries = dictionaryService.getDictionariesByLanguage(resourceResolver, dictionaryPath);
             if (!dictionaries.isEmpty()) {
                 List<Locale> knownLanguages = dictionaries.keySet()
                         .stream()
@@ -124,7 +124,7 @@ public class ImportDictionaryServlet extends AbstractDictionaryServlet {
     private Map<Locale, String> getLocalesToCsvHeadersMap(Collection<String> columnHeaders, List<Locale> knownLanguages) throws IOException {
         Map<Locale, String> map = new HashMap<>();
         for (String language : columnHeaders) {
-            Locale languageInCsv = LanguageDictionaryImpl.toLocale(language);
+            Locale languageInCsv = DictionaryImpl.toLocale(language);
             if (knownLanguages.contains(languageInCsv)) {
                 map.put(languageInCsv, language);
             } else {
@@ -134,7 +134,7 @@ public class ImportDictionaryServlet extends AbstractDictionaryServlet {
         return map;
     }
 
-    private void processCsvRecord(ResourceResolver resourceResolver, Map<Locale, LanguageDictionary> dictionaries, Map<Locale, String> localeToHeaderMap, CSVRecord csvRecord) throws IOException, RepositoryException, DictionaryException {
+    private void processCsvRecord(ResourceResolver resourceResolver, Map<Locale, Dictionary> dictionaries, Map<Locale, String> localeToHeaderMap, CSVRecord csvRecord) throws IOException, RepositoryException, DictionaryException {
         if (csvRecord.size() != localeToHeaderMap.size() + 1) {
             throw new IOException("Record has an incorrect number of translations: " + csvRecord);
         }
@@ -142,7 +142,7 @@ public class ImportDictionaryServlet extends AbstractDictionaryServlet {
         String key = csvRecord.get(KEY_HEADER);
 
         for (Map.Entry<Locale, String> localeWithHeader : localeToHeaderMap.entrySet()) {
-            LanguageDictionary dictionary = dictionaries.get(localeWithHeader.getKey());
+            Dictionary dictionary = dictionaries.get(localeWithHeader.getKey());
             if (dictionary == null) {
                 throw new IOException("No dictionary found for language: " + localeWithHeader.getValue());
             }

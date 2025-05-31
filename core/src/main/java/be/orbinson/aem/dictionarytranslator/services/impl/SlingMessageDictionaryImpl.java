@@ -33,11 +33,11 @@ import com.day.cq.replication.Replicator;
 
 import be.orbinson.aem.dictionarytranslator.exception.DictionaryException;
 
-public class SlingMessageLanguageDictionaryImpl extends LanguageDictionaryImpl {
+public class SlingMessageDictionaryImpl extends DictionaryImpl {
 
-    private static final Logger LOG = LoggerFactory.getLogger(SlingMessageLanguageDictionaryImpl.class);
+    private static final Logger LOG = LoggerFactory.getLogger(SlingMessageDictionaryImpl.class);
 
-    public SlingMessageLanguageDictionaryImpl(Resource dictionaryResource, Supplier<ResourceResolver> resourceResolverSupplier) {
+    public SlingMessageDictionaryImpl(Resource dictionaryResource, Supplier<ResourceResolver> resourceResolverSupplier) {
         super(dictionaryResource, resourceResolverSupplier);
     }
 

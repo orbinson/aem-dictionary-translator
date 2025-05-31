@@ -25,7 +25,7 @@ import com.day.cq.replication.Replicator;
 
 import be.orbinson.aem.dictionarytranslator.exception.DictionaryException;
 import be.orbinson.aem.dictionarytranslator.services.DictionaryService;
-import be.orbinson.aem.dictionarytranslator.services.LanguageDictionary;
+import be.orbinson.aem.dictionarytranslator.services.Dictionary;
 import be.orbinson.aem.dictionarytranslator.services.impl.CombiningMessageEntryResourceProvider;
 
 @Component(service = Servlet.class)
@@ -67,7 +67,7 @@ public class DeleteMessageEntryServlet extends AbstractDictionaryServlet {
                 if (dictionaryPath == null) {
                     throw new IllegalArgumentException("" + CombiningMessageEntryResourceProvider.DICTIONARY_PATH + " is required");
                 }
-                for (LanguageDictionary dictionary : dictionaryService.getDictionaries(resourceResolver, dictionaryPath)) {
+                for (Dictionary dictionary : dictionaryService.getDictionaries(resourceResolver, dictionaryPath)) {
                     dictionary.deleteEntry(replicator, resourceResolver, key);
                 }
                 resourceResolver.commit();

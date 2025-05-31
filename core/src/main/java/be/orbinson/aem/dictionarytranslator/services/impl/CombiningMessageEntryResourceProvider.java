@@ -44,8 +44,8 @@ import com.adobe.granite.ui.components.ds.ValueMapResource;
 
 import be.orbinson.aem.dictionarytranslator.exception.DictionaryException;
 import be.orbinson.aem.dictionarytranslator.services.DictionaryService;
-import be.orbinson.aem.dictionarytranslator.services.LanguageDictionary;
-import be.orbinson.aem.dictionarytranslator.services.LanguageDictionary.Message;
+import be.orbinson.aem.dictionarytranslator.services.Dictionary;
+import be.orbinson.aem.dictionarytranslator.services.Dictionary.Message;
 
 /**
  * Resource provider exposing all translations for one dictionary entry.
@@ -217,8 +217,8 @@ public class CombiningMessageEntryResourceProvider extends ResourceProvider<Obje
         Map<Locale, Message> messagePerLanguage = new LinkedHashMap<>();
         boolean isEditable = true;
         SortedSet<ValidationMessage> validationMessages = new TreeSet<>();
-        Collection<LanguageDictionary> dictionaries = dictionaryService.getDictionaries(resourceResolver, dictionaryPath);
-        for (LanguageDictionary dictionary : dictionaries) {
+        Collection<Dictionary> dictionaries = dictionaryService.getDictionaries(resourceResolver, dictionaryPath);
+        for (Dictionary dictionary : dictionaries) {
             try {
                 Message message = dictionary.getEntries().get(key);
                 if (message != null && config.enableValidation()) {
@@ -238,8 +238,8 @@ public class CombiningMessageEntryResourceProvider extends ResourceProvider<Obje
         return new ValueMapResource(resourceResolver, path, RESOURCE_TYPE, new ValueMapDecorator(createResourceProperties(path, isEditable, messagePerLanguage, config.enableValidation() ? Optional.of(validationMessages) : Optional.empty())));
     }
 
-    private Optional<ValidationMessage> validateItem(ResourceResolver resourceResolver, LanguageDictionary dictionary, String key, String message) {
-        LanguageDictionary conflictingDictionary = dictionaryService.getConflictingDictionary(resourceResolver, dictionary, key).orElse(null);
+    private Optional<ValidationMessage> validateItem(ResourceResolver resourceResolver, Dictionary dictionary, String key, String message) {
+        Dictionary conflictingDictionary = dictionaryService.getConflictingDictionary(resourceResolver, dictionary, key).orElse(null);
         final ValidationMessage validationMessage;
         if (conflictingDictionary != null) {
             // check if message is different from the one in the dictionary

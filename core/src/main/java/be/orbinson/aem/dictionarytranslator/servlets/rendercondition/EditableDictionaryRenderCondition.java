@@ -18,7 +18,7 @@ import com.adobe.granite.ui.components.rendercondition.RenderCondition;
 import com.adobe.granite.ui.components.rendercondition.SimpleRenderCondition;
 
 import be.orbinson.aem.dictionarytranslator.services.DictionaryService;
-import be.orbinson.aem.dictionarytranslator.services.LanguageDictionary;
+import be.orbinson.aem.dictionarytranslator.services.Dictionary;
 
 @Component(service = Servlet.class)
 @SlingServletResourceTypes(

@@ -36,7 +36,7 @@ import com.adobe.granite.ui.components.ds.SimpleDataSource;
 import com.adobe.granite.ui.components.ds.ValueMapResource;
 
 import be.orbinson.aem.dictionarytranslator.services.DictionaryService;
-import be.orbinson.aem.dictionarytranslator.services.impl.LanguageDictionaryImpl;
+import be.orbinson.aem.dictionarytranslator.services.impl.DictionaryImpl;
 
 @Component(service = Servlet.class)
 @SlingServletResourceTypes(
@@ -67,7 +67,7 @@ public class LanguageDatasource extends SlingSafeMethodsServlet {
                 // the upstream data source does not filter access control child resource
                 .filter(r -> !AccessControlConstants.REP_POLICY.equals(r.getValue()))
                 .collect(Collectors.toMap(
-                        r -> LanguageDictionaryImpl.toLocale(r.getValue()),
+                        r -> DictionaryImpl.toLocale(r.getValue()),
                         r -> r.getText() + " (" + r.getValue() + ")",
                         (oldValue, newValue) -> {
                             LOG.warn("Duplicate language/country code: {}", oldValue);
