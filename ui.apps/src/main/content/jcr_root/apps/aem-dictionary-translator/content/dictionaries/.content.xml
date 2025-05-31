@@ -170,7 +170,7 @@
                     layoutId="list"
                     selectionMode="row"
                     selectionCount="single"
-                    limit="20"
+                    limit="40"
                     sortMode="remote"
                     src="/apps/aem-dictionary-translator/content/dictionaries/jcr:content/views/list{.offset,limit}.html${requestPathInfo.suffix}{?sortName,sortDir}">
                 <datasource
@@ -178,7 +178,7 @@
                         sling:resourceType="aem-dictionary-translator/datasource/dictionary"
                         itemResourceType="aem-dictionary-translator/components/dictionary"
                         offset="${requestPathInfo.selectors[0]}"
-                        limit="${empty requestPathInfo.selectors[1] ? '21' : requestPathInfo.selectors[1] + 1}"/>
+                        limit="${empty requestPathInfo.selectors[1] ? '41' : requestPathInfo.selectors[1] + 1}"/>
                 <columns jcr:primaryType="nt:unstructured">
                     <select
                             jcr:primaryType="nt:unstructured"/>
