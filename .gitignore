@@ -20,3 +20,11 @@ buildNumber.properties
 # Ignore IntelliJ IDEA files
 .idea
 *.iml
+
+# Ignore Eclipse files
+.metadata
+bin/
+tmp/
+.settings/
+.project
+.classpath
