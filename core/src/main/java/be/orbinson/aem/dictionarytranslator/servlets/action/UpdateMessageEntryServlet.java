@@ -3,7 +3,7 @@ package be.orbinson.aem.dictionarytranslator.servlets.action;
 import be.orbinson.aem.dictionarytranslator.exception.DictionaryException;
 import be.orbinson.aem.dictionarytranslator.services.impl.CombiningMessageEntryResourceProvider;
 import be.orbinson.aem.dictionarytranslator.services.DictionaryService;
-import be.orbinson.aem.dictionarytranslator.services.LanguageDictionary;
+import be.orbinson.aem.dictionarytranslator.services.Dictionary;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.SlingHttpServletRequest;
@@ -71,7 +71,7 @@ public class UpdateMessageEntryServlet extends AbstractDictionaryServlet {
             String[] languages = combiningMessageEntryResource.getValueMap().get(CombiningMessageEntryResourceProvider.LANGUAGES, new String[0]);
             for (String language : languages) {
                 String message = getMandatoryParameter(request, language, true); // ensure the parameter exists
-                LanguageDictionary dictionary = dictionaryService.getDictionary(resourceResolver, dictionaryPath, Locale.forLanguageTag(language))
+                Dictionary dictionary = dictionaryService.getDictionary(resourceResolver, dictionaryPath, Locale.forLanguageTag(language))
                         .orElseThrow(() -> new DictionaryException("Could not find dictionary for language '" + language + "' below path: " + dictionaryPath));
                 dictionary.createOrUpdateEntry(resourceResolver, key, message);
             }

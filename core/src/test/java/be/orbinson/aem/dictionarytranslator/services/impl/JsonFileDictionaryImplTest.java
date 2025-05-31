@@ -16,17 +16,17 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import be.orbinson.aem.dictionarytranslator.exception.DictionaryException;
-import be.orbinson.aem.dictionarytranslator.services.LanguageDictionary;
-import be.orbinson.aem.dictionarytranslator.services.LanguageDictionary.Message;
+import be.orbinson.aem.dictionarytranslator.services.Dictionary;
+import be.orbinson.aem.dictionarytranslator.services.Dictionary.Message;
 import io.wcm.testing.mock.aem.junit5.AemContext;
 import io.wcm.testing.mock.aem.junit5.AemContextExtension;
 
 @ExtendWith({AemContextExtension.class, MockitoExtension.class})
-public class JsonFileLanguageDictionaryImplTest {
+public class JsonFileDictionaryImplTest {
 
     private final AemContext context = new AemContext();
 
-    private LanguageDictionary dictionary;
+    private Dictionary dictionary;
 
     @BeforeEach
     void setUp() throws IOException {
@@ -39,7 +39,7 @@ public class JsonFileLanguageDictionaryImplTest {
             properties.put("jcr:language", "de");
         }
         context.currentResource("/content/dictionaries/fruit/i18n/de.json");
-        dictionary = new JsonFileLanguageDictionary(context.currentResource(), context::resourceResolver);
+        dictionary = new JsonFileDictionary(context.currentResource(), context::resourceResolver);
     }
 
     @Test

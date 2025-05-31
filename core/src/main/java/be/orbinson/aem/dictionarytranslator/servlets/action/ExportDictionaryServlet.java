@@ -28,7 +28,7 @@ import org.slf4j.LoggerFactory;
 
 import be.orbinson.aem.dictionarytranslator.exception.DictionaryException;
 import be.orbinson.aem.dictionarytranslator.services.DictionaryService;
-import be.orbinson.aem.dictionarytranslator.services.LanguageDictionary;
+import be.orbinson.aem.dictionarytranslator.services.Dictionary;
 
 @Component(service = Servlet.class)
 @SlingServletResourceTypes(
@@ -55,14 +55,14 @@ public class ExportDictionaryServlet extends AbstractDictionaryServlet {
 
         ResourceResolver resolver = request.getResourceResolver();
         try {
-            Collection<LanguageDictionary> dictionaries = dictionaryService.getDictionaries(resolver, dictionaryPath);
+            Collection<Dictionary> dictionaries = dictionaryService.getDictionaries(resolver, dictionaryPath);
             if (dictionaries.isEmpty()) {
                 HtmlResponse htmlResponse = new HtmlResponse();
                 htmlResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST, "No dictionaries found below path: " + dictionaryPath);
                 htmlResponse.send(response, true);
                 return;
             }
-            try (CSVPrinter printer = createCsvPrinter(response.getWriter(), delimiter, dictionaries.stream().map(LanguageDictionary::getLanguage).collect(Collectors.toList()))) {
+            try (CSVPrinter printer = createCsvPrinter(response.getWriter(), delimiter, dictionaries.stream().map(Dictionary::getLanguage).collect(Collectors.toList()))) {
                 Collection<String> keys = dictionaries.stream().flatMap(d -> {
                     try {
                         return d.getEntries().keySet().stream();
@@ -98,7 +98,7 @@ public class ExportDictionaryServlet extends AbstractDictionaryServlet {
         return builder.build().print(writer);
     }
 
-    private void writeCsvRow(CSVPrinter csvPrinter, Collection<LanguageDictionary> dictionaries, String key) throws DictionaryException, IOException {
+    private void writeCsvRow(CSVPrinter csvPrinter, Collection<Dictionary> dictionaries, String key) throws DictionaryException, IOException {
         // use the combined message entries from all dictionaries
         Collection<String> columns = new LinkedList<>();
         columns.add(key);

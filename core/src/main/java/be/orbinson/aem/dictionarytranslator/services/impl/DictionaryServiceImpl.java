@@ -43,7 +43,7 @@ import com.day.cq.replication.Replicator;
 
 import be.orbinson.aem.dictionarytranslator.exception.DictionaryException;
 import be.orbinson.aem.dictionarytranslator.services.DictionaryService;
-import be.orbinson.aem.dictionarytranslator.services.LanguageDictionary;
+import be.orbinson.aem.dictionarytranslator.services.Dictionary;
 
 @Component(property = { ResourceChangeListener.PATHS + "=/",
 ResourceChangeListener.CHANGES + "=ADDED" ,
@@ -65,7 +65,7 @@ public class DictionaryServiceImpl implements DictionaryService, ResourceChangeL
      * The value is a map of locales to dictionaries.
      * The cache for all languages is automatically invalidated when a resource below the dictionary path was changed.
      */
-    private final Map<String, SortedMap<Locale, LanguageDictionary>> dictionaryMap = new HashMap<>();
+    private final Map<String, SortedMap<Locale, Dictionary>> dictionaryMap = new HashMap<>();
 
     public DictionaryServiceImpl() {
         this(false);
@@ -91,7 +91,7 @@ public class DictionaryServiceImpl implements DictionaryService, ResourceChangeL
     }
 
     @Override
-    public Collection<LanguageDictionary> getAllDictionaries(ResourceResolver resourceResolver) {
+    public Collection<Dictionary> getAllDictionaries(ResourceResolver resourceResolver) {
         Iterator<Resource> iterator = resourceResolver
                 .findResources(QUERY_LANGUAGE_ROOTS, "xpath");
         if (!allowEmptyQueryResults && !iterator.hasNext()) {
@@ -102,8 +102,8 @@ public class DictionaryServiceImpl implements DictionaryService, ResourceChangeL
                 throw new IllegalStateException("Resource is null, this should not happen when using the query '" + QUERY_LANGUAGE_ROOTS + "'.");
             }
             // only create new dictionary instance if it is not already in the cache
-            SortedMap<Locale, LanguageDictionary> dictionaries = dictionaryMap.computeIfAbsent(resource.getParent().getPath(), (k) -> new TreeMap<>(new LocaleComparator()));
-            LanguageDictionary dictionary = getLanguageDictionary(resource);
+            SortedMap<Locale, Dictionary> dictionaries = dictionaryMap.computeIfAbsent(resource.getParent().getPath(), (k) -> new TreeMap<>(new LocaleComparator()));
+            Dictionary dictionary = getLanguageDictionary(resource);
             dictionaries.computeIfAbsent(dictionary.getLanguage(), (k) -> {
                 // create dictionary
                 LOG.debug("Creating dictionary for path '{}'", resource.getPath());
@@ -114,20 +114,20 @@ public class DictionaryServiceImpl implements DictionaryService, ResourceChangeL
     }
 
     @Override
-    public Map<String, SortedMap<Locale, LanguageDictionary>> getAllDictionariesByParentPath(ResourceResolver resourceResolver) {
+    public Map<String, SortedMap<Locale, Dictionary>> getAllDictionariesByParentPath(ResourceResolver resourceResolver) {
         getAllDictionaries(resourceResolver);
         return dictionaryMap;
     }
 
     @Override
-    public Collection<LanguageDictionary> getDictionaries(ResourceResolver resourceResolver, String parentPath) {
+    public Collection<Dictionary> getDictionaries(ResourceResolver resourceResolver, String parentPath) {
         return getDictionariesByLanguage(resourceResolver, parentPath).values();
     }
 
     
     @Override
-    public SortedMap<Locale, LanguageDictionary> getDictionariesByLanguage(ResourceResolver resourceResolver, String parentPath) {
-        SortedMap<Locale, LanguageDictionary> dictionaries = internalGetDictionaries(parentPath);
+    public SortedMap<Locale, Dictionary> getDictionariesByLanguage(ResourceResolver resourceResolver, String parentPath) {
+        SortedMap<Locale, Dictionary> dictionaries = internalGetDictionaries(parentPath);
         if (dictionaries.isEmpty()) {
             // always rely on search instead of traversal as there might be lots of child resources to traverse otherwise
             getAllDictionaries(resourceResolver);
@@ -137,23 +137,23 @@ public class DictionaryServiceImpl implements DictionaryService, ResourceChangeL
     }
 
     @Override
-    public Optional<LanguageDictionary> getDictionary(ResourceResolver resourceResolver, String parentPath, Locale language) {
-        Optional<LanguageDictionary> dictionary = internalGetDictionary(parentPath, language);
+    public Optional<Dictionary> getDictionary(ResourceResolver resourceResolver, String parentPath, Locale language) {
+        Optional<Dictionary> dictionary = internalGetDictionary(parentPath, language);
         if (dictionary.isEmpty()) {
             // always rely on search instead of traversal as reconstructing the path from just the parent and the locale is not possible
             getAllDictionaries(resourceResolver);
             dictionary = internalGetDictionary(parentPath, language);
             if (dictionary.isEmpty()) {
                 // cache also the miss, so we don't have to search again
-                SortedMap<Locale, LanguageDictionary> dictionaries = dictionaryMap.computeIfAbsent(parentPath, (k) -> new TreeMap<>(new LocaleComparator()));
+                SortedMap<Locale, Dictionary> dictionaries = dictionaryMap.computeIfAbsent(parentPath, (k) -> new TreeMap<>(new LocaleComparator()));
                 dictionaries.put(language, null);
             }
         }
         return dictionary;
     }
 
-    private Optional<LanguageDictionary> internalGetDictionary(String parentPath, Locale language) {
-        SortedMap<Locale, LanguageDictionary> dictionaries = dictionaryMap.get(parentPath);
+    private Optional<Dictionary> internalGetDictionary(String parentPath, Locale language) {
+        SortedMap<Locale, Dictionary> dictionaries = dictionaryMap.get(parentPath);
         if (dictionaries == null) {
             return Optional.empty();
         } else {
@@ -161,7 +161,7 @@ public class DictionaryServiceImpl implements DictionaryService, ResourceChangeL
         }
     }
 
-    private SortedMap<Locale, LanguageDictionary> internalGetDictionaries(String parentPath) {
+    private SortedMap<Locale, Dictionary> internalGetDictionaries(String parentPath) {
         // filter out null values, which are used to cache missing dictionaries
         return dictionaryMap.getOrDefault(parentPath, Collections.emptySortedMap()).entrySet().stream()
                 .filter(e -> e.getValue() != null) // filter out null values
@@ -177,11 +177,11 @@ public class DictionaryServiceImpl implements DictionaryService, ResourceChangeL
         }
     }
 
-    private LanguageDictionary getLanguageDictionary(Resource resource) {
-        if (JsonFileLanguageDictionary.isCompliant(resource)) {
-            return new JsonFileLanguageDictionary(resource, this::createSystemReadResolver);
+    private Dictionary getLanguageDictionary(Resource resource) {
+        if (JsonFileDictionary.isCompliant(resource)) {
+            return new JsonFileDictionary(resource, this::createSystemReadResolver);
         } else {
-            return new SlingMessageLanguageDictionaryImpl(resource, this::createSystemReadResolver);
+            return new SlingMessageDictionaryImpl(resource, this::createSystemReadResolver);
         }
     }
 
@@ -195,7 +195,7 @@ public class DictionaryServiceImpl implements DictionaryService, ResourceChangeL
             throw new DictionaryException("Parent resource not found at path: " + parentPath);
         }
         // check for existing dictionary with same language below the parent path
-        Optional<LanguageDictionary> oldDictionary = getDictionary(resourceResolver, parentPath, language);
+        Optional<Dictionary> oldDictionary = getDictionary(resourceResolver, parentPath, language);
         if (oldDictionary.isPresent()) {
             throw new DictionaryException("Dictionary for language '" + language.toLanguageTag() + "' already exists at path: " + oldDictionary.get().getPath());
         }
@@ -206,9 +206,9 @@ public class DictionaryServiceImpl implements DictionaryService, ResourceChangeL
         properties.put(JCR_MIXINTYPES, MIX_LANGUAGE);
 
         if (!baseNames.isEmpty()) {
-            properties.put(LanguageDictionaryImpl.SLING_BASENAME, baseNames.toArray(new String[0]));
+            properties.put(DictionaryImpl.SLING_BASENAME, baseNames.toArray(new String[0]));
         } else {
-            properties.put(LanguageDictionaryImpl.SLING_BASENAME, parentResource.getPath());
+            properties.put(DictionaryImpl.SLING_BASENAME, parentResource.getPath());
         }
 
         LOG.debug("Add dictionary with with properties '{}' to parent resource {}", properties, parentResource.getPath());
@@ -239,7 +239,7 @@ public class DictionaryServiceImpl implements DictionaryService, ResourceChangeL
 
     @Override
     public void deleteDictionary(Replicator replicator, ResourceResolver resourceResolver, String parentPath, Locale language) throws DictionaryException, ReplicationException, PersistenceException {
-        LanguageDictionary dictionary = getDictionary(resourceResolver, parentPath, language).orElseThrow(() -> new DictionaryException("Dictionary not found for parent path '" + parentPath + "' and language '" + language + "'"));
+        Dictionary dictionary = getDictionary(resourceResolver, parentPath, language).orElseThrow(() -> new DictionaryException("Dictionary not found for parent path '" + parentPath + "' and language '" + language + "'"));
         Resource dictionaryResource = resourceResolver.getResource(dictionary.getPath());
         LOG.debug("Delete language '{}' from '{}'", language, dictionaryResource.getPath());
         replicator.replicate(resourceResolver.adaptTo(Session.class), ReplicationActionType.DEACTIVATE, dictionaryResource.getPath());
@@ -264,7 +264,7 @@ public class DictionaryServiceImpl implements DictionaryService, ResourceChangeL
     }
 
     @Override
-    public Optional<LanguageDictionary> getConflictingDictionary(ResourceResolver resourceResolver, LanguageDictionary dictionary, String key) {
+    public Optional<Dictionary> getConflictingDictionary(ResourceResolver resourceResolver, Dictionary dictionary, String key) {
         return getAllDictionaries(resourceResolver).stream()
                 .filter(d-> !d.getPath().equals(dictionary.getPath()))
                 .filter(d -> d.getLanguage().equals(dictionary.getLanguage()))
