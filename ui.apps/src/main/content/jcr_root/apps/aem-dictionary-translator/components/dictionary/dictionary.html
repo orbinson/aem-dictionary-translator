@@ -1,22 +1,21 @@
-<tr data-sly-use.model="be.orbinson.aem.dictionarytranslator.models.Dictionary"
-    is="coral-table-row"
+<tr is="coral-table-row"
     data-foundation-collection-item-id="${resource.path}"
     data-foundation-collection-navigator-href="/tools/translation/dictionaries/message-entries.html${resource.path}"
     data-dictionary-publish-paths="${resource.path}"
     data-dictionary-publish-recursive="true"
-    data-dictionary-item-editable="${model.editable ? 'true' : 'false'}"
+    data-dictionary-item-editable="${properties.editable ? 'true' : 'false'}"
     class="foundation-collection-item foundation-collection-navigator">
     <td is="coral-table-cell" coral-table-rowselect></td>
     <td is="coral-table-cell">${resource.path}</td>
-    <td is="coral-table-cell">${model.languageList}</td>
-    <td is="coral-table-cell">${model.basename}</td>
-    <td is="coral-table-cell">${model.type.toString}</td><!--/* call toString due to https://issues.apache.org/jira/browse/SLING-12785 */-->
-    <td is="coral-table-cell">
+    <td is="coral-table-cell">${properties.languages @ join=', '}</td>
+    <td is="coral-table-cell">${properties.baseNames  @ join=', '}</td>
+    <td is="coral-table-cell">${properties.type.toString}</td><!--/* call toString due to https://issues.apache.org/jira/browse/SLING-12785 */-->
+    <td is="coral-table-cell" value="${properties.editable ? 'yes' : 'no'}">
         <coral-icon
-                class="icon--${model.editable ? 'success' : 'warning'}"
-                icon="${model.editable ? 'checkmarkCircle' : 'closeCircle'}"
+                class="icon--${properties.editable ? 'success' : 'warning'}"
+                icon="${properties.editable ? 'checkmarkCircle' : 'closeCircle'}"
                 size="M">
         </coral-icon>
     </td>
-    <td is="coral-table-cell">${model.keyCount}</td>
+    <td is="coral-table-cell">${properties.numEntries}</td>
 </tr>

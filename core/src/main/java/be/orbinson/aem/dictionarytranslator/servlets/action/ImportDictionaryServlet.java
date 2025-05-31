@@ -6,9 +6,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
-import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.jcr.RepositoryException;
 import javax.servlet.Servlet;
@@ -21,9 +24,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.request.RequestParameter;
-import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
-import org.apache.sling.api.servlets.SlingAllMethodsServlet;
 import org.apache.sling.servlets.annotations.SlingServletResourceTypes;
 import org.apache.sling.servlets.post.HtmlResponse;
 import org.apache.tika.io.IOUtils;
@@ -33,6 +34,8 @@ import org.osgi.service.component.annotations.Reference;
 
 import be.orbinson.aem.dictionarytranslator.exception.DictionaryException;
 import be.orbinson.aem.dictionarytranslator.services.DictionaryService;
+import be.orbinson.aem.dictionarytranslator.services.LanguageDictionary;
+import be.orbinson.aem.dictionarytranslator.services.impl.LanguageDictionaryImpl;
 
 @Component(service = Servlet.class)
 @SlingServletResourceTypes(
@@ -40,14 +43,14 @@ import be.orbinson.aem.dictionarytranslator.services.DictionaryService;
         resourceTypes = "aem-dictionary-translator/servlet/action/import-dictionary",
         methods = "POST"
 )
-public class ImportDictionaryServlet extends SlingAllMethodsServlet {
+public class ImportDictionaryServlet extends AbstractDictionaryServlet {
 
     @Reference
     private DictionaryService dictionaryService;
 
     @Override
     public void doPost(SlingHttpServletRequest request, @NotNull SlingHttpServletResponse response) throws IOException {
-        String dictionaryPath = request.getParameter("dictionary");
+        String dictionaryPath = getMandatoryParameter(request, "dictionary", false);
         RequestParameter csvfile = request.getRequestParameter("csvfile");
 
         if (csvfile != null) {
@@ -62,10 +65,6 @@ public class ImportDictionaryServlet extends SlingAllMethodsServlet {
     }
 
     private void processCsvFile(SlingHttpServletRequest request, String dictionaryPath, InputStream csvContent) throws IOException, RepositoryException, DictionaryException {
-        List<String> languages = new ArrayList<>();
-        List<String> keys = new ArrayList<>();
-        List<List<String>> translations = new ArrayList<>();
-
         ResourceResolver resourceResolver = request.getResourceResolver();
 
         List<String> lines = IOUtils.readLines(csvContent, String.valueOf(StandardCharsets.UTF_8));
@@ -82,13 +81,15 @@ public class ImportDictionaryServlet extends SlingAllMethodsServlet {
             validateCsvHeaders(headers);
             headers.remove(KEY_HEADER);
 
-            Resource dictionaryResource = resourceResolver.getResource(dictionaryPath);
-            if (dictionaryResource != null) {
-                List<String> knownLanguages = dictionaryService.getLanguages(dictionaryResource);
-                initializeLanguageData(headers, languages, translations, knownLanguages);
+            Map<Locale, LanguageDictionary> dictionaries = dictionaryService.getDictionariesByLanguage(resourceResolver, dictionaryPath);
+            if (!dictionaries.isEmpty()) {
+                List<Locale> knownLanguages = dictionaries.keySet()
+                        .stream()
+                        .collect(Collectors.toList());
+                Map<Locale, String> localeToHeaderMap = getLocalesToCsvHeadersMap(headers.keySet(), knownLanguages);
 
                 for (CSVRecord csvRecord : csvParser) {
-                    processCsvRecord(dictionaryResource, languages, keys, translations, csvRecord);
+                    processCsvRecord(resourceResolver, dictionaries, localeToHeaderMap, csvRecord);
                 }
 
                 resourceResolver.commit();
@@ -120,45 +121,36 @@ public class ImportDictionaryServlet extends SlingAllMethodsServlet {
         }
     }
 
-    private void initializeLanguageData(Map<String, Integer> headers, List<String> languages, List<List<String>> translations, List<String> knownLanguages) throws IOException {
-        for (String language : headers.keySet()) {
-            boolean hasMatch = true;
-            for (String knownLanguage : knownLanguages) {
-                hasMatch = false;
-                if (knownLanguage.equals(language)) {
-                    languages.add(language);
-                    translations.add(new ArrayList<>());
-                    hasMatch = true;
-                    break;
-                }
-            }
-            if (!hasMatch) {
-                throw new IOException("Incorrect CSV file, please only add languages that exist in the dictionary");
+    private Map<Locale, String> getLocalesToCsvHeadersMap(Collection<String> columnHeaders, List<Locale> knownLanguages) throws IOException {
+        Map<Locale, String> map = new HashMap<>();
+        for (String language : columnHeaders) {
+            Locale languageInCsv = LanguageDictionaryImpl.toLocale(language);
+            if (knownLanguages.contains(languageInCsv)) {
+                map.put(languageInCsv, language);
+            } else {
+                throw new IOException("Incorrect CSV file, please only add languages that already have existing dictionaries. No dictionary found for language: " + language);
             }
         }
+        return map;
     }
 
-    private void processCsvRecord(Resource dictionaryResource, List<String> languages, List<String> keys, List<List<String>> translations, CSVRecord csvRecord) throws IOException, RepositoryException, DictionaryException {
-        if (csvRecord.size() != languages.size() + 1) {
+    private void processCsvRecord(ResourceResolver resourceResolver, Map<Locale, LanguageDictionary> dictionaries, Map<Locale, String> localeToHeaderMap, CSVRecord csvRecord) throws IOException, RepositoryException, DictionaryException {
+        if (csvRecord.size() != localeToHeaderMap.size() + 1) {
             throw new IOException("Record has an incorrect number of translations: " + csvRecord);
         }
 
         String key = csvRecord.get(KEY_HEADER);
-        keys.add(key);
 
-        for (String language : languages) {
-            try {
-                if (dictionaryService.getType(dictionaryResource, language) != DictionaryService.DictionaryType.SLING_MESSAGE_ENTRY) {
-                    throw new IOException("Can only import CSV files for dictionaries of type SLING_MESSAGE_ENTRY");
-                }
-            } catch (DictionaryException e) {
-                throw new IOException("Could not determine type of language '" + language + "' from dictionary '" + dictionaryResource.getPath() + "'", e);
+        for (Map.Entry<Locale, String> localeWithHeader : localeToHeaderMap.entrySet()) {
+            LanguageDictionary dictionary = dictionaries.get(localeWithHeader.getKey());
+            if (dictionary == null) {
+                throw new IOException("No dictionary found for language: " + localeWithHeader.getValue());
             }
-            int index = languages.indexOf(language);
-            String translation = csvRecord.get(language);
-            translations.get(index).add(translation);
-
-            dictionaryService.createOrUpdateMessageEntry(dictionaryResource, language, key, translation);
+            if (!dictionary.isEditable(resourceResolver)) {
+                throw new IOException("Dictionary for language '" + localeWithHeader.getValue() + "' is not editable: " + dictionary.getPath());
+            }
+            String translation = csvRecord.get(localeWithHeader.getValue());
+            dictionary.createOrUpdateEntry(resourceResolver, key, translation);
         }
     }
 

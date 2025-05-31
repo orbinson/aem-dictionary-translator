@@ -91,7 +91,7 @@ public class CombiningMessageEntryDatasourceForDialog extends SlingSafeMethodsSe
         return new ValueMapResource(resourceResolver, path, "granite/ui/components/coral/foundation/form/fieldset", null, Collections.singleton(items));
     }
 
-    private static Resource addValidationMessagesResource(I18n i18n, ResourceResolver resourceResolver, Map<String, String> languageMap, ValidationMessage... validationMessages) {
+    private static Resource addValidationMessagesResource(I18n i18n, ResourceResolver resourceResolver, Map<Locale, String> languageMap, ValidationMessage... validationMessages) {
         if (validationMessages == null || validationMessages.length == 0) {
             return null;
         }
@@ -100,7 +100,7 @@ public class CombiningMessageEntryDatasourceForDialog extends SlingSafeMethodsSe
         String fieldSetPath = "/dialog/validation"; // artifical path to avoid collision with other resources
         for (ValidationMessage validationMessage : validationMessages) {
             String textFieldPath = fieldSetPath + "/items/item" + index++;
-            String label = new StringBuilder().append(i18n.get("Language")).append(" ").append(languageMap.getOrDefault(validationMessage.getLanguage(), validationMessage.getLanguage())).toString();
+            String label = new StringBuilder().append(i18n.get("Language")).append(" ").append(languageMap.getOrDefault(validationMessage.getLanguage(), validationMessage.getLanguage().toLanguageTag())).toString();
             String text =  i18n.get(validationMessage.getI18nKey(), null, (Object[])validationMessage.getArguments());
             validationResources.add(createAlertResource(resourceResolver, textFieldPath, label, text, validationMessage.getSeverity().name().toLowerCase(Locale.ENGLISH)));
         }
@@ -116,18 +116,18 @@ public class CombiningMessageEntryDatasourceForDialog extends SlingSafeMethodsSe
         });
     }
 
-    private static void createCombiningMessageEntryDataSource(I18n i18n, Locale locale, Map<String, String> languageMap, ResourceResolver resourceResolver, String combiningMessageEntryPath, List<Resource> resourceList) {
+    private static void createCombiningMessageEntryDataSource(I18n i18n, Locale locale, Map<Locale, String> languageMap, ResourceResolver resourceResolver, String combiningMessageEntryPath, List<Resource> resourceList) {
         Resource combiningMessageEntryResource = resourceResolver.getResource(combiningMessageEntryPath);
         if (combiningMessageEntryResource != null) {
             ValueMap properties = combiningMessageEntryResource.getValueMap();
-            String[] languages = properties.get(CombiningMessageEntryResourceProvider.LANGUAGES, String[].class);
+            Locale[] languages = properties.get(CombiningMessageEntryResourceProvider.LANGUAGES, Locale[].class);
             String key = properties.get(CombiningMessageEntryResourceProvider.KEY, String.class);
 
             if (languages != null) {
-                for (String language : languages) {
-                    String message = properties.get(language, StringUtils.EMPTY);
-                    String label = languageMap.getOrDefault(language, language);
-                    resourceList.add(createTextFieldResource(resourceResolver, label, language, message));
+                for (Locale language : languages) {
+                    String message = properties.get(language.toLanguageTag(), StringUtils.EMPTY);
+                    String label = languageMap.getOrDefault(language, language.toLanguageTag());
+                    resourceList.add(createTextFieldResource(resourceResolver, label, language.toLanguageTag(), message));
                 }
                 // sort by fieldLabel
                 sortResourcesByProperty(FIELD_LABEL, locale, resourceList);

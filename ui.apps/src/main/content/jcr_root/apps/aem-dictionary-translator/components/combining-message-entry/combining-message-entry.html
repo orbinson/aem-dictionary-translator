@@ -5,25 +5,24 @@
     data-dictionary-item-editable="${properties.editable ? 'true' : 'false'}"
     class="foundation-collection-item">
     <td is="coral-table-cell" coral-table-rowselect></td>
-    <td is="coral-table-cell">${properties.key}</td>
-    <td is="coral-table-cell" value="${properties.validationMessages ? properties.validationMessages.first.severity.ordinal : '9'}">
-        <sly data-sly-test="${properties.validationMessages && properties.validationMessages.size > 0}">
-           <sly data-sly-test="${properties.validationMessages.first.severity == 'INFO'}" data-sly-set.color="color: var(--spectrum-global-color-static-blue-700)" />
-           <sly data-sly-test="${properties.validationMessages.first.severity == 'WARNING'}" data-sly-set.color="color: var(--spectrum-global-color-static-orange-700)" />
-           <sly data-sly-test="${properties.validationMessages.first.severity == 'ERROR'}" data-sly-set.color="color: var(--spectrum-global-color-static-red-700)" />
-           <coral-icon icon="${properties.validationMessages.first.severity == 'INFO' ? 'info' : 'alert'}" style="${color @ context='unsafe' }"></coral-icon>
-           <coral-tooltip within="#key-list" variant="${properties.validationMessages.first.severity}" delay="0" target="_prev" >
-           <ol>
-           <p data-sly-list.validationMessage="${properties.validationMessages}">
-           <li>${validationMessage.severity}: Language ${validationMessage.language}: ${validationMessage.i18nKey @ format=validationMessage.arguments, i18n }</li>
-           </p>
-           </ol>
-           </coral-tooltip>
-        </sly>
+    <td is="coral-table-cell"><pre>${properties.key}</pre></td>
+    <td is="coral-table-cell" value="${properties.validationMessages ? properties.validationMessages.first.severity.ordinal : '9'}" 
+        data-sly-test="${properties.validationMessages && properties.validationMessages.size > 0}">
+        <sly data-sly-test="${properties.validationMessages.first.severity == 'INFO'}" data-sly-set.color="color: var(--spectrum-global-color-static-blue-700)" />
+        <sly data-sly-test="${properties.validationMessages.first.severity == 'WARNING'}" data-sly-set.color="color: var(--spectrum-global-color-static-orange-700)" />
+        <sly data-sly-test="${properties.validationMessages.first.severity == 'ERROR'}" data-sly-set.color="color: var(--spectrum-global-color-static-red-700)" />
+        <coral-icon icon="${properties.validationMessages.first.severity == 'INFO' ? 'info' : 'alert'}" style="${color @ context='unsafe' }"></coral-icon>
+        <coral-tooltip within="#key-list" variant="${properties.validationMessages.first.severity}" delay="0" target="_prev" >
+        <ol>
+        <p data-sly-list.validationMessage="${properties.validationMessages}">
+        <li>${validationMessage.severity}: Language ${validationMessage.language}: ${validationMessage.i18nKey @ format=validationMessage.arguments, i18n }</li>
+        </p>
+        </ol>
+        </coral-tooltip>
     </td>
     <sly data-sly-repeat.language="${properties.languages}">
         <td is="coral-table-cell">
-            ${properties[language]}
+            <pre>${properties[language]}</pre>
         </td>
     </sly>
 </tr>

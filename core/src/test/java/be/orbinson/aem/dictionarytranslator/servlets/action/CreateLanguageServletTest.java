@@ -32,14 +32,15 @@ class CreateLanguageServletTest {
     @BeforeEach
     void beforeEach() {
         context.registerService(Replicator.class, mock(Replicator.class));
-        dictionaryService = context.registerInjectActivateService(new DictionaryServiceImpl());
+        dictionaryService = context.registerInjectActivateService(new DictionaryServiceImpl(true));
 
         servlet = context.registerInjectActivateService(new CreateLanguageServlet());
     }
 
     @Test
     void doPostWithoutParams() throws ServletException, IOException {
-        servlet.doPost(context.request(), context.response());
+        context.request().setMethod("POST");
+        servlet.service(context.request(), context.response());
 
         assertEquals(HttpServletResponse.SC_BAD_REQUEST, context.response().getStatus());
     }
@@ -51,9 +52,10 @@ class CreateLanguageServletTest {
                 "language", "en")
         );
 
-        servlet.doPost(context.request(), context.response());
+        context.request().setMethod("POST");
+        servlet.service(context.request(), context.response());
 
-        assertEquals(HttpServletResponse.SC_BAD_REQUEST, context.response().getStatus());
+        assertEquals(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, context.response().getStatus());
     }
 
     @Test
@@ -65,7 +67,8 @@ class CreateLanguageServletTest {
                 "language", "en")
         );
 
-        servlet.doPost(context.request(), context.response());
+        context.request().setMethod("POST");
+        servlet.service(context.request(), context.response());
 
         assertEquals(HttpServletResponse.SC_OK, context.response().getStatus());
 
@@ -73,8 +76,8 @@ class CreateLanguageServletTest {
         ValueMap properties = resource.getValueMap();
         assertNotNull(resource);
         assertEquals("en", properties.get("jcr:language"));
-        assertEquals("mix:language", properties.get("jcr:mixinTypes"));
-        assertEquals("/content/dictionaries/fruit/i18n", properties.get("sling:basename"));
+        assertEquals("mix:language", properties.get("jcr:mixinTypes", String.class));
+        assertEquals("/content/dictionaries/fruit/i18n", properties.get("sling:basename", String.class));
     }
 
     @Test
@@ -87,7 +90,8 @@ class CreateLanguageServletTest {
                 "basename", "namespace"
         ));
 
-        servlet.doPost(context.request(), context.response());
+        context.request().setMethod("POST");
+        servlet.service(context.request(), context.response());
 
         Resource resource = context.resourceResolver().getResource("/content/dictionaries/fruit/i18n/en");
         ValueMap properties = resource.getValueMap();
@@ -95,7 +99,7 @@ class CreateLanguageServletTest {
         assertNotNull(resource);
         assertEquals(HttpServletResponse.SC_OK, context.response().getStatus());
         assertEquals("en", properties.get("jcr:language"));
-        assertEquals("mix:language", properties.get("jcr:mixinTypes"));
-        assertEquals("namespace", properties.get("sling:basename"));
+        assertEquals("mix:language", properties.get("jcr:mixinTypes", String.class));
+        assertEquals("namespace", properties.get("sling:basename", String.class));
     }
 }

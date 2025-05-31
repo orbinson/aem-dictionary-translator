@@ -1,36 +1,29 @@
 package be.orbinson.aem.dictionarytranslator.services.impl;
 
+import static org.junit.Assert.assertNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertIterableEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
-import java.io.IOException;
-import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.Locale;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
-import javax.jcr.RepositoryException;
-import javax.jcr.Session;
-import javax.jcr.security.AccessControlManager;
-
-import org.apache.sling.api.resource.ModifiableValueMap;
 import org.apache.sling.api.resource.PersistenceException;
 import org.apache.sling.api.resource.Resource;
-import org.apache.sling.api.resource.ResourceResolver;
+import org.apache.sling.api.resource.observation.ResourceChange;
+import org.apache.sling.api.resource.observation.ResourceChange.ChangeType;
 import org.apache.sling.testing.resourceresolver.MockFindQueryResources;
 import org.apache.sling.testing.resourceresolver.MockFindResourcesHandler;
 import org.jetbrains.annotations.NotNull;
@@ -38,10 +31,7 @@ import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.day.cq.replication.ReplicationActionType;
@@ -49,10 +39,7 @@ import com.day.cq.replication.ReplicationException;
 import com.day.cq.replication.Replicator;
 
 import be.orbinson.aem.dictionarytranslator.exception.DictionaryException;
-import be.orbinson.aem.dictionarytranslator.models.Dictionary;
-import be.orbinson.aem.dictionarytranslator.models.impl.DictionaryImpl;
-import be.orbinson.aem.dictionarytranslator.services.DictionaryService;
-import be.orbinson.aem.dictionarytranslator.services.DictionaryService.Message;
+import be.orbinson.aem.dictionarytranslator.services.LanguageDictionary;
 import io.wcm.testing.mock.aem.junit5.AemContext;
 import io.wcm.testing.mock.aem.junit5.AemContextExtension;
 
@@ -61,114 +48,85 @@ class DictionaryServiceImplTest {
 
     private final AemContext context = new AemContext();
 
-    DictionaryService dictionaryService;
+    DictionaryServiceImpl dictionaryService;
 
     @Mock
     Replicator replicator;
+    
+    /** Contains the paths of all resources which are returned by the findResources() method, necessary because the RR mock does not support queries natively */
+    List<String> dictionaryPaths;
 
     @BeforeEach
     void setup() {
-        context.addModelsForClasses(DictionaryImpl.class);
-
-        replicator = context.registerService(Replicator.class, replicator);
         dictionaryService = context.registerInjectActivateService(new DictionaryServiceImpl());
 
         context.load().json("/content.json", "/content");
+        dictionaryPaths = new ArrayList<>(List.of(
+                "/content/dictionaries/fruit/i18n/en",
+                "/content/dictionaries/fruit/i18n/nl_be",
+                "/content/dictionaries/vegetables/i18n/en")
+        );
+        MockFindResourcesHandler handler = new MockFindResourcesHandler() {
+            @Override
+            public @Nullable Iterator<Resource> findResources(@NotNull String query, String language) {
+                return dictionaryPaths.stream().map(p -> context.resourceResolver().getResource(p)).iterator();
+            }
+        };
+        MockFindQueryResources.addFindResourceHandler(context.resourceResolver(), handler);
     }
 
     @Test
     void dictionaryListShouldNotContainDuplicates() {
-        ResourceResolver resourceResolver = spy(context.resourceResolver());
+        Collection<LanguageDictionary> dictionaries = dictionaryService.getAllDictionaries(context.resourceResolver());
 
-        doReturn(List.of(
-                        context.resourceResolver().getResource("/content/dictionaries/fruit/i18n"),
-                        context.resourceResolver().getResource("/content/dictionaries/fruit/i18n"),
-                        context.resourceResolver().getResource("/content/dictionaries/vegetables/i18n")
-                ).iterator()
-        ).when(resourceResolver).findResources(anyString(), anyString());
-
-        List<Resource> dictionaries = dictionaryService.getDictionaries(resourceResolver);
-
-        assertEquals(2, dictionaries.size());
-        assertEquals("/content/dictionaries/fruit/i18n", dictionaries.get(0).getPath());
-        assertEquals("/content/dictionaries/vegetables/i18n", dictionaries.get(1).getPath());
+        assertEquals(List.of("/content/dictionaries/fruit/i18n/en", 
+                "/content/dictionaries/fruit/i18n/nl_be",
+                "/content/dictionaries/vegetables/i18n/en"), 
+                dictionaries.stream().map(LanguageDictionary::getPath).collect(Collectors.toList()));
     }
 
-    @ParameterizedTest
-    @CsvSource({"true,true", "true,false", "false,true", "false,false"})
-    void dictionaryShouldBeEditableWhenPrivilegesAndCapabilitiesAreFullfilled(boolean hasPrivileges, boolean hasCapability) throws RepositoryException {
-        Session session = Mockito.mock(Session.class);
-        context.registerAdapter(ResourceResolver.class, Session.class, session);
-        AccessControlManager acm = Mockito.mock(AccessControlManager.class);
-        when(session.getAccessControlManager()).thenReturn(acm);
-        when(session.hasCapability(anyString(), any(), any())).thenReturn(hasCapability);
-        Mockito.lenient().when(acm.hasPrivileges(anyString(), any())).thenReturn(hasPrivileges);
 
-        context.currentResource("/content/dictionaries/fruit/i18n");
-
-        assertEquals(hasPrivileges && hasCapability, dictionaryService.isEditableDictionary(context.currentResource()));
+    @Test
+    void dictionaryServiceShouldBeAbleToAddNewLanguage() throws PersistenceException, DictionaryException {
+        dictionaryService.createDictionary(context.resourceResolver(), "/content/dictionaries/fruit/i18n", Locale.FRENCH, Collections.singleton("/content/dictionaries/fruit/i18n"));
+        dictionaryService.onChange(List.of(new ResourceChange(ChangeType.ADDED, "/content/dictionaries/fruit/i18n/fr", false)));
+        // return additional path in context.resourceResolver().findResources()
+        dictionaryPaths.add("/content/dictionaries/fruit/i18n/fr");
+        assertEquals(List.of("en", "fr", "nl-BE"), dictionaryService.getDictionaries(context.resourceResolver(), "/content/dictionaries/fruit/i18n").stream()
+                .map(d -> d.getLanguage().toLanguageTag())
+                .collect(Collectors.toList()));
     }
 
     @Test
-    void dictionaryShouldNotBeEditableWhenPrivilegesCanNotBeDetermined() throws RepositoryException {
-        Session session = Mockito.mock(Session.class);
-        context.registerAdapter(ResourceResolver.class, Session.class, session);
-        AccessControlManager acm = Mockito.mock(AccessControlManager.class);
-        when(session.getAccessControlManager()).thenReturn(acm);
-        when(session.hasCapability(anyString(), any(), any())).thenReturn(true);
+    void dictionaryServiceShouldAddCorrectBasenameIfEmpty() throws PersistenceException, DictionaryException {
+        dictionaryService.createDictionary(context.resourceResolver(), "/content/dictionaries/fruit/i18n", Locale.FRENCH, Collections.emptyList());
 
-        doThrow(new RepositoryException("Failed to determine privileges")).when(acm).hasPrivileges(anyString(), any());
+        // return additional path in context.resourceResolver().findResources()
+        dictionaryPaths.add("/content/dictionaries/fruit/i18n/fr");
 
-        context.currentResource("/content/dictionaries/fruit/i18n");
-
-        assertFalse(dictionaryService.isEditableDictionary(context.currentResource()));
-    }
-
-    @Test
-    void dictionaryServiceShouldReturnCorrectLanguages() {
-        Resource dictionary = context.currentResource("/content/dictionaries/fruit/i18n");
-
-        assertEquals(List.of("en", "nl_BE"), dictionaryService.getLanguages(dictionary));
-    }
-
-    @Test
-    void dictionaryServiceShouldBeAbleToAddNewLanguage() throws PersistenceException {
-        Resource dictionaryResource = context.currentResource("/content/dictionaries/fruit/i18n");
-
-        dictionaryService.addLanguage(dictionaryResource, "fr", "/content/dictionaries/fruit/i18n");
-
-        assertEquals(List.of("en", "fr", "nl_BE"), dictionaryService.getLanguages(dictionaryResource));
-    }
-
-    @Test
-    void dictionaryServiceShouldAddCorrectBasenameIfEmpty() throws PersistenceException {
-        Resource dictionaryResource = context.currentResource("/content/dictionaries/fruit/i18n");
-
-        dictionaryService.addLanguage(dictionaryResource, "fr", "");
-
-        Dictionary dictionary = context.request().adaptTo(Dictionary.class);
-
-        assertEquals("/content/dictionaries/fruit/i18n", dictionary.getBasename());
-    }
-
-    @Test
-    void dictionaryServiceShouldBeAbleToCreateDictionary() throws PersistenceException {
-        Resource parent = context.currentResource("/content/dictionaries");
-
-        dictionaryService.createDictionary(parent, "meat", new String[]{"en", "ar"}, null);
-
-        context.currentResource("/content/dictionaries/meat/i18n");
-        Dictionary dictionary = context.request().adaptTo(Dictionary.class);
-
+        LanguageDictionary dictionary = dictionaryService.getDictionary(context.resourceResolver(), "/content/dictionaries/fruit/i18n", Locale.FRENCH).orElse(null);
         assertNotNull(dictionary);
-        assertEquals(List.of("ar", "en"), dictionary.getLanguages());
+        assertIterableEquals(List.of("/content/dictionaries/fruit/i18n"), dictionary.getBaseNames());
+    }
+
+    
+    @Test
+    void dictionaryServiceShouldBeAbleToCreateDictionaries() throws PersistenceException, DictionaryException {
+        dictionaryService.createDictionaries(context.resourceResolver(), "/content/dictionaries/meat", List.of(Locale.ENGLISH, new Locale("ar")), Collections.emptyList());
+
+        // return additional paths in context.resourceResolver().findResources()
+        dictionaryPaths.add("/content/dictionaries/meat/en");
+        dictionaryPaths.add("/content/dictionaries/meat/ar");
+        assertEquals(List.of("ar", "en"), dictionaryService.getDictionaries(context.resourceResolver(), "/content/dictionaries/meat").stream()
+                .map(d -> d.getLanguage().toLanguageTag())
+                .collect(Collectors.toList()));
     }
 
     @Test
     void dictionaryServiceShouldBeAbleToDeleteDictionary() throws DictionaryException, PersistenceException, ReplicationException {
         assertNotNull(context.resourceResolver().getResource("/content/dictionaries/fruit/i18n"));
 
-        dictionaryService.deleteDictionary(context.resourceResolver(), "/content/dictionaries/fruit/i18n");
+        dictionaryService.deleteDictionaries(replicator, context.resourceResolver(), "/content/dictionaries/fruit/i18n");
 
         assertNull(context.resourceResolver().getResource("/content/dictionaries/fruit/i18n"));
     }
@@ -178,13 +136,13 @@ class DictionaryServiceImplTest {
         doThrow(new ReplicationException("Replication failed")).when(replicator).replicate(any(), any(), any());
 
         assertThrows(ReplicationException.class, () -> {
-            dictionaryService.deleteDictionary(context.resourceResolver(), "/content/dictionaries/fruit/i18n");
+            dictionaryService.deleteDictionaries(replicator, context.resourceResolver(), "/content/dictionaries/fruit/i18n");
         });
     }
 
     @Test
     void deletingDictionaryShouldDeactivate() throws DictionaryException, ReplicationException, PersistenceException {
-        dictionaryService.deleteDictionary(context.resourceResolver(), "/content/dictionaries/fruit/i18n");
+        dictionaryService.deleteDictionaries(replicator, context.resourceResolver(), "/content/dictionaries/fruit/i18n");
 
         verify(replicator, times(1)).replicate(any(), eq(ReplicationActionType.DEACTIVATE), eq("/content/dictionaries/fruit/i18n"));
     }
@@ -192,123 +150,50 @@ class DictionaryServiceImplTest {
     @Test
     void deletingNonExistingDictionaryShouldThrowExeption() {
         assertThrows(DictionaryException.class, () -> {
-            dictionaryService.deleteDictionary(context.resourceResolver(), "/content/dictionaries/nonexisting/i18n");
+            dictionaryService.deleteDictionaries(replicator, context.resourceResolver(), "/content/dictionaries/nonexisting/i18n");
         });
     }
 
     @Test
     void dictionaryServiceShouldBeAbleToDeleteLanguage() throws DictionaryException, PersistenceException, ReplicationException {
-        context.currentResource("/content/dictionaries/fruit/i18n");
 
-        dictionaryService.deleteLanguage(context.currentResource(), "en");
+        assertNotNull(context.resourceResolver().getResource("/content/dictionaries/fruit/i18n/en"));
+        dictionaryService.deleteDictionary(replicator, context.resourceResolver(), "/content/dictionaries/fruit/i18n", Locale.ENGLISH);
 
-        assertEquals(List.of("nl_BE"), dictionaryService.getLanguages(context.currentResource()));
+        assertNull(context.resourceResolver().getResource("/content/dictionaries/fruit/i18n/en"));
     }
 
     @Test
     void deletingNonExistingLanguageShouldThrowExeption() {
         context.currentResource("/content/dictionaries/fruit/i18n");
         assertThrows(DictionaryException.class, () -> {
-            dictionaryService.deleteLanguage(context.currentResource(), "ar");
+            dictionaryService.deleteDictionary(replicator, context.resourceResolver(), "/content/dictionaries/fruit/i18n", new Locale("ar"));
         });
-    }
-
-    @Test
-    void dictionaryShouldUpdateMessageEntry() throws PersistenceException, DictionaryException {
-        context.currentResource("/content/dictionaries/fruit/i18n");
-
-        dictionaryService.createOrUpdateMessageEntry(context.currentResource(), "en", "apple", "Not a banana");
-
-        assertEquals("Not a banana", context.resourceResolver().getResource("/content/dictionaries/fruit/i18n/en/apple").getValueMap().get("sling:message"));
-    }
-
-    @Test
-    void dictionaryShouldUpdateNonExistingMessageEntry() throws PersistenceException, DictionaryException {
-        context.currentResource("/content/dictionaries/fruit/i18n");
-
-        dictionaryService.createOrUpdateMessageEntry(context.currentResource(), "en", "kaboeboe", "Kaboeboe");
-
-        assertEquals("Kaboeboe", context.resourceResolver().getResource("/content/dictionaries/fruit/i18n/en/kaboeboe").getValueMap().get("sling:message"));
-    }
-
-    @Test
-    void dictionaryWithEmptyMessageShouldDeleteMessageEntry() throws PersistenceException, DictionaryException {
-        context.currentResource("/content/dictionaries/fruit/i18n");
-
-        dictionaryService.createOrUpdateMessageEntry(context.currentResource(), "en", "apple", "");
-
-        assertFalse(context.resourceResolver().getResource("/content/dictionaries/fruit/i18n/en/apple").getValueMap().containsKey("sling:message"));
-    }
-
-    @Test
-    void dictionaryServiceShouldReturnMessagesForMessageEntryDictionary() throws DictionaryException {
-        Resource dictionaryResource = context.currentResource("/content/dictionaries/fruit/i18n");
-
-        assertEquals(Map.of("apple", new Message("Apple", "/content/dictionaries/fruit/i18n/en/apple"), 
-                "banana", new Message("Banana", "/content/dictionaries/fruit/i18n/en/banana"),
-                "cherry", new Message("Cherry", "/content/dictionaries/fruit/i18n/en/cherry")),
-                dictionaryService.getMessages(dictionaryResource, "en"));
-    }
-
-    @Test
-    void dictionaryServiceShouldReturnMessagesForJsonBasedDictionary() throws DictionaryException, IOException {
-        context.currentResource("/content/dictionaries/fruit/i18n");
-        try (InputStream is = getClass().getResourceAsStream("/fruit.de.json")) {
-            Objects.requireNonNull(is);
-            Resource resource = context.load().binaryFile(is, "/content/dictionaries/fruit/i18n/de.json");
-            ModifiableValueMap properties = resource.adaptTo(ModifiableValueMap.class);
-            Objects.requireNonNull(properties);
-            properties.put("jcr:language", "de");
-        }
-
-        assertEquals(Map.of("apple", new Message("Apfel", null), "banana", new Message("Banane", null), "cherry", new Message("Kirsche", null)), 
-                dictionaryService.getMessages(context.currentResource(), "de"));
-    }
-
-    @Test
-    void testDictionaryOrdinal() {
-        context.load().json("/content.json", "/apps");
-        assertEquals(2, dictionaryService.getOrdinal(context.currentResource("/content/dictionaries/fruit/i18n")));
-        assertEquals(0, dictionaryService.getOrdinal(context.currentResource("/apps/dictionaries/vegetables/i18n")));
     }
 
     @Test
     void dictionaryShouldReturnConflictingDictionaryForSameKeyHigherPrecedence() {
         context.load().json("/content.json", "/apps");
-        MockFindResourcesHandler handler = new MockFindResourcesHandler() {
-            @Override
-            public @Nullable Iterator<Resource> findResources(@NotNull String query, String language) {
-                return List.of(
-                        context.resourceResolver().getResource("/apps/dictionaries/fruit/i18n"),
-                        context.resourceResolver().getResource("/apps/dictionaries/vegetables/i18n"),
-                        context.resourceResolver().getResource("/content/dictionaries/fruit/i18n"),
-                        context.resourceResolver().getResource("/content/dictionaries/vegetables/i18n")
-                ).iterator();
-            }
-        };
-        MockFindQueryResources.addFindResourceHandler(context.resourceResolver(), handler);
+        // return additional paths in context.resourceResolver().findResources()
+        dictionaryPaths.add("/apps/dictionaries/fruit/i18n/en");
+        dictionaryPaths.add("/apps/dictionaries/fruit/i18n/nl_be");
+        dictionaryPaths.add("/apps/dictionaries/vegetables/i18n/en");
 
-        assertEquals("/apps/dictionaries/fruit/i18n", dictionaryService.getConflictingDictionary(context.currentResource("/content/dictionaries/fruit/i18n"), "en", "apple").get().getPath());
+        LanguageDictionary dictionary = dictionaryService.getDictionary(context.resourceResolver(), "/content/dictionaries/fruit/i18n", Locale.ENGLISH).orElse(null);
+        assertNotNull(dictionary);
+        assertEquals("/apps/dictionaries/fruit/i18n/en", dictionaryService.getConflictingDictionary(context.resourceResolver(), dictionary, "apple").get().getPath());
     }
 
     @Test
     void dictionaryShouldNotReturnConflictingDictionaryForSameKeyLowerPrecedence() {
         context.load().json("/content.json", "/apps");
-        MockFindResourcesHandler handler = new MockFindResourcesHandler() {
+        // return additional paths in context.resourceResolver().findResources()
+        dictionaryPaths.add("/apps/dictionaries/fruit/i18n/en");
+        dictionaryPaths.add("/apps/dictionaries/fruit/i18n/nl_be");
+        dictionaryPaths.add("/apps/dictionaries/vegetables/i18n/en");
 
-            @Override
-            public @Nullable Iterator<Resource> findResources(@NotNull String query, String language) {
-                return List.of(
-                        context.resourceResolver().getResource("/apps/dictionaries/vegetables/i18n"),
-                        context.resourceResolver().getResource("/content/dictionaries/fruit/i18n"),
-                        context.resourceResolver().getResource("/content/dictionaries/vegetables/i18n")
-                ).iterator();
-            }
-            
-        };
-        MockFindQueryResources.addFindResourceHandler(context.resourceResolver(), handler);
-
-
-        assertEquals(Optional.empty(), dictionaryService.getConflictingDictionary(context.currentResource("/apps/dictionaries/fruit/i18n"), "en", "apple"));
+        LanguageDictionary dictionary = dictionaryService.getDictionary(context.resourceResolver(), "/apps/dictionaries/fruit/i18n", Locale.ENGLISH).orElse(null);
+        assertNotNull(dictionary);
+        assertEquals(Optional.empty(), dictionaryService.getConflictingDictionary(context.resourceResolver(), dictionary, "apple"));
     }
 }

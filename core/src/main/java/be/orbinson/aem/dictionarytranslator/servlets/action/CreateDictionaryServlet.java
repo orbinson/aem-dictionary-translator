@@ -1,6 +1,16 @@
 package be.orbinson.aem.dictionarytranslator.servlets.action;
 
-import be.orbinson.aem.dictionarytranslator.services.DictionaryService;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Locale;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import javax.servlet.Servlet;
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
@@ -16,11 +26,10 @@ import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.servlet.Servlet;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.Optional;
+import com.day.cq.commons.jcr.JcrUtil;
+
+import be.orbinson.aem.dictionarytranslator.exception.DictionaryException;
+import be.orbinson.aem.dictionarytranslator.services.DictionaryService;
 
 @Component(service = Servlet.class)
 @SlingServletResourceTypes(
@@ -28,7 +37,7 @@ import java.util.Optional;
         resourceTypes = "aem-dictionary-translator/servlet/action/create-dictionary",
         methods = "POST"
 )
-public class CreateDictionaryServlet extends SlingAllMethodsServlet {
+public class CreateDictionaryServlet extends AbstractDictionaryServlet {
 
     private static final Logger LOG = LoggerFactory.getLogger(CreateDictionaryServlet.class);
 
@@ -37,34 +46,21 @@ public class CreateDictionaryServlet extends SlingAllMethodsServlet {
 
     @Override
     protected void doPost(SlingHttpServletRequest request, @NotNull SlingHttpServletResponse response) throws IOException {
-        String name = request.getParameter("name");
-        String path = request.getParameter("path");
-        String basename = request.getParameter("basename");
+        String path = getMandatoryParameter(request, "path", false);
+        String name = getMandatoryParameter(request, "name", false);
+        path = path + "/" + JcrUtil.escapeIllegalJcrChars(name);
+        Collection<Locale> languages = getMandatoryParameters(request, "language", false, Locale::forLanguageTag);
+        Collection<String> basenames = getOptionalParameters(request, "basename", true);
 
-        String[] languages = request.getParameterValues("language");
-
-        if (StringUtils.isEmpty(name) || StringUtils.isEmpty(path) || languages == null) {
+        final ResourceResolver resourceResolver = request.getResourceResolver();
+        try {
+            LOG.debug("Create dictionary '{}'", name);
+            dictionaryService.createDictionaries(resourceResolver, path, languages, basenames);
+            resourceResolver.commit();
+        } catch (PersistenceException | DictionaryException e) {
             HtmlResponse htmlResponse = new HtmlResponse();
-            htmlResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST, String.format("Invalid parameters to create dictionary, 'dictionary=%s', 'path=%s', 'languages=%s', 'basename=%s'", name, path, String.join(",", Arrays.asList(Optional.ofNullable(languages).orElse(new String[0]))), basename));
+            htmlResponse.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, String.format("Unable to create dictionary: %s", e.getMessage()));
             htmlResponse.send(response, true);
-        } else {
-            final ResourceResolver resourceResolver = request.getResourceResolver();
-            Resource resource = resourceResolver.getResource(path);
-
-            if (resource != null) {
-                try {
-                    LOG.debug("Create dictionary '{}'", name);
-                    dictionaryService.createDictionary(resource, name, languages, basename);
-                } catch (PersistenceException e) {
-                    HtmlResponse htmlResponse = new HtmlResponse();
-                    htmlResponse.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, String.format("Unable to create dictionary: %s", e.getMessage()));
-                    htmlResponse.send(response, true);
-                }
-            } else {
-                HtmlResponse htmlResponse = new HtmlResponse();
-                htmlResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST, String.format("Unable to get resource for path '%s", path));
-                htmlResponse.send(response, true);
-            }
         }
     }
 }

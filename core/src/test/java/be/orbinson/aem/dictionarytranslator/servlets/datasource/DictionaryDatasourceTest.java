@@ -1,5 +1,6 @@
 package be.orbinson.aem.dictionarytranslator.servlets.datasource;
 
+import be.orbinson.aem.dictionarytranslator.services.DictionaryService;
 import be.orbinson.aem.dictionarytranslator.services.impl.DictionaryServiceImpl;
 import com.adobe.granite.ui.components.ExpressionResolver;
 import com.adobe.granite.ui.components.ds.DataSource;
@@ -10,14 +11,22 @@ import io.wcm.testing.mock.aem.junit5.AemContextExtension;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
+import org.apache.sling.testing.resourceresolver.MockFindQueryResources;
+import org.apache.sling.testing.resourceresolver.MockFindResourcesHandler;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+
+import javax.servlet.ServletException;
 
 import static junitx.framework.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -33,36 +42,46 @@ class DictionaryDatasourceTest {
     @Mock
     ExpressionResolver expressionResolver;
 
+    
+    /** Contains the paths of all resources which are returned by the findResources() method, necessary because the RR mock does not support queries natively */
+    List<String> dictionaryPaths;
+
     @BeforeEach
     void beforeEach() {
         context.registerService(Replicator.class, mock(Replicator.class));
         expressionResolver = context.registerService(ExpressionResolver.class, expressionResolver);
-        context.registerInjectActivateService(new DictionaryServiceImpl());
 
-        servlet = context.registerInjectActivateService(new DictionaryDatasource());
+        DictionaryService dictionaryService = new DictionaryServiceImpl();
+        context.registerInjectActivateService(dictionaryService);
+        servlet = context.registerInjectActivateService(new DictionaryDatasource(dictionaryService, expressionResolver));
 
         context.load().json("/apps.json", "/apps");
         context.load().json("/content.json", "/content");
-
-        when(expressionResolver.resolve(any(), any(), any(), any(SlingHttpServletRequest.class))).thenReturn(20);
+        
+        dictionaryPaths = new ArrayList<>(List.of(
+                "/content/dictionaries/fruit/i18n/en",
+                "/content/dictionaries/fruit/i18n/nl_be",
+                "/content/dictionaries/vegetables/i18n/en")
+        );
+        
+        MockFindResourcesHandler handler = new MockFindResourcesHandler() {
+            @Override
+            public @Nullable Iterator<Resource> findResources(@NotNull String query, String language) {
+                return dictionaryPaths.stream().map(p -> context.resourceResolver().getResource(p)).iterator();
+            }
+        };
+        MockFindQueryResources.addFindResourceHandler(context.resourceResolver(), handler);
     }
 
     @Test
-    void getDataSource() {
+    void getDataSource() throws ServletException, IOException {
         context.currentResource("/apps/aem-dictionary-translator/content/dictionaries/jcr:content/views/list");
 
-        ResourceResolver resourceResolver = spy(context.resourceResolver());
-        doReturn(List.of(
-                        resourceResolver.getResource("/content/dictionaries/fruit/i18n"),
-                        resourceResolver.getResource("/content/dictionaries/vegetables/i18n")
-                ).iterator()
-        ).when(resourceResolver).findResources(anyString(), anyString());
-        SlingHttpServletRequest request = spy(context.request());
-        when(request.getResourceResolver()).thenReturn(resourceResolver);
-
+        SlingHttpServletRequest request = context.request();
+        context.requestPathInfo().setSelectorString(".0.20");
         servlet.doGet(request, context.response());
 
-        SimpleDataSource dataSource = (SimpleDataSource) request.getAttribute(DataSource.class.getName());
+        DataSource dataSource = (DataSource) request.getAttribute(DataSource.class.getName());
 
         Iterator<Resource> iterator = dataSource.iterator();
         List.of("/content/dictionaries/fruit/i18n", "/content/dictionaries/vegetables/i18n").forEach(path -> {

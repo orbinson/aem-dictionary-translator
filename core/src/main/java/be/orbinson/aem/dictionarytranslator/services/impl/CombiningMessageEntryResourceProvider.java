@@ -2,25 +2,29 @@ package be.orbinson.aem.dictionarytranslator.services.impl;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
 import org.apache.commons.lang3.text.translate.AggregateTranslator;
+import org.apache.commons.lang3.text.translate.CharSequenceTranslator;
 import org.apache.commons.lang3.text.translate.JavaUnicodeEscaper;
 import org.apache.commons.lang3.text.translate.UnicodeUnescaper;
 import org.apache.jackrabbit.util.Text;
 import org.apache.sling.api.resource.Resource;
-import org.apache.sling.api.resource.ResourceNotFoundException;
 import org.apache.sling.api.resource.ResourceResolver;
+import org.apache.sling.api.resource.ResourceUtil;
 import org.apache.sling.api.wrappers.ValueMapDecorator;
 import org.apache.sling.spi.resource.provider.ResolveContext;
 import org.apache.sling.spi.resource.provider.ResourceContext;
@@ -33,12 +37,15 @@ import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.metatype.annotations.AttributeDefinition;
 import org.osgi.service.metatype.annotations.Designate;
 import org.osgi.service.metatype.annotations.ObjectClassDefinition;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.adobe.granite.ui.components.ds.ValueMapResource;
 
 import be.orbinson.aem.dictionarytranslator.exception.DictionaryException;
 import be.orbinson.aem.dictionarytranslator.services.DictionaryService;
-import be.orbinson.aem.dictionarytranslator.services.DictionaryService.Message;
+import be.orbinson.aem.dictionarytranslator.services.LanguageDictionary;
+import be.orbinson.aem.dictionarytranslator.services.LanguageDictionary.Message;
 
 /**
  * Resource provider exposing all translations for one dictionary entry.
@@ -57,6 +64,8 @@ import be.orbinson.aem.dictionarytranslator.services.DictionaryService.Message;
 )
 @Designate(ocd = CombiningMessageEntryResourceProvider.Config.class)
 public class CombiningMessageEntryResourceProvider extends ResourceProvider<Object> {
+
+    private static final Logger LOG = LoggerFactory.getLogger(CombiningMessageEntryResourceProvider.class);
 
     @ObjectClassDefinition(
             name = "Orbinson AEM Dictionary Translator - Combining Message Entry Resource Provider",
@@ -93,19 +102,19 @@ public class CombiningMessageEntryResourceProvider extends ResourceProvider<Obje
             }
         }
 
-        private final String language;
+        private final Locale language;
         private final String i18nKey;
         private final String[] arguments;
         private final Severity severity;
 
-        public ValidationMessage(Severity severity, String language, String i18nKey, String... arguments) {
+        public ValidationMessage(Severity severity, Locale language, String i18nKey, String... arguments) {
             this.severity = severity;
             this.language = language;
             this.i18nKey = i18nKey;
             this.arguments = arguments;
         }
 
-        public String getLanguage() {
+        public Locale getLanguage() {
             return language;
         }
 
@@ -181,13 +190,15 @@ public class CombiningMessageEntryResourceProvider extends ResourceProvider<Obje
         return config.enableValidation();
     }
 
-    static OverlapType checkBasenameOverlap(String currentDictionaryBasename, String conflictingDictionaryBasename) {
-        if (conflictingDictionaryBasename == null && currentDictionaryBasename == null) {
+    static OverlapType checkBasenameOverlap(Set<String> baseNames, Set<String> conflictingDictionaryBaseNames) {
+        if (conflictingDictionaryBaseNames == null && baseNames == null) {
             return OverlapType.FULL;
-        } else if (Objects.equals(conflictingDictionaryBasename, currentDictionaryBasename)) {
+        } else if (Objects.equals(conflictingDictionaryBaseNames, baseNames)) {
             return OverlapType.FULL;
-        } else if (conflictingDictionaryBasename == null || currentDictionaryBasename == null) {
+        } else if (conflictingDictionaryBaseNames == null || baseNames == null) {
             return OverlapType.POTENTIAL;
+        } else if (baseNames.stream().anyMatch(conflictingDictionaryBaseNames::contains)) {
+            return OverlapType.PARTIAL;
         } else {
             return OverlapType.NONE;
         }
@@ -203,54 +214,54 @@ public class CombiningMessageEntryResourceProvider extends ResourceProvider<Obje
 
         String key = extractKeyFromPath(path);
         String dictionaryPath = getDictionaryPath(path);
-        Resource dictionaryResource = resourceResolver.getResource(dictionaryPath);
-
-        if (dictionaryResource != null) {
-            @NotNull Map<String, Message> messagePerLanguage = new LinkedHashMap<>(); // preserve the order of languages
-            List<String> languages = dictionaryService.getLanguages(dictionaryResource);
-            SortedSet<ValidationMessage> validationMessages = new TreeSet<>();
-            for (String language : languages) {
-                Message message;
-                try {
-                    message = dictionaryService.getMessages(dictionaryResource, language).get(key);
-                } catch (DictionaryException e) {
-                    throw new ResourceNotFoundException("Unable to get message entries for language '" + language + "' in dictionary '" + dictionaryPath + "'", e);
-                }
-                messagePerLanguage.put(language, message);
+        Map<Locale, Message> messagePerLanguage = new LinkedHashMap<>();
+        boolean isEditable = true;
+        SortedSet<ValidationMessage> validationMessages = new TreeSet<>();
+        Collection<LanguageDictionary> dictionaries = dictionaryService.getDictionaries(resourceResolver, dictionaryPath);
+        for (LanguageDictionary dictionary : dictionaries) {
+            try {
+                Message message = dictionary.getEntries().get(key);
                 if (message != null && config.enableValidation()) {
-                    validateItem(dictionaryResource, language, key, message.getText()).ifPresent(validationMessages::add);
+                    validateItem(resourceResolver, dictionary, key, message.getText()).ifPresent(validationMessages::add);
                 }
+                if (isEditable) {
+                    isEditable = dictionary.isEditable(resourceResolver);
+                }
+                messagePerLanguage.put(dictionary.getLanguage(), message);
+            } catch (DictionaryException e) {
+                LOG.warn("Error retrieving message entries for dictionary at '" + dictionaryPath + "', skipping it", e);
             }
-            return new ValueMapResource(resourceResolver, path, RESOURCE_TYPE, new ValueMapDecorator(createResourceProperties(path, dictionaryService.isEditableDictionary(dictionaryResource), messagePerLanguage, config.enableValidation() ? Optional.of(validationMessages) : Optional.empty())));
-        } else {
-            throw new ResourceNotFoundException(path, "Unable to get underlying dictionary resource for path '" + dictionaryPath + "'");
         }
+        if (messagePerLanguage.isEmpty()) {
+            return null;
+        }
+        return new ValueMapResource(resourceResolver, path, RESOURCE_TYPE, new ValueMapDecorator(createResourceProperties(path, isEditable, messagePerLanguage, config.enableValidation() ? Optional.of(validationMessages) : Optional.empty())));
     }
 
-    private Optional<ValidationMessage> validateItem(Resource dictionaryResource, String language, String key, String message) {
-        Optional<Resource> conflictingDictionaryResource = dictionaryService.getConflictingDictionary(dictionaryResource, language, key);
+    private Optional<ValidationMessage> validateItem(ResourceResolver resourceResolver, LanguageDictionary dictionary, String key, String message) {
+        LanguageDictionary conflictingDictionary = dictionaryService.getConflictingDictionary(resourceResolver, dictionary, key).orElse(null);
         final ValidationMessage validationMessage;
-        if (conflictingDictionaryResource.isPresent()) {
+        if (conflictingDictionary != null) {
             // check if message is different from the one in the dictionary
             String otherMessage;
             try {
-                otherMessage = dictionaryService.getMessages(conflictingDictionaryResource.get(), language).get(key).getText();
+                otherMessage = conflictingDictionary.getEntries().get(key).getText();
             } catch (DictionaryException e) {
-                throw new IllegalStateException("Unable to get message entries for language '" + language + "' in dictionary '" + conflictingDictionaryResource.get().getPath() + "'", e);
+                throw new IllegalStateException("Unable to get message entries for in dictionary '" + conflictingDictionary.getPath() + "'", e);
             }
             if (Objects.equals(otherMessage, message)) {
-                validationMessage = new ValidationMessage(ValidationMessage.Severity.INFO, language, "Conflicting dictionary at \"{0}\" for language {1}, it has the same message though.", conflictingDictionaryResource.get().getPath(), language);
+                validationMessage = new ValidationMessage(ValidationMessage.Severity.INFO, dictionary.getLanguage(), "Conflicting dictionary at \"{0}\" for language {1}, it has the same message though.", conflictingDictionary.getPath(), dictionary.getLanguage().toLanguageTag());
             } else {
-                String conflictingDictionaryBasename = dictionaryService.getBasename(conflictingDictionaryResource.get());
-                switch (checkBasenameOverlap(dictionaryService.getBasename(dictionaryResource), conflictingDictionaryBasename)) {
+                Set<String> conflictingDictionaryBasenames = conflictingDictionary.getBaseNames();
+                switch (checkBasenameOverlap(dictionary.getBaseNames(), conflictingDictionaryBasenames)) {
                     case PARTIAL:
-                        validationMessage = new ValidationMessage(ValidationMessage.Severity.WARNING, language, "Conflicting dictionary at \"{0}\" for language {1} with another translation and partially overlapping basenames {2}.", conflictingDictionaryResource.get().getPath(), language, conflictingDictionaryBasename);
+                        validationMessage = new ValidationMessage(ValidationMessage.Severity.WARNING, dictionary.getLanguage(), "Conflicting dictionary at \"{0}\" for language {1} with another translation and partially overlapping basenames {2}.", conflictingDictionary.getPath(), dictionary.getLanguage().toLanguageTag(), String.join(", ", conflictingDictionaryBasenames));
                         break;
                     case FULL:
-                        validationMessage = new ValidationMessage(ValidationMessage.Severity.ERROR, language, "Conflicting dictionary at \"{0}\" for language {1} with another translation for same basenames.", conflictingDictionaryResource.get().getPath(), language);
+                        validationMessage = new ValidationMessage(ValidationMessage.Severity.ERROR, dictionary.getLanguage(), "Conflicting dictionary at \"{0}\" for language {1} with another translation for same basenames.", conflictingDictionary.getPath(), dictionary.getLanguage().toLanguageTag());
                         break;
                     case POTENTIAL:
-                        validationMessage = new ValidationMessage(ValidationMessage.Severity.WARNING, language, "Potential conflicting dictionary at \"{0}\" for language {1} with another translation and potentially overlapping basenames (one side is null).", conflictingDictionaryResource.get().getPath(), language);
+                        validationMessage = new ValidationMessage(ValidationMessage.Severity.WARNING, dictionary.getLanguage(), "Potential conflicting dictionary at \"{0}\" for language {1} with another translation and potentially overlapping basenames (one side is null).", conflictingDictionary.getPath(), dictionary.getLanguage().toLanguageTag());
                         break;
                     default:
                         validationMessage = null;
@@ -269,9 +280,10 @@ public class CombiningMessageEntryResourceProvider extends ResourceProvider<Obje
 
     /**
      * Creates a resource path for the given dictionary path and key.
-     * The key is escaped with the help of unicode escape sequences for {@code /} and {@code %} in order to
+     * The key is escaped with the help of unicode escape sequences for {@code /} and {@code %} and {@code .} potentially in order to
      * <ul>
      * <li>allow to reconstruct the dictionary path from the combined message entry path</li>
+     * <li>prevent clashes with the relative path selectors {@code .} and {@code ..} which are used in the Sling API to refer to the current and parent resource</li>
      * <li>prevent the URITemplate heuristic in {@code /libs/clientlibs/granite/uritemplate/URITemplate.js#isEncoded(String)} from not applying URL encoding to such values if used in request parameters</li>
      * </ul>
      *
@@ -283,19 +295,25 @@ public class CombiningMessageEntryResourceProvider extends ResourceProvider<Obje
         if (!dictionaryPath.startsWith("/")) {
             throw new IllegalArgumentException("dictionaryPath must start with a slash (i.e. must be absolute)");
         }
-        AggregateTranslator escaper = new AggregateTranslator(JavaUnicodeEscaper.between('%', '%'), JavaUnicodeEscaper.between('/', '/'));
-        return ROOT + dictionaryPath + "/" + escaper.translate(key);
+        // does the key conflict with a relative path selector "." or ".."?
+        final CharSequenceTranslator translator;
+        if (key.chars().allMatch(c -> c == '.')) {
+            translator = JavaUnicodeEscaper.between('.', '.');
+        } else {
+            translator = new AggregateTranslator(JavaUnicodeEscaper.between('%', '%'), JavaUnicodeEscaper.between('/', '/'));
+        }
+        return ROOT + dictionaryPath + "/" + translator.translate(key);
     }
 
-    public static @NotNull Map<String, Object> createResourceProperties(@NotNull String path, boolean isEditable, @NotNull Map<String, Message> messagePerLanguage, Optional<SortedSet<ValidationMessage>> validationMessages) {
+    public static @NotNull Map<String, Object> createResourceProperties(@NotNull String path, boolean isEditable, @NotNull Map<Locale, Message> messagePerLanguage, Optional<SortedSet<ValidationMessage>> validationMessages) {
         Map<String, Object> properties = new HashMap<>();
         properties.put(KEY, extractKeyFromPath(path));
         properties.put("path", path); // TODO: remove as it duplicates the resource path which is always available
         properties.put("editable", isEditable);
         properties.put(DICTIONARY_PATH, getDictionaryPath(path));
-        properties.put(LANGUAGES, messagePerLanguage.keySet());
+        properties.put(LANGUAGES, messagePerLanguage.keySet().stream().map(Locale::toLanguageTag).toArray(String[]::new));
         List<String> messageEntryPaths = new ArrayList<>();
-        for (Entry<String, Message> messageEntryPerLanguageEntry : messagePerLanguage.entrySet()) {
+        for (Entry<Locale, Message> messageEntryPerLanguageEntry : messagePerLanguage.entrySet()) {
             Message message = messageEntryPerLanguageEntry.getValue();
             final String text;
             if (message == null) {
@@ -304,7 +322,7 @@ public class CombiningMessageEntryResourceProvider extends ResourceProvider<Obje
                 text = message.getText();
                 message.getResourcePath().ifPresent(messageEntryPaths::add);
             }
-            properties.put(messageEntryPerLanguageEntry.getKey(), text);
+            properties.put(messageEntryPerLanguageEntry.getKey().toLanguageTag(), text);
         }
         // all paths to replicate
         properties.put(MESSAGE_ENTRY_PATHS, messageEntryPaths);

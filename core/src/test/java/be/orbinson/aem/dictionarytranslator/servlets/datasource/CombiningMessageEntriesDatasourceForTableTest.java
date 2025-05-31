@@ -3,11 +3,16 @@ package be.orbinson.aem.dictionarytranslator.servlets.datasource;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -17,12 +22,15 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 
 import org.apache.commons.collections4.IteratorUtils;
-import org.apache.jackrabbit.vault.util.Text;
 import org.apache.sling.api.request.RequestDispatcherOptions;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.SyntheticResource;
 import org.apache.sling.servlethelpers.MockRequestDispatcherFactory;
 import org.apache.sling.testing.mock.sling.ResourceResolverType;
+import org.apache.sling.testing.resourceresolver.MockFindQueryResources;
+import org.apache.sling.testing.resourceresolver.MockFindResourcesHandler;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -56,6 +64,9 @@ class CombiningMessageEntriesDatasourceForTableTest {
 
     private static final String KEY_SPECIAL_CHARACTERS = "key / with / special characters &&&";
 
+    /** Contains the paths of all resources which are returned by the findResources() method, necessary because the RR mock does not support queries natively */
+    List<String> dictionaryPaths;
+
     @BeforeEach
     void beforeEach() {
         context.registerService(Replicator.class, mock(Replicator.class));
@@ -64,13 +75,27 @@ class CombiningMessageEntriesDatasourceForTableTest {
         context.registerInjectActivateService(dictionaryService);
         Converter converter = Converters.standardConverter();
         CombiningMessageEntryResourceProvider.Config config = converter.convert(Map.of("enableValidation", true)).to(CombiningMessageEntryResourceProvider.Config.class);
-        context.registerInjectActivateService(new CombiningMessageEntryResourceProvider(dictionaryService, config));
+        CombiningMessageEntryResourceProvider provider = new CombiningMessageEntryResourceProvider(dictionaryService, config);
+        context.registerInjectActivateService(provider);
         context.load().json("/content.json", "/content");
-        // add additional message entry with key havgin special characters
+        dictionaryPaths = new ArrayList<>(List.of(
+                "/content/dictionaries/fruit/i18n/en",
+                "/content/dictionaries/fruit/i18n/nl_be",
+                "/content/dictionaries/vegetables/i18n/en")
+        );
+        
+        MockFindResourcesHandler handler = new MockFindResourcesHandler() {
+            @Override
+            public @Nullable Iterator<Resource> findResources(@NotNull String query, String language) {
+                return dictionaryPaths.stream().map(p -> context.resourceResolver().getResource(p)).iterator();
+            }
+        };
+        MockFindQueryResources.addFindResourceHandler(context.resourceResolver(), handler);
+        // add additional message entry with key having special characters
         context.build().resource("/content/dictionaries/fruit/i18n/en/specialkey", "jcr:primaryType", "sling:MessageEntry",
                 "sling:message", "Cherry",
                 "sling:key", KEY_SPECIAL_CHARACTERS);
-        servlet = context.registerInjectActivateService(new CombiningMessageEntriesDatasourceForTable());
+        servlet = context.registerService(new CombiningMessageEntriesDatasourceForTable(dictionaryService, provider, expressionResolver));
         context.request().setRequestDispatcherFactory(new MockRequestDispatcherFactory() {
 
             @Override
@@ -105,7 +130,7 @@ class CombiningMessageEntriesDatasourceForTableTest {
         context.request().setResource(new SyntheticResource(context.resourceResolver(), "/some/path", "artificial test resource"));
         servlet.doGet(context.request(), context.response());
 
-        SimpleDataSource dataSource = (SimpleDataSource) context.request().getAttribute(DataSource.class.getName());
+        DataSource dataSource = (DataSource) context.request().getAttribute(DataSource.class.getName());
         assertDataSourceEquals(dataSource,
                 new SyntheticResource(context.resourceResolver(), "/mnt/dictionary/content/dictionaries/fruit/i18n/apple", CombiningMessageEntryResourceProvider.RESOURCE_TYPE),
                 new SyntheticResource(context.resourceResolver(), "/mnt/dictionary/content/dictionaries/fruit/i18n/banana", CombiningMessageEntryResourceProvider.RESOURCE_TYPE),
@@ -121,11 +146,11 @@ class CombiningMessageEntriesDatasourceForTableTest {
 
         DataSource dataSource = (DataSource)context.request().getAttribute(DataSource.class.getName());
 
-        assertDataSourceEquals(dataSource, CombiningMessageEntriesDatasourceForTable.getColumn(context.resourceResolver(), "select", true),
-                CombiningMessageEntriesDatasourceForTable.getColumn(context.resourceResolver(), "jcr:title", "Key"),
-                CombiningMessageEntriesDatasourceForTable.getColumn(context.resourceResolver(), "jcr:title", "Validation"),
-                CombiningMessageEntriesDatasourceForTable.getColumn(context.resourceResolver(), "jcr:title", "en"),
-                CombiningMessageEntriesDatasourceForTable.getColumn(context.resourceResolver(), "jcr:title", "nl_BE"));
+        assertDataSourceEquals(dataSource, CombiningMessageEntriesDatasourceForTable.getColumn(context.resourceResolver(), "select", true, Optional.empty()),
+                CombiningMessageEntriesDatasourceForTable.getColumn(context.resourceResolver(), "jcr:title", "Key", Optional.of("Key")),
+                CombiningMessageEntriesDatasourceForTable.getColumn(context.resourceResolver(), "jcr:title", "Validation", Optional.of("Validation")),
+                CombiningMessageEntriesDatasourceForTable.getColumn(context.resourceResolver(), "jcr:title", "en", Optional.of("en")),
+                CombiningMessageEntriesDatasourceForTable.getColumn(context.resourceResolver(), "jcr:title", "nl-BE", Optional.of("nl-BE")));
     }
 
     @Test
@@ -151,12 +176,14 @@ class CombiningMessageEntriesDatasourceForTableTest {
         Iterator<Resource> iterator = dataSource.iterator();
         int index = 0;
         for (Resource expectedResource : expectedResources) {
+            assertTrue(iterator.hasNext(), "Iterator has less elements than expected, expected at least " + (expectedResources.length) + " but got only " + index);
             Resource resource = iterator.next();
             assertEquals(expectedResource.getPath(), resource.getPath(), "Path at index " + index + " does not match");
             assertEquals(expectedResource.getResourceType(), resource.getResourceType(), "Type at index " + index + " does not match");
             if (!expectedResource.getValueMap().isEmpty()) {
                 assertEquals(expectedResource.getValueMap(), resource.getValueMap(), "ValueMap at index " + index + " does not match");
             }
+            index++;
         }
         assertFalse(iterator.hasNext(), () -> "Iterator has at least one more element than expected: " + iterator.next());
     }
@@ -164,10 +191,10 @@ class CombiningMessageEntriesDatasourceForTableTest {
     @Test
     void testValidationMessageSortOrder() {
         SortedSet<ValidationMessage> messages = new TreeSet<>();
-        messages.add(new ValidationMessage(Severity.WARNING, "de", "warn"));
-        messages.add(new ValidationMessage(Severity.ERROR, "de", "error"));
-        messages.add(new ValidationMessage(Severity.INFO, "de", "info"));
-        messages.add(new ValidationMessage(Severity.ERROR, "de", "error2"));
+        messages.add(new ValidationMessage(Severity.WARNING, Locale.GERMAN, "warn"));
+        messages.add(new ValidationMessage(Severity.ERROR, Locale.GERMAN, "error"));
+        messages.add(new ValidationMessage(Severity.INFO, Locale.GERMAN, "info"));
+        messages.add(new ValidationMessage(Severity.ERROR, Locale.GERMAN, "error2"));
         assertArrayEquals(new ValidationMessage.Severity[] { Severity.ERROR, Severity.ERROR, Severity.WARNING, Severity.INFO }, messages.stream().map(ValidationMessage::getSeverity).toArray());
     }
 }

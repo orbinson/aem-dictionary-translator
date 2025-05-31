@@ -6,6 +6,10 @@ import io.wcm.testing.mock.aem.junit5.AemContextExtension;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ValueMap;
+import org.apache.sling.testing.resourceresolver.MockFindQueryResources;
+import org.apache.sling.testing.resourceresolver.MockFindResourcesHandler;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -13,6 +17,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 import static be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants.SLING_MESSAGE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -26,12 +33,25 @@ class ImportDictionaryServletTest {
 
     ImportDictionaryServlet servlet;
 
+    private List<String> dictionaryPaths;
+
     @BeforeEach
     void setUp() {
-        context.registerService(new DictionaryServiceImpl());
+        context.registerInjectActivateService(new DictionaryServiceImpl());
         servlet = context.registerInjectActivateService(new ImportDictionaryServlet());
+        context.request().setMethod("POST");
 
         context.load().json("/content.json", "/content");
+        dictionaryPaths = new ArrayList<>();
+        dictionaryPaths.add("/content/dictionaries/fruit/i18n/en");
+        dictionaryPaths.add("/content/dictionaries/fruit/i18n/nl_be");
+        MockFindResourcesHandler handler = new MockFindResourcesHandler() {
+            @Override
+            public @Nullable Iterator<Resource> findResources(@NotNull String query, String language) {
+                return dictionaryPaths.stream().map(p -> context.resourceResolver().getResource(p)).iterator();
+            }
+        };
+        MockFindQueryResources.addFindResourceHandler(context.resourceResolver(), handler);
     }
 
     @Test
@@ -46,7 +66,7 @@ class ImportDictionaryServletTest {
                 "translations.csv"
         );
 
-        servlet.doPost(context.request(), context.response());
+        servlet.service(context.request(), context.response());
 
         assertEquals(200, context.response().getStatus());
 
@@ -77,7 +97,7 @@ class ImportDictionaryServletTest {
                 "translations.csv"
         );
 
-        servlet.doPost(context.request(), context.response());
+        servlet.service(context.request(), context.response());
 
         assertEquals(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, context.response().getStatus());
 
@@ -102,7 +122,7 @@ class ImportDictionaryServletTest {
                 "translations.csv"
         );
 
-        servlet.doPost(context.request(), context.response());
+        servlet.service(context.request(), context.response());
 
         assertEquals(200, context.response().getStatus());
 
@@ -139,7 +159,7 @@ class ImportDictionaryServletTest {
         InputStream csvStream = new ByteArrayInputStream(csvData.getBytes());
         context.request().addRequestParameter("csvfile", csvStream.readAllBytes(), "text/csv", "translations.csv");
 
-        servlet.doPost(context.request(), context.response());
+        servlet.service(context.request(), context.response());
 
         assertEquals(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, context.response().getStatus());
     }
@@ -151,7 +171,7 @@ class ImportDictionaryServletTest {
         InputStream csvStream = new ByteArrayInputStream(csvData.getBytes());
         context.request().addRequestParameter("csvfile", csvStream.readAllBytes(), "text/csv", "translations.csv");
 
-        servlet.doPost(context.request(), context.response());
+        servlet.service(context.request(), context.response());
 
         assertEquals(200, context.response().getStatus());
     }
@@ -163,7 +183,7 @@ class ImportDictionaryServletTest {
         InputStream csvStream = new ByteArrayInputStream(csvData.getBytes());
         context.request().addRequestParameter("csvfile", csvStream.readAllBytes(), "text/csv", "translations.csv");
 
-        servlet.doPost(context.request(), context.response());
+        servlet.service(context.request(), context.response());
 
         assertEquals(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, context.response().getStatus());
     }
@@ -175,7 +195,7 @@ class ImportDictionaryServletTest {
         InputStream csvStream = new ByteArrayInputStream(csvData.getBytes());
         context.request().addRequestParameter("csvfile", csvStream.readAllBytes(), "text/csv", "translations.csv");
 
-        servlet.doPost(context.request(), context.response());
+        servlet.service(context.request(), context.response());
 
         assertEquals(HttpServletResponse.SC_OK, context.response().getStatus());
     }
@@ -187,7 +207,7 @@ class ImportDictionaryServletTest {
         InputStream csvStream = new ByteArrayInputStream(csvData.getBytes());
         context.request().addRequestParameter("csvfile", csvStream.readAllBytes(), "text/csv", "translations.csv");
 
-        servlet.doPost(context.request(), context.response());
+        servlet.service(context.request(), context.response());
 
         assertEquals(HttpServletResponse.SC_OK, context.response().getStatus());
     }

@@ -4,6 +4,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.RequestDispatcher;
@@ -17,6 +20,10 @@ import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.SyntheticResource;
 import org.apache.sling.servlethelpers.MockRequestDispatcherFactory;
 import org.apache.sling.testing.mock.sling.ResourceResolverType;
+import org.apache.sling.testing.resourceresolver.MockFindQueryResources;
+import org.apache.sling.testing.resourceresolver.MockFindResourcesHandler;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -51,11 +58,25 @@ class CombiningMessageEntryDatasourceForDialogTest {
         expressionResolver = context.registerService(ExpressionResolver.class, expressionResolver);
         DictionaryServiceImpl dictionaryService = new DictionaryServiceImpl();
         context.registerInjectActivateService(dictionaryService);
+        
+        List<String> dictionaryPaths = new ArrayList<>(List.of(
+                "/content/dictionaries/fruit/i18n/en",
+                "/content/dictionaries/fruit/i18n/nl_be",
+                "/content/dictionaries/vegetables/i18n/en")
+        );
+        MockFindResourcesHandler handler = new MockFindResourcesHandler() {
+            @Override
+            public @Nullable Iterator<Resource> findResources(@NotNull String query, String language) {
+                return dictionaryPaths.stream().map(p -> context.resourceResolver().getResource(p)).iterator();
+            }
+        };
+        MockFindQueryResources.addFindResourceHandler(context.resourceResolver(), handler);
+        
         Converter converter = Converters.standardConverter();
         CombiningMessageEntryResourceProvider.Config config = converter.convert(Map.of("enableValidation", true)).to(CombiningMessageEntryResourceProvider.Config.class);
         context.registerInjectActivateService(new CombiningMessageEntryResourceProvider(dictionaryService, config));
         context.load().json("/content.json", "/content");
-        // add additional message entry with key havgin special characters
+        // add additional message entry with key having special characters
         context.build().resource("/content/dictionaries/fruit/i18n/en/specialkey", "jcr:primaryType", "sling:MessageEntry",
                 "sling:message", "Cherry",
                 "sling:key", KEY_SPECIAL_CHARACTERS);
