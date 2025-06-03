@@ -35,6 +35,7 @@ public interface Dictionary {
 
     /**
      * Returns if the entries of this dictionary can be written as well.
+     * As the return value is not cached, and this method takes some time, this should be called only when really necessary.
      * @return true if the entries can be written with the given {@link ResourceResolver}, false otherwise
      * @see #createOrUpdateEntry(ResourceResolver, String, String)
      * @see #deleteEntry(Replicator, ResourceResolver, String)
