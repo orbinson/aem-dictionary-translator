@@ -215,17 +215,15 @@ public class CombiningMessageEntryResourceProvider extends ResourceProvider<Obje
         String key = extractKeyFromPath(path);
         String dictionaryPath = getDictionaryPath(path);
         Map<Locale, Message> messagePerLanguage = new LinkedHashMap<>();
-        boolean isEditable = true;
         SortedSet<ValidationMessage> validationMessages = new TreeSet<>();
         Collection<Dictionary> dictionaries = dictionaryService.getDictionaries(resourceResolver, dictionaryPath);
+        // only calculate editable flag once, as it is most likely the same for all sibling dictionaries and calling it is time consuming
+        boolean isEditable = dictionaries.stream().findFirst().map(dictionary -> dictionary.isEditable(resourceResolver)).orElse(false);
         for (Dictionary dictionary : dictionaries) {
             try {
                 Message message = dictionary.getEntries().get(key);
                 if (message != null && config.enableValidation()) {
                     validateItem(resourceResolver, dictionary, key, message.getText()).ifPresent(validationMessages::add);
-                }
-                if (isEditable) {
-                    isEditable = dictionary.isEditable(resourceResolver);
                 }
                 messagePerLanguage.put(dictionary.getLanguage(), message);
             } catch (DictionaryException e) {

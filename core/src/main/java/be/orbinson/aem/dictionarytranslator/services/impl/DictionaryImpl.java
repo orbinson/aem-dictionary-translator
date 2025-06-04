@@ -70,6 +70,7 @@ public abstract class DictionaryImpl implements Dictionary {
         return i;
     }
 
+    @Override
     public boolean isEditable(ResourceResolver resourceResolver) {
         Session session = resourceResolver.adaptTo(Session.class);
         if (session != null) {
