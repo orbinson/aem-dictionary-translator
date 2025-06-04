@@ -68,10 +68,10 @@ public class UpdateMessageEntryServlet extends AbstractDictionaryServlet {
         String dictionaryPath = combiningMessageEntryResource.getValueMap().get(CombiningMessageEntryResourceProvider.DICTIONARY_PATH, String.class);
         if (StringUtils.isNotBlank(dictionaryPath)) {
             // check languages
-            String[] languages = combiningMessageEntryResource.getValueMap().get(CombiningMessageEntryResourceProvider.LANGUAGES, new String[0]);
-            for (String language : languages) {
-                String message = getMandatoryParameter(request, language, true); // ensure the parameter exists
-                Dictionary dictionary = dictionaryService.getDictionary(resourceResolver, dictionaryPath, Locale.forLanguageTag(language))
+            Locale[] languages = combiningMessageEntryResource.getValueMap().get(CombiningMessageEntryResourceProvider.LANGUAGES, new Locale[0]);
+            for (Locale language : languages) {
+                String message = getMandatoryParameter(request, language.toLanguageTag(), true); // ensure the parameter exists
+                Dictionary dictionary = dictionaryService.getDictionary(resourceResolver, dictionaryPath, language)
                         .orElseThrow(() -> new DictionaryException("Could not find dictionary for language '" + language + "' below path: " + dictionaryPath));
                 dictionary.createOrUpdateEntry(resourceResolver, key, message);
             }

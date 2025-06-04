@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
@@ -81,7 +82,7 @@ class CombiningMessageEntryResourceProviderTest {
         ValueMap properties = resource.getValueMap();
         Map<String, Object> expectedProperties = Map.of(
                 "path", "/mnt/dictionary/content/dictionaries/fruit/i18n/apple",
-                "languages", new String[]{"en", "nl-BE"}, // languages must always be in alphabetical order
+                "languages", new Locale[]{Locale.ENGLISH, new Locale("nl", "BE")}, // languages must always be in alphabetical order
                 "nl-BE", "Appel",
                 "en", "Apple",
                 "editable", Boolean.TRUE, // because resource resolver is not adaptable to Session
@@ -97,8 +98,8 @@ class CombiningMessageEntryResourceProviderTest {
             assertNotNull(actualValue, "Property " + key + " should not be null");
             if (actualValue instanceof Collection) {
                 assertArrayEquals((Object[])value, ((Collection<?>)actualValue).toArray(), "Multi-value property " + key + " is not equal");
-            } else if (actualValue instanceof String[]) {
-                assertArrayEquals((String[])value, (String[])actualValue, "Multi-value propert " + key + " is not equal");
+            } else if (actualValue instanceof Object[]) {
+                assertArrayEquals((Object[])value, (Object[])actualValue, "Multi-value propert " + key + " is not equal");
             }
             else {
                 assertEquals(value, actualValue, "Property " + key + " is not equal");
