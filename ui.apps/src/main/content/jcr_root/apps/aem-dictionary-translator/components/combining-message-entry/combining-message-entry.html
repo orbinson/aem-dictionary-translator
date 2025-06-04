@@ -22,7 +22,7 @@
     </td>
     <sly data-sly-repeat.language="${properties.languages}">
         <td is="coral-table-cell">
-            <pre>${properties[language]}</pre>
+            <pre>${properties[language.toLanguageTag]}</pre>
         </td>
     </sly>
 </tr>

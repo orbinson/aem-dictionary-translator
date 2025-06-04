@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Some labels in the edit messages dialog show "und" [#204](https://github.com/orbinson/aem-dictionary-translator/issues/204)
+
 ### Changed
 
 - Improve speed of CombiningMessageEntryResourceProvider [#202](https://github.com/orbinson/aem-dictionary-translator/issues/202)
