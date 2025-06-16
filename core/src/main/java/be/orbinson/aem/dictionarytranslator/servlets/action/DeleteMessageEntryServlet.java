@@ -68,7 +68,11 @@ public class DeleteMessageEntryServlet extends AbstractDictionaryServlet {
                     throw new IllegalArgumentException("" + CombiningMessageEntryResourceProvider.DICTIONARY_PATH + " is required");
                 }
                 for (Dictionary dictionary : dictionaryService.getDictionaries(resourceResolver, dictionaryPath)) {
-                    dictionary.deleteEntry(replicator, resourceResolver, key);
+                    if (dictionary.getEntries().containsKey(key)) {
+                        dictionary.deleteEntry(replicator, resourceResolver, key);
+                    } else {
+                        LOG.debug("No message entry found for key '{}' in dictionary '{}'", key, dictionary.getPath());
+                    }
                 }
                 resourceResolver.commit();
                 // javasecurity:S5145

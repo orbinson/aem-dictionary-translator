@@ -28,6 +28,19 @@
             "jcr:primaryType": "sling:MessageEntry",
             "sling:message": "Cherry",
             "sling:key": "cherry"
+          },
+          "papaya": {
+            "jcr:primaryType": "sling:MessageEntry",
+            "sling:message": "Papaya"
+          },
+          "mango":{
+            "jcr:primaryType": "sling:MessageEntry",
+            "sling:message": "Mango",
+            "sling:key": "mango"
+          },
+          "pear": {
+            "jcr:primaryType": "sling:MessageEntry",
+            "sling:message": ""
           }
         },
         "nl_be": {
@@ -50,6 +63,10 @@
             "jcr:primaryType": "sling:MessageEntry",
             "sling:message": "Kers",
             "sling:key": "cherry"
+          },
+          "papaya": {
+            "jcr:primaryType": "sling:MessageEntry",
+            "sling:key": "papaya"
           }
         }
       }

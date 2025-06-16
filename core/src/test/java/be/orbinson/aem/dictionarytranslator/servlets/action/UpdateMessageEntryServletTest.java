@@ -1,11 +1,12 @@
 package be.orbinson.aem.dictionarytranslator.servlets.action;
 
-import static be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants.SLING_KEY;
 import static be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants.SLING_MESSAGE;
 import static be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants.SLING_MESSAGEENTRY;
 import static org.apache.jackrabbit.JcrConstants.JCR_PRIMARYTYPE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.mock;
 
 import java.io.IOException;
@@ -78,8 +79,7 @@ class UpdateMessageEntryServletTest {
     @Test
     void updateCombiningMessageEntryInNonExistingDictionary() throws IOException, ServletException {
         context.request().setParameterMap(Map.of(
-                "item", "/mnt/dictionary/content/dictionaries/non-existing/i18",
-                "key", "greeting",
+                "item", "/mnt/dictionary/content/dictionaries/non-existing/i18/greeting",
                 "en", "Hello"
         ));
 
@@ -95,7 +95,6 @@ class UpdateMessageEntryServletTest {
         dictionaryPaths.add("/content/dictionaries/fruit/i18n/nl_be");
         context.request().setParameterMap(Map.of(
                 "item", "/mnt/dictionary/content/dictionaries/fruit/i18n/apple",
-                "key", "appel",
                 "en", "New Apple",
                 "nl-BE", "Nieuwe Appel"
         ));
@@ -104,19 +103,75 @@ class UpdateMessageEntryServletTest {
 
         assertEquals(HttpServletResponse.SC_OK, context.response().getStatus());
 
-        Resource resource = context.resourceResolver().getResource("/content/dictionaries/fruit/i18n/en/appel");
+        Resource resource = context.resourceResolver().getResource("/content/dictionaries/fruit/i18n/en/apple");
         assertNotNull(resource);
         ValueMap properties = resource.getValueMap();
         assertNotNull(resource);
         assertEquals(SLING_MESSAGEENTRY, properties.get(JCR_PRIMARYTYPE));
-        assertEquals("appel", properties.get(SLING_KEY));
         assertEquals("New Apple", properties.get(SLING_MESSAGE));
 
-        resource = context.resourceResolver().getResource("/content/dictionaries/fruit/i18n/nl_be/appel");
+        resource = context.resourceResolver().getResource("/content/dictionaries/fruit/i18n/nl_be/apple");
         properties = resource.getValueMap();
         assertNotNull(resource);
         assertEquals(SLING_MESSAGEENTRY, properties.get(JCR_PRIMARYTYPE));
-        assertEquals("appel", properties.get(SLING_KEY));
         assertEquals("Nieuwe Appel", properties.get(SLING_MESSAGE));
+    }
+
+    @Test
+    void doPostWithEmptyMessagesForExistingEntries() throws IOException, ServletException {
+        context.load().json("/content.json", "/content");
+        dictionaryPaths.add("/content/dictionaries/fruit/i18n/en");
+        dictionaryPaths.add("/content/dictionaries/fruit/i18n/nl_be");
+        context.request().setParameterMap(Map.of(
+                "item", "/mnt/dictionary/content/dictionaries/fruit/i18n/apple",
+                "en", "",
+                "en_useEmpty", "true", // this entry should be created with an empty message
+                "nl-BE", "",
+                "nl-BE_useEmpty", "false" // this entry should be cleared
+        ));
+
+        servlet.service(context.request(), context.response());
+
+        assertEquals(HttpServletResponse.SC_OK, context.response().getStatus());
+
+        Resource resource = context.resourceResolver().getResource("/content/dictionaries/fruit/i18n/en/apple");
+        assertNotNull(resource);
+        ValueMap properties = resource.getValueMap();
+        assertNotNull(resource);
+        assertEquals(SLING_MESSAGEENTRY, properties.get(JCR_PRIMARYTYPE));
+        assertEquals("", properties.get(SLING_MESSAGE));
+
+        resource = context.resourceResolver().getResource("/content/dictionaries/fruit/i18n/nl_be/apple");
+        assertNotNull(resource);
+        properties = resource.getValueMap();
+        assertFalse(properties.containsKey(SLING_MESSAGE));
+    }
+
+    @Test
+    void doPostWithEmptyMessagesForNewEntries() throws IOException, ServletException {
+        context.load().json("/content.json", "/content");
+        dictionaryPaths.add("/content/dictionaries/fruit/i18n/en");
+        dictionaryPaths.add("/content/dictionaries/fruit/i18n/nl_be");
+        context.request().setParameterMap(Map.of(
+                "item", "/mnt/dictionary/content/dictionaries/fruit/i18n/pineapple",
+                "en", "",
+                "en_useEmpty", "true", // this entry should be created with an empty message
+                "nl-BE", "",
+                "nl-BE_useEmpty", "false" // this entry should not be created
+        ));
+
+        servlet.service(context.request(), context.response());
+
+        assertEquals(HttpServletResponse.SC_OK, context.response().getStatus());
+
+        Resource resource = context.resourceResolver().getResource("/content/dictionaries/fruit/i18n/en/pineapple");
+        assertNotNull(resource);
+        ValueMap properties = resource.getValueMap();
+        assertNotNull(resource);
+        assertEquals(SLING_MESSAGEENTRY, properties.get(JCR_PRIMARYTYPE));
+        assertEquals("", properties.get(SLING_MESSAGE));
+
+        resource = context.resourceResolver().getResource("/content/dictionaries/fruit/i18n/nl_be/pineapple");
+        assertNull(resource);
     }
 }

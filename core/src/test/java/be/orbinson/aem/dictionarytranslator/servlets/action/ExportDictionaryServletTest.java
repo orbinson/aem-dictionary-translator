@@ -71,7 +71,10 @@ class ExportDictionaryServletTest {
         String expectedContent = "KEY" + delimiter + "en" + delimiter + "nl-BE\n" +
                 "apple" + delimiter + "Apple" + delimiter + "Appel\n" +
                 "banana" + delimiter + "Banana" + delimiter + "Banaan\n" +
-                "cherry" + delimiter + "Cherry" + delimiter + "Kers\n";
+                "cherry" + delimiter + "Cherry" + delimiter + "Kers\n" +
+                "mango" + delimiter + "Mango" + delimiter + "\n" +
+                "papaya" + delimiter + "Papaya" + delimiter + "\n" +
+                "pear" + delimiter + "<empty>" + delimiter + "\n";
         assertEquals(expectedContent, csvContent);
     }
 

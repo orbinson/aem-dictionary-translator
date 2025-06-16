@@ -135,7 +135,10 @@ class CombiningMessageEntriesDatasourceForTableTest {
                 new SyntheticResource(context.resourceResolver(), "/mnt/dictionary/content/dictionaries/fruit/i18n/apple", CombiningMessageEntryResourceProvider.RESOURCE_TYPE),
                 new SyntheticResource(context.resourceResolver(), "/mnt/dictionary/content/dictionaries/fruit/i18n/banana", CombiningMessageEntryResourceProvider.RESOURCE_TYPE),
                 new SyntheticResource(context.resourceResolver(), "/mnt/dictionary/content/dictionaries/fruit/i18n/cherry", CombiningMessageEntryResourceProvider.RESOURCE_TYPE),
-                new SyntheticResource(context.resourceResolver(), CombiningMessageEntryResourceProvider.createPath("/content/dictionaries/fruit/i18n", KEY_SPECIAL_CHARACTERS), CombiningMessageEntryResourceProvider.RESOURCE_TYPE)
+                new SyntheticResource(context.resourceResolver(), CombiningMessageEntryResourceProvider.createPath("/content/dictionaries/fruit/i18n", KEY_SPECIAL_CHARACTERS), CombiningMessageEntryResourceProvider.RESOURCE_TYPE),
+                new SyntheticResource(context.resourceResolver(), "/mnt/dictionary/content/dictionaries/fruit/i18n/mango", CombiningMessageEntryResourceProvider.RESOURCE_TYPE),
+                new SyntheticResource(context.resourceResolver(), "/mnt/dictionary/content/dictionaries/fruit/i18n/papaya", CombiningMessageEntryResourceProvider.RESOURCE_TYPE),
+                new SyntheticResource(context.resourceResolver(), "/mnt/dictionary/content/dictionaries/fruit/i18n/pear", CombiningMessageEntryResourceProvider.RESOURCE_TYPE)
         );
     }
 
@@ -151,18 +154,6 @@ class CombiningMessageEntriesDatasourceForTableTest {
                 CombiningMessageEntriesDatasourceForTable.getColumn(context.resourceResolver(), "jcr:title", "Validation", Optional.of("Validation")),
                 CombiningMessageEntriesDatasourceForTable.getColumn(context.resourceResolver(), "jcr:title", "en", Optional.of("en")),
                 CombiningMessageEntriesDatasourceForTable.getColumn(context.resourceResolver(), "jcr:title", "nl-BE", Optional.of("nl-BE")));
-    }
-
-    @Test
-    void testItemDataSource() throws ServletException, IOException {
-        context.request().setParameterMap(Map.of("item", "/mnt/dictionary/content/dictionaries/fruit/i18n/apple"));
-        context.request().setResource(new SyntheticResource(context.resourceResolver(), "/some/path", "artificial test resource"));
-        servlet.doGet(context.request(), context.response());
-
-        DataSource dataSource = (DataSource)context.request().getAttribute(DataSource.class.getName());
-
-        // this should only have the 3 textfields for the dialog and a hidden field for the path
-        assertEquals(4, IteratorUtils.size(dataSource.iterator()));
     }
 
     /**

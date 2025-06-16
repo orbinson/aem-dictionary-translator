@@ -3,23 +3,20 @@ package be.orbinson.aem.dictionarytranslator.servlets.datasource;
 import java.io.IOException;
 import java.text.Collator;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 
 import javax.servlet.Servlet;
 import javax.servlet.ServletException;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ValueMap;
 import org.apache.sling.api.servlets.SlingSafeMethodsServlet;
-import org.apache.sling.api.wrappers.ValueMapDecorator;
 import org.apache.sling.servlets.annotations.SlingServletResourceTypes;
 import org.jetbrains.annotations.NotNull;
 import org.osgi.service.component.annotations.Component;
@@ -29,12 +26,15 @@ import org.slf4j.LoggerFactory;
 import com.adobe.granite.ui.components.ds.DataSource;
 import com.adobe.granite.ui.components.ds.EmptyDataSource;
 import com.adobe.granite.ui.components.ds.SimpleDataSource;
-import com.adobe.granite.ui.components.ds.ValueMapResource;
-import com.day.cq.commons.jcr.JcrConstants;
 import com.day.cq.i18n.I18n;
 
 import be.orbinson.aem.dictionarytranslator.services.impl.CombiningMessageEntryResourceProvider;
 import be.orbinson.aem.dictionarytranslator.services.impl.CombiningMessageEntryResourceProvider.ValidationMessage;
+import be.orbinson.aem.dictionarytranslator.servlets.datasource.builder.ValueMapResourceBuilderFactory;
+import be.orbinson.aem.dictionarytranslator.servlets.datasource.builder.graniteui.ComponentValueMapResourceBuilder;
+import be.orbinson.aem.dictionarytranslator.servlets.datasource.builder.graniteui.ComponentValueMapResourceBuilder.AlertVariant;
+import be.orbinson.aem.dictionarytranslator.servlets.datasource.builder.graniteui.ContainerValueMapResourceBuilder;
+import be.orbinson.aem.dictionarytranslator.servlets.datasource.builder.graniteui.FieldValueMapResourceBuilder;
 
 /**
  * This data source is used to populate a dialog allowing to maintain translations for a single key in multiple languages
@@ -46,68 +46,41 @@ import be.orbinson.aem.dictionarytranslator.services.impl.CombiningMessageEntryR
 )
 public class CombiningMessageEntryDatasourceForDialog extends SlingSafeMethodsServlet {
 
+    public static final String SUFFIX_USE_EMPTY = "_useEmpty";
     private static final long serialVersionUID = 1L;
-    public static final String FIELD_LABEL = "fieldLabel";
     private static final Logger LOG = LoggerFactory.getLogger(CombiningMessageEntryDatasourceForDialog.class);
-
-    private static Resource createTextFieldResource(ResourceResolver resourceResolver, String label, String name, String value) {
-        return createTextFieldResource(resourceResolver, label, name, value, false, false);
-    }
-
-    private static Resource createTextFieldResource(ResourceResolver resourceResolver, String label, String name, String value, boolean required, boolean disabled) {
-        return createTextFieldResource(resourceResolver, "", label, name, value, required, disabled);
-    }
-    private static Resource createTextFieldResource(ResourceResolver resourceResolver, String path, String label, String name, String value, boolean required, boolean disabled) {
-        ValueMap valueMap = new ValueMapDecorator(Map.of(
-                FIELD_LABEL, label,
-                "name", name,
-                "value", value,
-                "disabled", disabled,
-                "required", required)
-        );
-        return new ValueMapResource(resourceResolver, path, "granite/ui/components/coral/foundation/form/textfield", valueMap);
-    }
-
-    private static Resource createHiddenFieldResource(ResourceResolver resourceResolver, String key, String value) {
-        ValueMap valueMap = new ValueMapDecorator(Map.of(
-                FIELD_LABEL, key,
-                "name", key,
-                "value", value)
-        );
-        return new ValueMapResource(resourceResolver, "", "granite/ui/components/coral/foundation/form/hidden", valueMap);
-    }
-
-    private static Resource createAlertResource(ResourceResolver resourceResolver, String path, String title, String text, String variant) {
-        ValueMap valueMap = new ValueMapDecorator(Map.of(
-                JcrConstants.JCR_TITLE, title,
-                "text", text,
-                "variant", variant
-        ));
-        return new ValueMapResource(resourceResolver, path, "granite/ui/components/coral/foundation/alert", valueMap);
-    }
-
-    private static Resource createFieldSetResource(ResourceResolver resourceResolver, String path, Collection<Resource> childResources) {
-        Resource items = new ValueMapResource(resourceResolver, path+"/items", "nt:unstructured", null, childResources);
-        return new ValueMapResource(resourceResolver, path, "granite/ui/components/coral/foundation/form/fieldset", null, Collections.singleton(items));
-    }
 
     private static Resource addValidationMessagesResource(I18n i18n, ResourceResolver resourceResolver, Map<Locale, String> languageMap, ValidationMessage... validationMessages) {
         if (validationMessages == null || validationMessages.length == 0) {
             return null;
         }
-        List<Resource> validationResources = new ArrayList<>();
         int index = 0;
-        String fieldSetPath = "/dialog/validation"; // artifical path to avoid collision with other resources
+        // artifical path to avoid collision with other resources
+        ValueMapResourceBuilderFactory factory = new ValueMapResourceBuilderFactory(resourceResolver,  "/dialog");
+        ContainerValueMapResourceBuilder<?> fieldSet = ContainerValueMapResourceBuilder.forFieldSet(factory, "validation");
         for (ValidationMessage validationMessage : validationMessages) {
-            String textFieldPath = fieldSetPath + "/items/item" + index++;
             String label = new StringBuilder().append(i18n.get("Language")).append(" ").append(languageMap.getOrDefault(validationMessage.getLanguage(), validationMessage.getLanguage().toLanguageTag())).toString();
             String text =  i18n.get(validationMessage.getI18nKey(), null, (Object[])validationMessage.getArguments());
-            validationResources.add(createAlertResource(resourceResolver, textFieldPath, label, text, validationMessage.getSeverity().name().toLowerCase(Locale.ENGLISH)));
+            fieldSet.withItem(ComponentValueMapResourceBuilder.forAlert(fieldSet.getItemFactory(), "item" + index, label, text, AlertVariant.valueOf(validationMessage.getSeverity().name().toLowerCase(Locale.ENGLISH))));
         }
-        return createFieldSetResource(resourceResolver, fieldSetPath, validationResources);
+        return fieldSet.build();
     }
 
-    private static void sortResourcesByProperty(String propertyName, Locale locale, List<Resource> resources) {
+    private static Resource createTranslationResource(ResourceResolver resourceResolver, String label, String name, Optional<String> translation) {
+        String checkboxName = name+ SUFFIX_USE_EMPTY;
+        ValueMapResourceBuilderFactory factory = new ValueMapResourceBuilderFactory(resourceResolver,  "/dialog");
+        ContainerValueMapResourceBuilder<?> well = ContainerValueMapResourceBuilder.forWell(factory, name).withProperty("sortKey", label);
+        well.withItem(FieldValueMapResourceBuilder.forTextField(well.getItemFactory(), name, label, translation.orElse("")).withDataAttribute("show-checkbox-with-name-when-empty", checkboxName));
+        boolean isChecked = translation.isPresent() && translation.get().isEmpty();
+        FieldValueMapResourceBuilder<?> checkbox = FieldValueMapResourceBuilder.forCheckboxField(well.getItemFactory(), checkboxName, "Use empty value", isChecked);
+        // field description is not properly hidden dynamically, therefore not used
+        //    .withDescription("Check this box if a this translation should be kept as empty value. Otherwise all empty value entries will be removed from the dictionary.");
+        // checkbox needs to be hidden with clientside logic due to not supporting Granite UIs field property "renderHidden"
+        well.withItem(checkbox);
+        return well.build();
+    }
+
+    static void sortResourcesByProperty(String propertyName, Locale locale, List<Resource> resources) {
         Collator collator = Collator.getInstance(locale);
         resources.sort((o1, o2) -> {
             ValueMap properties1 = o1.getValueMap();
@@ -116,29 +89,36 @@ public class CombiningMessageEntryDatasourceForDialog extends SlingSafeMethodsSe
         });
     }
 
-    private static void createCombiningMessageEntryDataSource(I18n i18n, Locale locale, Map<Locale, String> languageMap, ResourceResolver resourceResolver, String combiningMessageEntryPath, List<Resource> resourceList) {
+    static void createCombiningMessageEntryDataSource(I18n i18n, Locale locale, Map<Locale, String> languageMap, ResourceResolver resourceResolver, String combiningMessageEntryPath, List<Resource> resourceList) {
         Resource combiningMessageEntryResource = resourceResolver.getResource(combiningMessageEntryPath);
         if (combiningMessageEntryResource != null) {
             ValueMap properties = combiningMessageEntryResource.getValueMap();
             Locale[] languages = properties.get(CombiningMessageEntryResourceProvider.LANGUAGES, Locale[].class);
-            String key = properties.get(CombiningMessageEntryResourceProvider.KEY, String.class);
 
-            if (languages != null) {
-                for (Locale language : languages) {
-                    String message = properties.get(language.toLanguageTag(), StringUtils.EMPTY);
-                    String label = languageMap.getOrDefault(language, language.toLanguageTag());
-                    resourceList.add(createTextFieldResource(resourceResolver, label, language.toLanguageTag(), message));
-                }
-                // sort by fieldLabel
-                sortResourcesByProperty(FIELD_LABEL, locale, resourceList);
-            }
+            createCombiningMessageEntryDataSource(locale, languageMap, resourceResolver, resourceList, properties, languages);
             // make sure that key is always at the top
-            resourceList.add(0, createTextFieldResource(resourceResolver, "Key", key, key, false, true));
-            resourceList.add(1, createHiddenFieldResource(resourceResolver, "key", key));
+            ValueMapResourceBuilderFactory resourceBuilderFactory = new ValueMapResourceBuilderFactory(resourceResolver, "/dialog/item");
+            String escapedKey = properties.get(CombiningMessageEntryResourceProvider.ESCAPED_KEY, String.class);
+            resourceList.add(0, FieldValueMapResourceBuilder.forTextField(resourceBuilderFactory, "key", "Key", escapedKey).disabled().build());
             Resource validationContainer = addValidationMessagesResource(i18n, resourceResolver, languageMap, properties.get(CombiningMessageEntryResourceProvider.VALIDATION_MESSAGES, ValidationMessage[].class));
             if (validationContainer != null) {
                 resourceList.add(0, validationContainer);
             }
+        }
+    }
+
+    static void createCombiningMessageEntryDataSource(Locale locale, Map<Locale, String> languageMap,
+            ResourceResolver resourceResolver, List<Resource> resourceList, ValueMap properties, Locale[] languages) {
+        if (languages != null) {
+            for (Locale language : languages) {
+                @NotNull String name = language.toLanguageTag();
+                String messageValue = properties.get(name, String.class);
+                Optional<String> message = Optional.ofNullable(messageValue);
+                String label = languageMap.getOrDefault(language, language.toLanguageTag());
+                resourceList.add(createTranslationResource(resourceResolver, label, language.toLanguageTag(), message));
+            }
+            // sort by fieldLabel
+            sortResourcesByProperty("sortKey", locale, resourceList);
         }
     }
 

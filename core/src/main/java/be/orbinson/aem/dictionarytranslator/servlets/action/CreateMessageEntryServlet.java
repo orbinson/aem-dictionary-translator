@@ -2,17 +2,15 @@ package be.orbinson.aem.dictionarytranslator.servlets.action;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Optional;
 
 import javax.servlet.Servlet;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.resource.PersistenceException;
-import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
-import org.apache.sling.api.servlets.SlingAllMethodsServlet;
 import org.apache.sling.servlets.annotations.SlingServletResourceTypes;
 import org.apache.sling.servlets.post.HtmlResponse;
 import org.jetbrains.annotations.NotNull;
@@ -22,8 +20,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import be.orbinson.aem.dictionarytranslator.exception.DictionaryException;
-import be.orbinson.aem.dictionarytranslator.services.DictionaryService;
 import be.orbinson.aem.dictionarytranslator.services.Dictionary;
+import be.orbinson.aem.dictionarytranslator.services.DictionaryService;
+import be.orbinson.aem.dictionarytranslator.servlets.datasource.CombiningMessageEntryDatasourceForDialog;
 
 @Component(service = Servlet.class)
 @SlingServletResourceTypes(
@@ -59,12 +58,16 @@ public class CreateMessageEntryServlet extends AbstractDictionaryServlet {
             }
             for (Dictionary languageDictionary : dictionaries) {
                 if (!languageDictionary.getEntries().containsKey(key)) {
-                    String message = getOptionalParameter(request, languageDictionary.getLanguage().toLanguageTag(), true).orElse(null);
-                    if (message != null) {
-                        languageDictionary.createOrUpdateEntry(resourceResolver, key, message);
+                    String name = languageDictionary.getLanguage().toLanguageTag();
+                    String message = getOptionalParameter(request, name, true).orElse("");
+                    boolean useEmpty = getOptionalParameter(request, name + CombiningMessageEntryDatasourceForDialog.SUFFIX_USE_EMPTY, false, Boolean::parseBoolean).orElse(false);
+                    Optional<String> messageOptional;
+                    if (useEmpty || !message.isEmpty()) {
+                        messageOptional = Optional.of(message);
                     } else {
-                        LOG.warn("No message provided for key '{}' in language '{}'", key, languageDictionary.getLanguage().toLanguageTag());
+                        messageOptional = Optional.empty();
                     }
+                    languageDictionary.createEntry(resourceResolver, key, messageOptional);
                 } else {
                     HtmlResponse htmlResponse = new HtmlResponse();
                     htmlResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST, String.format("Can not create message entry %s, key already exists", key));

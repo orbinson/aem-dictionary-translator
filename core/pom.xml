@@ -148,14 +148,14 @@ Import-Package: javax.annotation;version=0.0.0,*
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.13.2</version>
+            <groupId>io.wcm</groupId>
+            <artifactId>io.wcm.testing.logging.logback</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>io.wcm</groupId>
-            <artifactId>io.wcm.testing.logging.logback</artifactId>
+            <groupId>org.apache.sling</groupId>
+            <artifactId>org.apache.sling.testing.hamcrest</artifactId>
+            <version>1.0.2</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

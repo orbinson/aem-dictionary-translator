@@ -1,8 +1,20 @@
 package be.orbinson.aem.dictionarytranslator.servlets.action;
 
-import be.orbinson.aem.dictionarytranslator.services.impl.DictionaryServiceImpl;
-import io.wcm.testing.mock.aem.junit5.AemContext;
-import io.wcm.testing.mock.aem.junit5.AemContextExtension;
+import static be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants.SLING_MESSAGE;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.Mockito.mock;
+
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ValueMap;
@@ -14,17 +26,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-import javax.servlet.http.HttpServletResponse;
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import com.day.cq.replication.Replicator;
 
-import static be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants.SLING_MESSAGE;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import be.orbinson.aem.dictionarytranslator.services.impl.DictionaryServiceImpl;
+import io.wcm.testing.mock.aem.junit5.AemContext;
+import io.wcm.testing.mock.aem.junit5.AemContextExtension;
 
 @ExtendWith(AemContextExtension.class)
 class ImportDictionaryServletTest {
@@ -38,6 +44,7 @@ class ImportDictionaryServletTest {
     @BeforeEach
     void setUp() {
         context.registerInjectActivateService(new DictionaryServiceImpl());
+        context.registerService(Replicator.class, mock(Replicator.class));
         servlet = context.registerInjectActivateService(new ImportDictionaryServlet());
         context.request().setMethod("POST");
 
@@ -150,6 +157,50 @@ class ImportDictionaryServletTest {
         properties = resource.getValueMap();
         message = properties.get(SLING_MESSAGE, String.class);
         assertEquals("Ananas", message);
+    }
+
+    @Test
+    void doPostEmptyMessageEntries() throws Exception {
+        context.request().addRequestParameter("dictionary", "/content/dictionaries/fruit/i18n");
+
+        // test empty message entries both with empty and with special <empty> value for existing and non existing keys
+        String csvData = "KEY,en\ngrape,\napple,\nbanana,<empty>\npineapple,<empty>";
+        InputStream csvStream = new ByteArrayInputStream(csvData.getBytes());
+        context.request().addRequestParameter(
+                "csvfile",
+                csvStream.readAllBytes(),
+                "text/csv",
+                "translations.csv"
+        );
+
+        servlet.service(context.request(), context.response());
+
+        assertEquals(200, context.response().getStatus());
+
+        // new entries with empty values should not be created
+        ResourceResolver resourceResolver = context.resourceResolver();
+        Resource resource = resourceResolver.getResource("/content/dictionaries/fruit/i18n/en/grape");
+        assertNull(resource);
+
+        // existing entries with empty values should not be deleted, but their sling:message property should be removed
+        resource = resourceResolver.getResource("/content/dictionaries/fruit/i18n/en/apple");
+        assertNotNull(resource);
+        ValueMap properties = resource.getValueMap();
+        assertFalse(properties.containsKey(SLING_MESSAGE));
+
+        // existing entries with <empty> value should be updated with empty sling:message property
+        resource = resourceResolver.getResource("/content/dictionaries/fruit/i18n/en/banana");
+        assertNotNull(resource);
+        properties = resource.getValueMap();
+        String message = properties.get(SLING_MESSAGE, String.class);
+        assertEquals("", message);
+
+        // new entries with <empty> value should be created with empty sling:message property
+        resource = resourceResolver.getResource("/content/dictionaries/fruit/i18n/en/pineapple");
+        assertNotNull(resource);
+        properties = resource.getValueMap();
+        message = properties.get(SLING_MESSAGE, String.class);
+        assertEquals("", message);
     }
 
     @Test

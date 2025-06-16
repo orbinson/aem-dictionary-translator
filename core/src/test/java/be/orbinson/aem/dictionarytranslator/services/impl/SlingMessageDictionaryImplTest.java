@@ -2,10 +2,13 @@ package be.orbinson.aem.dictionarytranslator.services.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.util.Map;
+import java.util.Optional;
 
 import org.apache.sling.api.resource.PersistenceException;
+import org.apache.sling.api.resource.Resource;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -35,28 +38,40 @@ class SlingMessageDictionaryImplTest {
     void shouldReturnMessages() throws DictionaryException {
         assertEquals(Map.of("apple", new Message("Apple", "/content/dictionaries/fruit/i18n/en/apple"), 
                 "banana", new Message("Banana", "/content/dictionaries/fruit/i18n/en/banana"),
-                "cherry", new Message("Cherry", "/content/dictionaries/fruit/i18n/en/cherry")),
+                "cherry", new Message("Cherry", "/content/dictionaries/fruit/i18n/en/cherry"),
+                "papaya", new Message("Papaya", "/content/dictionaries/fruit/i18n/en/papaya"),
+                "mango", new Message("Mango", "/content/dictionaries/fruit/i18n/en/mango"),
+                "pear", new Message("", "/content/dictionaries/fruit/i18n/en/pear")),
                 dictionary.getEntries());
     }
 
     @Test
     void dictionaryShouldUpdateMessageEntry() throws PersistenceException, DictionaryException {
-        dictionary.createOrUpdateEntry(context.resourceResolver(), "apple", "Not a banana");
+        dictionary.updateEntry(context.resourceResolver(), "apple", Optional.of("Not a banana"));
 
         assertEquals("Not a banana", context.resourceResolver().getResource("/content/dictionaries/fruit/i18n/en/apple").getValueMap().get("sling:message"));
     }
 
     @Test
     void dictionaryShouldUpdateNonExistingMessageEntry() throws PersistenceException, DictionaryException {
-        dictionary.createOrUpdateEntry(context.resourceResolver(), "kaboeboe", "Kaboeboe");
+        dictionary.updateEntry(context.resourceResolver(), "kaboeboe", Optional.of("Kaboeboe"));
 
         assertEquals("Kaboeboe", context.resourceResolver().getResource("/content/dictionaries/fruit/i18n/en/kaboeboe").getValueMap().get("sling:message"));
     }
 
     @Test
-    void dictionaryWithEmptyMessageShouldDeleteMessageEntry() throws PersistenceException, DictionaryException {
-        dictionary.createOrUpdateEntry(context.resourceResolver(), "apple", "");
+    void dictionaryWithEmptyMessageShouldNotDeleteMessageEntry() throws PersistenceException, DictionaryException {
+        dictionary.updateEntry(context.resourceResolver(), "apple", Optional.of(""));
 
-        assertFalse(context.resourceResolver().getResource("/content/dictionaries/fruit/i18n/en/apple").getValueMap().containsKey("sling:message"));
+        assertEquals("", context.resourceResolver().getResource("/content/dictionaries/fruit/i18n/en/apple").getValueMap().get("sling:message"));
+    }
+    
+    @Test
+    void dictionaryWithMissingMessageShouldNotDeleteMessageEntry() throws PersistenceException, DictionaryException {
+        dictionary.updateEntry(context.resourceResolver(), "apple", Optional.empty());
+
+        Resource resource = context.resourceResolver().getResource("/content/dictionaries/fruit/i18n/en/apple");
+        assertNotNull(resource);
+        assertFalse(resource.getValueMap().containsKey("sling:message"));
     }
 }

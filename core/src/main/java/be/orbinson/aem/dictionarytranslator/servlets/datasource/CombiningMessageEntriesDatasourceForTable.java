@@ -98,7 +98,7 @@ public class CombiningMessageEntriesDatasourceForTable extends SortedAndPaginate
         for (String key : keys) {
             // the escaping of the key is necessary as it may contain "/" which has a special meaning (even outside the JCR provider)
             String path = CombiningMessageEntryResourceProvider.createPath(dictionaryPath, key);
-            // wrap the original resource 
+            // use the resource returned by the CombiningMessageEntryResourceProvider as is
             Resource keyResource = resourceResolver.getResource(path);
             if (keyResource != null) {
                 resourceList.add(keyResource);
