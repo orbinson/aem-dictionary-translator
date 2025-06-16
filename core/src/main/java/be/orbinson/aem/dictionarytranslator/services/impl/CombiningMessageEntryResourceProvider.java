@@ -52,7 +52,7 @@ import be.orbinson.aem.dictionarytranslator.services.Dictionary.Message;
  * It expects the path to be of the form:
  * {@code /mnt/dictionary/<dictionaryPath>/<key>}
  * <p>
- * The key is unescaped with {@link Text#unescapeIllegalJcrChars(String)} to also allow "/" in it.
+ * The key is unescaped with {@link UnicodeUnescaper} to also allow "/" in it.
  * This resource provider is used to combine message entries from different languages into a single resource.
  * It is used in the AEM UI to display the combined message entries for a given key.
  */
@@ -215,17 +215,15 @@ public class CombiningMessageEntryResourceProvider extends ResourceProvider<Obje
         String key = extractKeyFromPath(path);
         String dictionaryPath = getDictionaryPath(path);
         Map<Locale, Message> messagePerLanguage = new LinkedHashMap<>();
-        boolean isEditable = true;
         SortedSet<ValidationMessage> validationMessages = new TreeSet<>();
         Collection<Dictionary> dictionaries = dictionaryService.getDictionaries(resourceResolver, dictionaryPath);
+        // only calculate editable flag once, as it is most likely the same for all sibling dictionaries and calling it is time consuming
+        boolean isEditable = dictionaries.stream().findFirst().map(dictionary -> dictionary.isEditable(resourceResolver)).orElse(false);
         for (Dictionary dictionary : dictionaries) {
             try {
                 Message message = dictionary.getEntries().get(key);
                 if (message != null && config.enableValidation()) {
                     validateItem(resourceResolver, dictionary, key, message.getText()).ifPresent(validationMessages::add);
-                }
-                if (isEditable) {
-                    isEditable = dictionary.isEditable(resourceResolver);
                 }
                 messagePerLanguage.put(dictionary.getLanguage(), message);
             } catch (DictionaryException e) {
@@ -311,7 +309,7 @@ public class CombiningMessageEntryResourceProvider extends ResourceProvider<Obje
         properties.put("path", path); // TODO: remove as it duplicates the resource path which is always available
         properties.put("editable", isEditable);
         properties.put(DICTIONARY_PATH, getDictionaryPath(path));
-        properties.put(LANGUAGES, messagePerLanguage.keySet().stream().map(Locale::toLanguageTag).toArray(String[]::new));
+        properties.put(LANGUAGES, messagePerLanguage.keySet().toArray(Locale[]::new));
         List<String> messageEntryPaths = new ArrayList<>();
         for (Entry<Locale, Message> messageEntryPerLanguageEntry : messagePerLanguage.entrySet()) {
             Message message = messageEntryPerLanguageEntry.getValue();

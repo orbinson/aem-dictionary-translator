@@ -6,7 +6,7 @@
     <groupId>be.orbinson.aem</groupId>
     <artifactId>aem-dictionary-translator</artifactId>
     <packaging>pom</packaging>
-    <version>1.4.1-SNAPSHOT</version>
+    <version>1.4.2-SNAPSHOT</version>
 
     <name>AEM Dictionary Translator</name>
     <description>Tool to translate AEM i18n dictionaries for internationalization</description>
@@ -167,7 +167,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-clean-plugin</artifactId>
-                    <version>3.4.1</version>
+                    <version>3.5.0</version>
                 </plugin>
                 <plugin>
                     <groupId>biz.aQute.bnd</groupId>
@@ -662,7 +662,7 @@ Bundle-DocURL:
             <dependency>
                 <groupId>org.junit</groupId>
                 <artifactId>junit-bom</artifactId>
-                <version>5.12.2</version>
+                <version>5.13.0</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -675,13 +675,13 @@ Bundle-DocURL:
             <dependency>
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-core</artifactId>
-                <version>5.17.0</version>
+                <version>5.18.0</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-junit-jupiter</artifactId>
-                <version>5.17.0</version>
+                <version>5.18.0</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
