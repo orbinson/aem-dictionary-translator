@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import java.util.Map;
 import java.util.Optional;
 
+import org.apache.commons.collections4.IteratorUtils;
 import org.apache.sling.api.resource.PersistenceException;
 import org.apache.sling.api.resource.Resource;
 import org.junit.jupiter.api.BeforeEach;
@@ -73,5 +74,17 @@ class SlingMessageDictionaryImplTest {
         Resource resource = context.resourceResolver().getResource("/content/dictionaries/fruit/i18n/en/apple");
         assertNotNull(resource);
         assertFalse(resource.getValueMap().containsKey("sling:message"));
+    }
+
+    @Test
+    void dictionaryShouldCreateNonConflictingResourceNameForNewKey() throws PersistenceException, DictionaryException {
+        context.create().resource("/content/dictionaries/fruit/i18n/en/generic", Map.of("sling:message", "foo", "sling:key", "original"));
+        int numChildrenBefore = IteratorUtils.size(context.resourceResolver().getResource("/content/dictionaries/fruit/i18n/en").listChildren());
+        // create a item with a key which equals the resource name of an existing item (with another key set in the properties)
+        dictionary.createEntry(context.resourceResolver(), "generic", Optional.of("bar"));
+        // the old resource should not be overwritten, but a new resource should be created with with a resource name close to the key
+        assertEquals("original", context.resourceResolver().getResource("/content/dictionaries/fruit/i18n/en/generic").getValueMap().get("sling:key"));
+        // one new resource should have been created (name is impl specific)
+        assertEquals(numChildrenBefore + 1, IteratorUtils.size(context.resourceResolver().getResource("/content/dictionaries/fruit/i18n/en").listChildren()));
     }
 }
