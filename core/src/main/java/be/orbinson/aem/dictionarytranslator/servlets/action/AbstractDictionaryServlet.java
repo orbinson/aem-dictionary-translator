@@ -22,6 +22,18 @@ public abstract class AbstractDictionaryServlet extends SlingAllMethodsServlet {
     private static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger(AbstractDictionaryServlet.class);
     private static final long serialVersionUID = 1L;
 
+    private final String exceptionMessagePrefix;
+
+    /**
+     * Constructor for the servlet, allowing to set a custom prefix for exception messages.
+     * 
+     * @param exceptionMessagePrefix the prefix to use for logging and printing exception messages. Separated by a colon and space (:) from the actual message.
+     */
+    public AbstractDictionaryServlet(String exceptionMessagePrefix) {
+        super();
+        this.exceptionMessagePrefix = exceptionMessagePrefix;
+    }
+
     String getMandatoryParameter(SlingHttpServletRequest request, String parameterName, boolean allowEmptyValue) {
         return getMandatoryParameter(request, parameterName, allowEmptyValue, Function.identity());
     }
@@ -93,10 +105,38 @@ public abstract class AbstractDictionaryServlet extends SlingAllMethodsServlet {
         try {
             super.service(request, response);
         } catch (IllegalArgumentException e) {
-            LOG.error("Servlet parameter error: {}", e.getMessage());
+            LOG.error("{}: Servlet parameter error: {}", exceptionMessagePrefix, e.getMessage());
             HtmlResponse htmlResponse = new HtmlResponse();
             htmlResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
             htmlResponse.send(response, true);
         }
+    }
+
+    @Override
+    protected void doPost(@NotNull SlingHttpServletRequest request, @NotNull SlingHttpServletResponse response)
+            throws ServletException, IOException {
+        HtmlResponse htmlResponse = new HtmlResponse();
+        try {
+            internalDoPost(request, htmlResponse);
+            htmlResponse.send(response, true);
+        } catch (Throwable e) {
+            if (e instanceof IllegalArgumentException) {
+                throw (IllegalArgumentException)e; // rethrow IllegalArgumentException to be handled by the service method
+            }
+            LOG.error("{}: {}", exceptionMessagePrefix, e.getMessage(), e);
+            htmlResponse.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, exceptionMessagePrefix + ": " + e.getMessage());
+            htmlResponse.setTitle(exceptionMessagePrefix); // not exposed on client side for Ajax requests
+            htmlResponse.send(response, true);
+        }
+    }
+
+    /**
+     * Internal method to handle the POST request logic. Only supposed to be used from POST servlets which don't deliver any HTML response except for the enriched status code.
+     * 
+     * @param request the Sling HTTP servlet request
+     * @param htmlResponse the HTML response to be sent back
+     * @throws Throwable if an error occurs during processing
+     */
+    protected void internalDoPost(@NotNull SlingHttpServletRequest request, @NotNull HtmlResponse htmlResponse) throws Throwable {
     }
 }

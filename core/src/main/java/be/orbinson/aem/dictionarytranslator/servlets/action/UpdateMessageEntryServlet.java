@@ -1,21 +1,19 @@
 package be.orbinson.aem.dictionarytranslator.servlets.action;
 
-import be.orbinson.aem.dictionarytranslator.exception.DictionaryException;
-import be.orbinson.aem.dictionarytranslator.services.impl.CombiningMessageEntryResourceProvider;
-import be.orbinson.aem.dictionarytranslator.servlets.datasource.CombiningMessageEntryDatasourceForDialog;
-import be.orbinson.aem.dictionarytranslator.services.DictionaryService;
-import be.orbinson.aem.dictionarytranslator.services.Dictionary;
+import java.util.Locale;
+import java.util.Optional;
+
+import javax.jcr.RepositoryException;
+import javax.servlet.Servlet;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.api.SlingHttpServletRequest;
-import org.apache.sling.api.SlingHttpServletResponse;
 import org.apache.sling.api.resource.PersistenceException;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
-import org.apache.sling.api.servlets.SlingAllMethodsServlet;
 import org.apache.sling.servlets.annotations.SlingServletResourceTypes;
 import org.apache.sling.servlets.post.HtmlResponse;
-import org.jetbrains.annotations.NotNull;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
@@ -24,12 +22,11 @@ import org.slf4j.LoggerFactory;
 import com.day.cq.replication.ReplicationException;
 import com.day.cq.replication.Replicator;
 
-import javax.jcr.RepositoryException;
-import javax.servlet.Servlet;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.util.Locale;
-import java.util.Optional;
+import be.orbinson.aem.dictionarytranslator.exception.DictionaryException;
+import be.orbinson.aem.dictionarytranslator.services.Dictionary;
+import be.orbinson.aem.dictionarytranslator.services.DictionaryService;
+import be.orbinson.aem.dictionarytranslator.services.impl.CombiningMessageEntryResourceProvider;
+import be.orbinson.aem.dictionarytranslator.servlets.datasource.CombiningMessageEntryDatasourceForDialog;
 
 @Component(service = Servlet.class)
 @SlingServletResourceTypes(
@@ -38,6 +35,10 @@ import java.util.Optional;
         methods = "POST"
 )
 public class UpdateMessageEntryServlet extends AbstractDictionaryServlet {
+
+    public UpdateMessageEntryServlet() {
+        super("Unable to update message entry");
+    }
 
     private static final Logger LOG = LoggerFactory.getLogger(UpdateMessageEntryServlet.class);
 
@@ -48,26 +49,18 @@ public class UpdateMessageEntryServlet extends AbstractDictionaryServlet {
     private Replicator replicator;
 
     @Override
-    protected void doPost(SlingHttpServletRequest request, @NotNull SlingHttpServletResponse response) throws IOException {
+    protected void internalDoPost(SlingHttpServletRequest request, HtmlResponse htmlResponse) throws Throwable {
         String combiningMessageEntryPath = getMandatoryParameter(request, "item", false); // only single items are supported
-
+        htmlResponse.setPath(combiningMessageEntryPath);
         ResourceResolver resourceResolver = request.getResourceResolver();
-        try {
-            Resource combiningMessageEntryResource = resourceResolver.getResource(combiningMessageEntryPath);
-            if (combiningMessageEntryResource != null) {
-                // javasecurity:S5145
-                LOG.debug("Update message entry for path '{}'", combiningMessageEntryPath);
-                updateCombiningMessageEntry(request, resourceResolver, combiningMessageEntryResource);
-            } else {
-                // javasecurity:S5145
-                HtmlResponse htmlResponse = new HtmlResponse();
-                htmlResponse.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, String.format("No dictionaries to update exist for '%s'", combiningMessageEntryPath));
-                htmlResponse.send(response, true);
-            }
-        } catch (Exception e) {
-            HtmlResponse htmlResponse = new HtmlResponse();
-            htmlResponse.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, String.format("Unable to update message entry '%s': %s", combiningMessageEntryPath, e.getMessage()));
-            htmlResponse.send(response, true);
+        Resource combiningMessageEntryResource = resourceResolver.getResource(combiningMessageEntryPath);
+        if (combiningMessageEntryResource != null) {
+            // javasecurity:S5145
+            LOG.debug("Updating message entry for path '{}'...", combiningMessageEntryPath);
+            updateCombiningMessageEntry(request, resourceResolver, combiningMessageEntryResource);
+        } else {
+            // javasecurity:S5145
+            htmlResponse.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, String.format("No dictionaries to update exist for '%s'", combiningMessageEntryPath));
         }
     }
 

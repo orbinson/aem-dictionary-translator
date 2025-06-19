@@ -30,26 +30,26 @@ import be.orbinson.aem.dictionarytranslator.services.DictionaryService;
         methods = "POST"
 )
 public class CreateLanguageServlet extends AbstractDictionaryServlet {
+    public CreateLanguageServlet() {
+        super("Unable to add language");
+    }
+
     private static final Logger LOG = LoggerFactory.getLogger(CreateLanguageServlet.class);
 
     @Reference
     private transient DictionaryService dictionaryService;
 
     @Override
-    protected void doPost(@NotNull SlingHttpServletRequest request, @NotNull SlingHttpServletResponse response) throws ServletException, IOException {
+    protected void internalDoPost(SlingHttpServletRequest request, HtmlResponse htmlResponse) throws Throwable {
         String dictionary = getMandatoryParameter(request, "dictionary", false);
         Locale language = getMandatoryParameter(request, "language", false, Locale::forLanguageTag);
         Collection<String> basenames = getOptionalParameters(request, "basename", true);
-
+        htmlResponse.setCreateRequest(true);
+        htmlResponse.setPath(dictionary + "/" + language.toLanguageTag()); // close enough to the actual path
         ResourceResolver resourceResolver = request.getResourceResolver();
-        try {
-            LOG.debug("Adding language '{}' to dictionary '{}'", language, dictionary);
-            dictionaryService.createDictionary(resourceResolver, dictionary, language, basenames);
-            resourceResolver.commit();
-        } catch (PersistenceException|DictionaryException e) {
-            HtmlResponse htmlResponse = new HtmlResponse();
-            htmlResponse.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, String.format("Unable to add language '%s' to dictionary '%s': %s", language, dictionary, e.getMessage()));
-            htmlResponse.send(response, true);
-        }
+        LOG.debug("Adding language '{}' to dictionary '{}'...", language, dictionary);
+        dictionaryService.createDictionary(resourceResolver, dictionary, language, basenames);
+        resourceResolver.commit();
+        
     }
 }

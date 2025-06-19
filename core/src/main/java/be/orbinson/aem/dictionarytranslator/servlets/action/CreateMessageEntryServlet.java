@@ -8,12 +8,9 @@ import javax.servlet.Servlet;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.sling.api.SlingHttpServletRequest;
-import org.apache.sling.api.SlingHttpServletResponse;
-import org.apache.sling.api.resource.PersistenceException;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.servlets.annotations.SlingServletResourceTypes;
 import org.apache.sling.servlets.post.HtmlResponse;
-import org.jetbrains.annotations.NotNull;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
@@ -32,55 +29,48 @@ import be.orbinson.aem.dictionarytranslator.servlets.datasource.CombiningMessage
 )
 public class CreateMessageEntryServlet extends AbstractDictionaryServlet {
 
+    public CreateMessageEntryServlet() {
+        super("Unable to create message entry");
+    }
+
     private static final Logger LOG = LoggerFactory.getLogger(CreateMessageEntryServlet.class);
 
     @Reference
     private transient DictionaryService dictionaryService;
 
     @Override
-    protected void doPost(SlingHttpServletRequest request, @NotNull SlingHttpServletResponse response) throws IOException {
+    protected void internalDoPost(SlingHttpServletRequest request, HtmlResponse htmlResponse) throws Throwable {
         String key = getMandatoryParameter(request, "key", false);
         String dictionary = getMandatoryParameter(request, "dictionary", false);
-
-        createMessageEntry(request, response, dictionary, key);
-        
+        htmlResponse.setCreateRequest(true);
+        createMessageEntry(request, htmlResponse, dictionary, key);
     }
 
-    private void createMessageEntry(SlingHttpServletRequest request, @NotNull SlingHttpServletResponse response, String path, String key) throws IOException {
+    private void createMessageEntry(SlingHttpServletRequest request, HtmlResponse htmlResponse, String path, String key) throws IOException, DictionaryException {
         ResourceResolver resourceResolver = request.getResourceResolver();
-        try {
-            Collection<Dictionary> dictionaries = dictionaryService.getDictionaries(resourceResolver, path);
-            if (dictionaries.isEmpty()) {
-                HtmlResponse htmlResponse = new HtmlResponse();
-                htmlResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST, String.format("No dictionaries found at path '%s'", path));
-                htmlResponse.send(response, true);
+        Collection<Dictionary> dictionaries = dictionaryService.getDictionaries(resourceResolver, path);
+        if (dictionaries.isEmpty()) {
+            htmlResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST, String.format("No dictionaries found at path '%s'", path));
+            return;
+        }
+        for (Dictionary languageDictionary : dictionaries) {
+            if (!languageDictionary.getEntries().containsKey(key)) {
+                String name = languageDictionary.getLanguage().toLanguageTag();
+                String message = getOptionalParameter(request, name, true).orElse("");
+                boolean useEmpty = getOptionalParameter(request, name + CombiningMessageEntryDatasourceForDialog.SUFFIX_USE_EMPTY, false, Boolean::parseBoolean).orElse(false);
+                Optional<String> messageOptional;
+                if (useEmpty || !message.isEmpty()) {
+                    messageOptional = Optional.of(message);
+                } else {
+                    messageOptional = Optional.empty();
+                }
+                LOG.debug("Creating message entry for key '{}' in dictionary '{}'...", key, languageDictionary.getPath());
+                languageDictionary.createEntry(resourceResolver, key, messageOptional);
+            } else {
+                htmlResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST, String.format("Can not create message entry %s, key already exists", key));
                 return;
             }
-            for (Dictionary languageDictionary : dictionaries) {
-                if (!languageDictionary.getEntries().containsKey(key)) {
-                    String name = languageDictionary.getLanguage().toLanguageTag();
-                    String message = getOptionalParameter(request, name, true).orElse("");
-                    boolean useEmpty = getOptionalParameter(request, name + CombiningMessageEntryDatasourceForDialog.SUFFIX_USE_EMPTY, false, Boolean::parseBoolean).orElse(false);
-                    Optional<String> messageOptional;
-                    if (useEmpty || !message.isEmpty()) {
-                        messageOptional = Optional.of(message);
-                    } else {
-                        messageOptional = Optional.empty();
-                    }
-                    languageDictionary.createEntry(resourceResolver, key, messageOptional);
-                } else {
-                    HtmlResponse htmlResponse = new HtmlResponse();
-                    htmlResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST, String.format("Can not create message entry %s, key already exists", key));
-                    htmlResponse.send(response, true);
-                    return;
-                }
-            }
-            resourceResolver.commit();
-        } catch (PersistenceException|DictionaryException e) {
-            HtmlResponse htmlResponse = new HtmlResponse();
-            htmlResponse.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, String.format("Unable to create key '%s' on dictionary '%s': %s", key, path, e.getMessage()));
-            htmlResponse.send(response, true);
         }
+        resourceResolver.commit();
     }
-
 }

@@ -37,6 +37,10 @@ import be.orbinson.aem.dictionarytranslator.services.Dictionary;
         methods = "POST")
 public class ExportDictionaryServlet extends AbstractDictionaryServlet {
 
+    public ExportDictionaryServlet() {
+        super("Unable to export dictionary");
+    }
+
     public static final String KEY_HEADER = "KEY";
     public static final String VALUE_EMPTY = "<empty>";
     private static final Logger LOG = LoggerFactory.getLogger(ExportDictionaryServlet.class);
@@ -49,10 +53,6 @@ public class ExportDictionaryServlet extends AbstractDictionaryServlet {
         String dictionaryPath = getMandatoryParameter(request, "dictionary", false);
         Optional<String> delimiter = getOptionalParameter(request, "delimiter", false);
 
-        response.setContentType("text/csv");
-        response.setCharacterEncoding("UTF-8");
-        response.setHeader("Content-Disposition", "attachment; filename=\"dictionary_" + dictionaryPath + ".csv");
-
         ResourceResolver resolver = request.getResourceResolver();
         try {
             Collection<Dictionary> dictionaries = dictionaryService.getDictionaries(resolver, dictionaryPath);
@@ -62,6 +62,9 @@ public class ExportDictionaryServlet extends AbstractDictionaryServlet {
                 htmlResponse.send(response, true);
                 return;
             }
+            response.setContentType("text/csv");
+            response.setCharacterEncoding("UTF-8");
+            response.setHeader("Content-Disposition", "attachment; filename=\"dictionary_" + dictionaryPath + ".csv");
             try (CSVPrinter printer = createCsvPrinter(response.getWriter(), delimiter, dictionaries.stream().map(Dictionary::getLanguage).collect(Collectors.toList()))) {
                 Collection<String> keys = dictionaries.stream().flatMap(d -> {
                     try {

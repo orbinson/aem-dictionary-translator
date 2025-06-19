@@ -72,7 +72,7 @@ class DeleteDictionaryServletTest {
     }
 
     @Test
-    void deleteMultipleDictionaries() throws IOException {
+    void deleteMultipleDictionaries() throws IOException, ServletException {
         context.create().resource("/content/dictionaries/site-a/i18n");
         context.create().resource("/content/dictionaries/site-b/i18n");
         context.create().resource("/content/dictionaries/site-c/i18n");
@@ -89,7 +89,7 @@ class DeleteDictionaryServletTest {
     }
 
     @Test
-    void deleteNonExistingDictionary() throws IOException {
+    void deleteNonExistingDictionary() throws IOException, ServletException {
         context.create().resource("/content/dictionaries/site-a/i18n");
         context.request().setParameterMap(Map.of(
                 DeleteDictionaryServlet.DICTIONARIES_PARAM, new String[]{"/content/dictionaries/site-b/i18n"}
@@ -98,6 +98,6 @@ class DeleteDictionaryServletTest {
         servlet.doPost(context.request(), context.response());
 
         assertNotNull(context.resourceResolver().getResource("/content/dictionaries/site-a/i18n"));
-        assertEquals(HttpServletResponse.SC_BAD_REQUEST, context.response().getStatus());
+        assertEquals(HttpServletResponse.SC_NOT_FOUND, context.response().getStatus());
     }
 }

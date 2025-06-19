@@ -13,10 +13,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Editing a key containing newlines (\n) produces duplicate entries [#208](https://github.com/orbinson/aem-dictionary-translator/issues/208)
 - Importing a key that has the same name as a sling:MessageEntry node generates an error [#209](https://github.com/orbinson/aem-dictionary-translator/issues/209)
 
-
 ### Changed
 
 - Allow empty value on i18n key [#172](https://github.com/orbinson/aem-dictionary-translator/issues/172)
+- Improve exception handling in servlets [#212](https://github.com/orbinson/aem-dictionary-translator/issues/212)
 
 ## [1.4.1] - 2025-06-04
 
