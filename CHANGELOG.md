@@ -7,10 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Fixed 
+## [1.5.0] - 2025-06-19
+
+### Fixed
 
 - Deleting a key that doesn't exist in all sibling dictionaries (i.e. not have a sling:MessageEntry node for one of the languages) produces an error [#207](https://github.com/orbinson/aem-dictionary-translator/issues/207)
-- Editing a key containing newlines (\n) produces duplicate entries [#208](https://github.com/orbinson/aem-dictionary-translator/issues/208)
+- Editing a key containing newlines (\\n) produces duplicate entries [#208](https://github.com/orbinson/aem-dictionary-translator/issues/208)
 - Importing a key that has the same name as a sling:MessageEntry node generates an error [#209](https://github.com/orbinson/aem-dictionary-translator/issues/209)
 
 ### Changed
@@ -220,7 +222,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Create, publish and edit dictionaries
 - Create, delete and update message entries in a dictionary
 
-[unreleased]: https://github.com/orbinson/aem-dictionary-translator/compare/1.4.1...HEAD
+[unreleased]: https://github.com/orbinson/aem-dictionary-translator/compare/1.5.0...HEAD
+[1.5.0]: https://github.com/orbinson/aem-dictionary-translator/compare/1.4.1...1.5.0
 [1.4.1]: https://github.com/orbinson/aem-dictionary-translator/compare/1.4.0...1.4.1
 [1.4.0]: https://github.com/orbinson/aem-dictionary-translator/compare/1.3.3...1.4.0
 [1.3.3]: https://github.com/orbinson/aem-dictionary-translator/compare/1.3.2...1.3.3
