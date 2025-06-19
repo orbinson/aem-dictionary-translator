@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed 
+
+- Deleting a key that doesn't exist in all sibling dictionaries (i.e. not have a sling:MessageEntry node for one of the languages) produces an error [#207](https://github.com/orbinson/aem-dictionary-translator/issues/207)
+- Editing a key containing newlines (\n) produces duplicate entries [#208](https://github.com/orbinson/aem-dictionary-translator/issues/208)
+
+### Changed
+
+- Allow empty value on i18n key [#172](https://github.com/orbinson/aem-dictionary-translator/issues/172)
+
 ## [1.4.1] - 2025-06-04
 
 ### Fixed

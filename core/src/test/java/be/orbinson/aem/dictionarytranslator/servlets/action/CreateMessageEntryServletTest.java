@@ -1,12 +1,11 @@
 package be.orbinson.aem.dictionarytranslator.servlets.action;
 
-import static be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants.SLING_KEY;
 import static be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants.SLING_MESSAGE;
 import static be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants.SLING_MESSAGEENTRY;
 import static org.apache.jackrabbit.JcrConstants.JCR_PRIMARYTYPE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.mock;
 
 import java.io.IOException;
@@ -115,14 +114,12 @@ class CreateMessageEntryServletTest {
         assertNotNull(resource);
         ValueMap properties = resource.getValueMap();
         assertEquals(SLING_MESSAGEENTRY, properties.get(JCR_PRIMARYTYPE));
-        assertEquals("apple", properties.get(SLING_KEY));
         assertEquals("Apple", properties.get(SLING_MESSAGE));
 
         resource = context.resourceResolver().getResource("/content/dictionaries/fruit/i18n/fr/apple");
         assertNotNull(resource);
         properties = resource.getValueMap();
         assertEquals(SLING_MESSAGEENTRY, properties.get(JCR_PRIMARYTYPE));
-        assertEquals("apple", properties.get(SLING_KEY));
         assertEquals("Pomme", properties.get(SLING_MESSAGE));
     }
 
@@ -146,10 +143,37 @@ class CreateMessageEntryServletTest {
         assertEquals(HttpServletResponse.SC_OK, context.response().getStatus());
 
         Resource resource = context.resourceResolver().getResource("/content/dictionaries/i18n/fr/greeting");
-        ValueMap properties = resource.getValueMap();
         assertNotNull(resource);
+        ValueMap properties = resource.getValueMap();
         assertEquals(SLING_MESSAGEENTRY, properties.get(JCR_PRIMARYTYPE));
-        assertNull(properties.get(SLING_MESSAGE));
+        assertFalse(properties.containsKey(SLING_MESSAGE));
+    }
+
+    @Test
+    void doPostWithEmptyMessageAndUseEmpty() throws IOException, ServletException {
+        context.create().resource("/content/dictionaries/i18n/en", Map.of("jcr:language", "en"));
+        context.create().resource("/content/dictionaries/i18n/fr", Map.of("jcr:language", "fr"));
+        context.resourceResolver().commit(); // expose to other resource resolvers
+        dictionaryPaths.add("/content/dictionaries/i18n/en");
+        dictionaryPaths.add("/content/dictionaries/i18n/fr");
+
+        context.request().setParameterMap(Map.of(
+                "dictionary", "/content/dictionaries/i18n",
+                "key", "greeting",
+                "en", "Hello",
+                "fr", "",
+                "fr_useEmpty", "true"
+        ));
+
+        servlet.service(context.request(), context.response());
+
+        assertEquals(HttpServletResponse.SC_OK, context.response().getStatus());
+
+        Resource resource = context.resourceResolver().getResource("/content/dictionaries/i18n/fr/greeting");
+        assertNotNull(resource);
+        ValueMap properties = resource.getValueMap();
+        assertEquals(SLING_MESSAGEENTRY, properties.get(JCR_PRIMARYTYPE));
+        assertEquals("", properties.get(SLING_MESSAGE));
     }
 
     @Test
@@ -183,14 +207,12 @@ class CreateMessageEntryServletTest {
         ValueMap properties = resource.getValueMap();
         assertNotNull(resource);
         assertEquals(SLING_MESSAGEENTRY, properties.get(JCR_PRIMARYTYPE));
-        assertEquals("greeting", properties.get(SLING_KEY));
         assertEquals("Hello", properties.get(SLING_MESSAGE));
 
         resource = context.resourceResolver().getResource("/content/dictionaries/i18n/en/Greeting");
         properties = resource.getValueMap();
         assertNotNull(resource);
         assertEquals(SLING_MESSAGEENTRY, properties.get(JCR_PRIMARYTYPE));
-        assertEquals("Greeting", properties.get(SLING_KEY));
         assertEquals("Hello2", properties.get(SLING_MESSAGE));
     }
 

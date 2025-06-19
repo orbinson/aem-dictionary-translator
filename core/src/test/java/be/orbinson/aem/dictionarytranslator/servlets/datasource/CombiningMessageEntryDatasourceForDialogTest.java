@@ -118,8 +118,8 @@ class CombiningMessageEntryDatasourceForDialogTest {
 
         DataSource dataSource = (DataSource)context.request().getAttribute(DataSource.class.getName());
 
-        // this should only have the 3 textfields for the dialog and a hidden field for the path
-        assertEquals(4, IteratorUtils.size(dataSource.iterator()));
+        // this should only have the 3 textfields for the dialog
+        assertEquals(3, IteratorUtils.size(dataSource.iterator()));
     }
 
 }

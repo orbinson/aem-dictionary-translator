@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -51,7 +52,13 @@ public class JsonFileDictionary extends DictionaryImpl {
     }
 
     @Override
-    public void createOrUpdateEntry(ResourceResolver resourceResolver, String key, String message)
+    public void createEntry(ResourceResolver resourceResolver, String key, Optional<String> message)
+            throws PersistenceException, DictionaryException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void updateEntry(ResourceResolver resourceResolver, String key, Optional<String> message)
             throws PersistenceException, DictionaryException {
         throw new UnsupportedOperationException("Not supported yet.");
     }

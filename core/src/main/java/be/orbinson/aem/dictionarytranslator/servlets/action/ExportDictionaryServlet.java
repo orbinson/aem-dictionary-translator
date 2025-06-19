@@ -38,7 +38,7 @@ import be.orbinson.aem.dictionarytranslator.services.Dictionary;
 public class ExportDictionaryServlet extends AbstractDictionaryServlet {
 
     public static final String KEY_HEADER = "KEY";
-
+    public static final String VALUE_EMPTY = "<empty>";
     private static final Logger LOG = LoggerFactory.getLogger(ExportDictionaryServlet.class);
 
     @Reference
@@ -111,7 +111,15 @@ public class ExportDictionaryServlet extends AbstractDictionaryServlet {
                     return null;
                 }
             })
-            .map(entry -> entry != null ? entry.getText() : " ")
+            .map(entry -> {
+                if (entry == null || entry.getText() == null) {
+                    return "";
+                } else if (entry.getText().isEmpty()) {
+                    return VALUE_EMPTY;
+                } else {
+                    return entry.getText();
+                }
+            })
             .forEach(columns::add);
         csvPrinter.printRecord(columns);
     }

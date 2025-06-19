@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.IllformedLocaleException;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
@@ -13,6 +14,7 @@ import javax.jcr.Session;
 import javax.jcr.security.AccessControlManager;
 import javax.jcr.security.Privilege;
 
+import org.apache.sling.api.resource.PersistenceException;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ValueMap;
@@ -129,6 +131,13 @@ public abstract class DictionaryImpl implements Dictionary {
     }
 
     public abstract Map<String, Message> loadMessages(Resource dictionaryResource) throws DictionaryException;
+
+    
+    @Override
+    public void createOrUpdateEntry(ResourceResolver resourceResolver, String key, String message)
+            throws PersistenceException, DictionaryException {
+        updateEntry(resourceResolver, key, Optional.ofNullable(message));
+    }
 
     /**
      * Returns the resource for this dictionary using the given resource resolver.

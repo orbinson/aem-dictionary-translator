@@ -24,7 +24,6 @@ import org.apache.commons.lang3.text.translate.UnicodeUnescaper;
 import org.apache.jackrabbit.util.Text;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
-import org.apache.sling.api.resource.ResourceUtil;
 import org.apache.sling.api.wrappers.ValueMapDecorator;
 import org.apache.sling.spi.resource.provider.ResolveContext;
 import org.apache.sling.spi.resource.provider.ResourceContext;
@@ -172,6 +171,7 @@ public class CombiningMessageEntryResourceProvider extends ResourceProvider<Obje
 
     /* Properties exposed in the combining message entry resource */
     public static final String KEY = "key";
+    public static final String ESCAPED_KEY = "escapedKey"; // exposed in UI which does not deal well with newlines
     public static final String DICTIONARY_PATH = "dictionaryPath";
     public static final String LANGUAGES = "languages";
     public static final String MESSAGE_ENTRY_PATHS = "messageEntryPaths";
@@ -278,11 +278,12 @@ public class CombiningMessageEntryResourceProvider extends ResourceProvider<Obje
 
     /**
      * Creates a resource path for the given dictionary path and key.
-     * The key is escaped with the help of unicode escape sequences for {@code /} and {@code %} and {@code .} potentially in order to
+     * The key is escaped with the help of unicode escape sequences for {@code /}, {@code %}, {@code .}, {@code \n} and {@code \r} potentially in order to
      * <ul>
      * <li>allow to reconstruct the dictionary path from the combined message entry path</li>
      * <li>prevent clashes with the relative path selectors {@code .} and {@code ..} which are used in the Sling API to refer to the current and parent resource</li>
      * <li>prevent the URITemplate heuristic in {@code /libs/clientlibs/granite/uritemplate/URITemplate.js#isEncoded(String)} from not applying URL encoding to such values if used in request parameters</li>
+     * <li>prevent emitting of characters in HTML which may be modified through the browser (new lines in data attributes)</li>
      * </ul>
      *
      * @param dictionaryPath the dictionary path
@@ -298,15 +299,21 @@ public class CombiningMessageEntryResourceProvider extends ResourceProvider<Obje
         if (key.chars().allMatch(c -> c == '.')) {
             translator = JavaUnicodeEscaper.between('.', '.');
         } else {
-            translator = new AggregateTranslator(JavaUnicodeEscaper.between('%', '%'), JavaUnicodeEscaper.between('/', '/'));
+            translator = new AggregateTranslator(JavaUnicodeEscaper.between('%', '%'), JavaUnicodeEscaper.between('/', '/'), JavaUnicodeEscaper.between('\n', '\n'), JavaUnicodeEscaper.between('\r', '\r'));
         }
         return ROOT + dictionaryPath + "/" + translator.translate(key);
     }
 
+    public static String escapeKey(String key) {
+        // just expose the key in a form which makes whitespace characters visible
+        return key.replace("\n", "\\n").replace("\r", "\\r").replace("\t", "\\t").replace(" ", "\u00B7");
+    }
+
     public static @NotNull Map<String, Object> createResourceProperties(@NotNull String path, boolean isEditable, @NotNull Map<Locale, Message> messagePerLanguage, Optional<SortedSet<ValidationMessage>> validationMessages) {
         Map<String, Object> properties = new HashMap<>();
-        properties.put(KEY, extractKeyFromPath(path));
-        properties.put("path", path); // TODO: remove as it duplicates the resource path which is always available
+        String key = extractKeyFromPath(path);
+        properties.put(KEY, key);
+        properties.put(ESCAPED_KEY, escapeKey(key));
         properties.put("editable", isEditable);
         properties.put(DICTIONARY_PATH, getDictionaryPath(path));
         properties.put(LANGUAGES, messagePerLanguage.keySet().toArray(Locale[]::new));
@@ -314,13 +321,14 @@ public class CombiningMessageEntryResourceProvider extends ResourceProvider<Obje
         for (Entry<Locale, Message> messageEntryPerLanguageEntry : messagePerLanguage.entrySet()) {
             Message message = messageEntryPerLanguageEntry.getValue();
             final String text;
-            if (message == null) {
-                text = "";
-            } else {
+            if (message != null) {
                 text = message.getText();
                 message.getResourcePath().ifPresent(messageEntryPaths::add);
+                if (text != null) {
+                    // if no text is maintained, the message entry is there but contains no translation text -> treat visually the same as not existing
+                    properties.put(messageEntryPerLanguageEntry.getKey().toLanguageTag(), text);
+                }
             }
-            properties.put(messageEntryPerLanguageEntry.getKey().toLanguageTag(), text);
         }
         // all paths to replicate
         properties.put(MESSAGE_ENTRY_PATHS, messageEntryPaths);

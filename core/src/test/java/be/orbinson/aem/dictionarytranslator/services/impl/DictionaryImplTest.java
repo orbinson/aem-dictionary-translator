@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
@@ -51,7 +52,13 @@ class DictionaryImplTest {
             }
 
             @Override
-            public void createOrUpdateEntry(ResourceResolver resourceResolver, String key, String message)
+            public void createEntry(ResourceResolver resourceResolver, String key, Optional<String> message)
+                    throws PersistenceException, DictionaryException {
+                throw new UnsupportedOperationException("Not implemented in test");
+            }
+
+            @Override
+            public void updateEntry(ResourceResolver resourceResolver, String key, Optional<String> message)
                     throws PersistenceException, DictionaryException {
                 throw new UnsupportedOperationException("Not implemented in test");
             }

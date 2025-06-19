@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import javax.jcr.RepositoryException;
@@ -32,9 +33,12 @@ import org.jetbrains.annotations.NotNull;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
+import com.day.cq.replication.ReplicationException;
+import com.day.cq.replication.Replicator;
+
 import be.orbinson.aem.dictionarytranslator.exception.DictionaryException;
-import be.orbinson.aem.dictionarytranslator.services.DictionaryService;
 import be.orbinson.aem.dictionarytranslator.services.Dictionary;
+import be.orbinson.aem.dictionarytranslator.services.DictionaryService;
 import be.orbinson.aem.dictionarytranslator.services.impl.DictionaryImpl;
 
 @Component(service = Servlet.class)
@@ -48,6 +52,9 @@ public class ImportDictionaryServlet extends AbstractDictionaryServlet {
     @Reference
     private DictionaryService dictionaryService;
 
+    @Reference
+    private Replicator replicator;
+
     @Override
     public void doPost(SlingHttpServletRequest request, @NotNull SlingHttpServletResponse response) throws IOException {
         String dictionaryPath = getMandatoryParameter(request, "dictionary", false);
@@ -56,7 +63,7 @@ public class ImportDictionaryServlet extends AbstractDictionaryServlet {
         if (csvfile != null) {
             try {
                 processCsvFile(request, dictionaryPath, csvfile.getInputStream());
-            } catch (IOException | RepositoryException | DictionaryException e) {
+            } catch (IOException | RepositoryException | DictionaryException | ReplicationException e) {
                 HtmlResponse htmlResponse = new HtmlResponse();
                 htmlResponse.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error while importing CSV file: " + e.getMessage());
                 htmlResponse.send(response, true);
@@ -64,7 +71,7 @@ public class ImportDictionaryServlet extends AbstractDictionaryServlet {
         }
     }
 
-    private void processCsvFile(SlingHttpServletRequest request, String dictionaryPath, InputStream csvContent) throws IOException, RepositoryException, DictionaryException {
+    private void processCsvFile(SlingHttpServletRequest request, String dictionaryPath, InputStream csvContent) throws IOException, RepositoryException, DictionaryException, ReplicationException {
         ResourceResolver resourceResolver = request.getResourceResolver();
 
         List<String> lines = IOUtils.readLines(csvContent, String.valueOf(StandardCharsets.UTF_8));
@@ -134,7 +141,7 @@ public class ImportDictionaryServlet extends AbstractDictionaryServlet {
         return map;
     }
 
-    private void processCsvRecord(ResourceResolver resourceResolver, Map<Locale, Dictionary> dictionaries, Map<Locale, String> localeToHeaderMap, CSVRecord csvRecord) throws IOException, RepositoryException, DictionaryException {
+    private void processCsvRecord(ResourceResolver resourceResolver, Map<Locale, Dictionary> dictionaries, Map<Locale, String> localeToHeaderMap, CSVRecord csvRecord) throws IOException, RepositoryException, DictionaryException, ReplicationException {
         if (csvRecord.size() != localeToHeaderMap.size() + 1) {
             throw new IOException("Record has an incorrect number of translations: " + csvRecord);
         }
@@ -149,8 +156,17 @@ public class ImportDictionaryServlet extends AbstractDictionaryServlet {
             if (!dictionary.isEditable(resourceResolver)) {
                 throw new IOException("Dictionary for language '" + localeWithHeader.getValue() + "' is not editable: " + dictionary.getPath());
             }
-            String translation = csvRecord.get(localeWithHeader.getValue());
-            dictionary.createOrUpdateEntry(resourceResolver, key, translation);
+            String message = csvRecord.get(localeWithHeader.getValue());
+            final Optional<String> messageOptional;
+            if (message.isEmpty()) {
+                messageOptional = Optional.empty();
+            } else {
+                if (message.equals(ExportDictionaryServlet.VALUE_EMPTY)) {
+                    message = ""; // convert the special empty value back to an empty string
+                }
+                messageOptional = Optional.of(message);
+            }
+            dictionary.updateEntry(resourceResolver, key, messageOptional);
         }
     }
 

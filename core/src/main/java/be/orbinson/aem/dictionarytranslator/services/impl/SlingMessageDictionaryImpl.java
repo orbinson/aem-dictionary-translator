@@ -63,31 +63,46 @@ public class SlingMessageDictionaryImpl extends DictionaryImpl {
             if (isMessageEntryResource(messageEntryResource)) {
                 String key = Optional.ofNullable(messageEntryResource.getValueMap().get(SLING_KEY, String.class))
                         .orElse(Text.unescapeIllegalJcrChars(messageEntryResource.getName()));
-                messages.put(key, new Message(messageEntryResource.getValueMap().get(SLING_MESSAGE, ""), messageEntryResource.getPath()));
+                messages.put(key, new Message(messageEntryResource.getValueMap().get(SLING_MESSAGE, null), messageEntryResource.getPath()));
             }
         });
         return messages;
     }
 
     @Override
-    public void createOrUpdateEntry(ResourceResolver resourceResolver, String key, String message)
+    public void createEntry(ResourceResolver resourceResolver, String key, Optional<String> message)
             throws PersistenceException, DictionaryException {
-        Resource messageEntryResource = getOrCreateMessageEntryResource(resourceResolver, key);
+        final Resource messageEntryResource = createMessageEntryResource(resourceResolver, key);
         updateMessage(key, message, messageEntryResource);
     }
 
-    private static void updateMessage(String key, String message, Resource messageEntryResource) throws PersistenceException {
+    @Override
+    public void updateEntry(ResourceResolver resourceResolver, String key, Optional<String> message)
+            throws PersistenceException, DictionaryException {
+        final Resource messageEntryResource;
+        if (message.isPresent()) {
+            messageEntryResource = getOrCreateMessageEntryResource(resourceResolver, key);
+        } else {
+            messageEntryResource = getMessageEntryResource(resourceResolver, key).orElse(null);
+            if (messageEntryResource == null) {
+                LOG.trace("No message entry found for key '{}', nothing to update, as message was not set", key);
+                return; // Nothing to update if the message is not present and no entry exists
+            }
+        }
+        updateMessage(key, message, messageEntryResource);
+    }
+
+    private static void updateMessage(String key, Optional<String> message, Resource messageEntryResource) throws PersistenceException {
         ValueMap valueMap = messageEntryResource.adaptTo(ModifiableValueMap.class);
         if (valueMap != null) {
-            if (message.isBlank()) {
-                valueMap.remove(SLING_MESSAGE);
+            if (message.isPresent()) {
+                valueMap.put(SLING_MESSAGE, message.get());
+                LOG.trace("Updated message entry for key '{}' to message '{}' on path '{}'", key, message.get(), messageEntryResource.getPath());
             } else {
-                valueMap.put(SLING_MESSAGE, message);
-                if (StringUtils.isNotBlank(key)) {
-                    valueMap.putIfAbsent(SLING_KEY, key);
-                }
-                LOG.trace("Updated message entry with name '{}' and message '{}' on path '{}'", messageEntryResource.getName(), message, messageEntryResource.getPath());
+                valueMap.remove(SLING_MESSAGE);
+                LOG.trace("Removed message for key '{}' on path '{}'", key, messageEntryResource.getPath());
             }
+          
         } else {
             throw new PersistenceException("Could not update message entry, resource at \"" + messageEntryResource.getPath() + "\" not adaptable to ModifiableValueMap");
         }
@@ -109,10 +124,14 @@ public class SlingMessageDictionaryImpl extends DictionaryImpl {
         if (messageEntryResource.isPresent()) {
             return messageEntryResource.get();
         } else {
-            Resource newResource = resourceResolver.create(getResource(resourceResolver), Text.escapeIllegalJcrChars(key), Map.of(JCR_PRIMARYTYPE, SLING_MESSAGEENTRY));
-            LOG.trace("Created message entry with key '{}' on path '{}'", key, newResource.getPath());
-            return newResource;
+            return createMessageEntryResource(resourceResolver, key);
         }
+    }
+
+    private Resource createMessageEntryResource(ResourceResolver resourceResolver, String key) throws PersistenceException, DictionaryException {
+        Resource newResource = resourceResolver.create(getResource(resourceResolver), Text.escapeIllegalJcrChars(key), Map.of(JCR_PRIMARYTYPE, SLING_MESSAGEENTRY));
+        LOG.trace("Created message entry with key '{}' on path '{}'", key, newResource.getPath());
+        return newResource;
     }
 
     @Override
