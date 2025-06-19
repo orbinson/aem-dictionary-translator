@@ -108,7 +108,7 @@ class CreateMessageEntryServletTest {
 
         servlet.service(context.request(), context.response());
 
-        assertEquals(HttpServletResponse.SC_OK, context.response().getStatus());
+        assertEquals(HttpServletResponse.SC_CREATED, context.response().getStatus());
 
         Resource resource = context.resourceResolver().getResource("/content/dictionaries/fruit/i18n/en/apple");
         assertNotNull(resource);
@@ -140,7 +140,7 @@ class CreateMessageEntryServletTest {
 
         servlet.service(context.request(), context.response());
 
-        assertEquals(HttpServletResponse.SC_OK, context.response().getStatus());
+        assertEquals(HttpServletResponse.SC_CREATED, context.response().getStatus());
 
         Resource resource = context.resourceResolver().getResource("/content/dictionaries/i18n/fr/greeting");
         assertNotNull(resource);
@@ -167,7 +167,7 @@ class CreateMessageEntryServletTest {
 
         servlet.service(context.request(), context.response());
 
-        assertEquals(HttpServletResponse.SC_OK, context.response().getStatus());
+        assertEquals(HttpServletResponse.SC_CREATED, context.response().getStatus());
 
         Resource resource = context.resourceResolver().getResource("/content/dictionaries/i18n/fr/greeting");
         assertNotNull(resource);
@@ -191,7 +191,7 @@ class CreateMessageEntryServletTest {
                 "fr", ""
         ));
         servlet.service(context.request(), context.response());
-        assertEquals(HttpServletResponse.SC_OK, context.response().getStatus());
+        assertEquals(HttpServletResponse.SC_CREATED, context.response().getStatus());
 
         context.request().setParameterMap(Map.of(
                 "dictionary", "/content/dictionaries/i18n",
@@ -201,7 +201,7 @@ class CreateMessageEntryServletTest {
         ));
         servlet.service(context.request(), context.response());
 
-        assertEquals(HttpServletResponse.SC_OK, context.response().getStatus());
+        assertEquals(HttpServletResponse.SC_CREATED, context.response().getStatus());
 
         Resource resource = context.resourceResolver().getResource("/content/dictionaries/i18n/en/greeting");
         ValueMap properties = resource.getValueMap();
@@ -233,7 +233,7 @@ class CreateMessageEntryServletTest {
 
         servlet.service(context.request(), context.response());
 
-        assertEquals(HttpServletResponse.SC_OK, context.response().getStatus());
+        assertEquals(HttpServletResponse.SC_CREATED, context.response().getStatus());
 
         // invalidate cache
         dictionaryService.onChange(List.of(new ResourceChange(ChangeType.ADDED, "/content/dictionaries/i18n/en", false)));

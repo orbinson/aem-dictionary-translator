@@ -94,7 +94,7 @@ class CreateDictionaryServletTest {
 
         servlet.service(context.request(), context.response());
 
-        assertEquals(HttpServletResponse.SC_OK, context.response().getStatus());
+        assertEquals(HttpServletResponse.SC_CREATED, context.response().getStatus());
         for (String language : languages) {
             Resource resource = context.resourceResolver().getResource("/content/dictionaries/fruit/" + language);
             assertNotNull(resource);

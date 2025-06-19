@@ -1,22 +1,19 @@
 package be.orbinson.aem.dictionarytranslator.servlets.action;
 
-import java.io.IOException;
 import java.util.Collection;
 
 import javax.servlet.Servlet;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.sling.api.SlingHttpServletRequest;
-import org.apache.sling.api.SlingHttpServletResponse;
-import org.apache.sling.api.resource.PersistenceException;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.servlets.annotations.SlingServletResourceTypes;
 import org.apache.sling.servlets.post.HtmlResponse;
-import org.jetbrains.annotations.NotNull;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import com.day.cq.replication.ReplicationException;
 import com.day.cq.replication.Replicator;
 
 import be.orbinson.aem.dictionarytranslator.exception.DictionaryException;
@@ -30,7 +27,13 @@ import be.orbinson.aem.dictionarytranslator.services.DictionaryService;
 )
 public class DeleteDictionaryServlet extends AbstractDictionaryServlet {
 
+    public DeleteDictionaryServlet() {
+        super("Unable to delete dictionaries");
+    }
+
     public static final String DICTIONARIES_PARAM = "item";
+
+    private static final Logger LOG = LoggerFactory.getLogger(DeleteDictionaryServlet.class);
 
     @Reference
     private transient DictionaryService dictionaryService;
@@ -39,19 +42,18 @@ public class DeleteDictionaryServlet extends AbstractDictionaryServlet {
     private Replicator replicator;
 
     @Override
-    protected void doPost(SlingHttpServletRequest request, @NotNull SlingHttpServletResponse response) throws IOException {
+    protected void internalDoPost(SlingHttpServletRequest request, HtmlResponse htmlResponse) throws Throwable {
         Collection<String> dictionaries = getMandatoryParameters(request, DICTIONARIES_PARAM, false);
-
         final ResourceResolver resourceResolver = request.getResourceResolver();
-        for (String dictionaryPath : dictionaries) {
-            try {
+        try {
+            for (String dictionaryPath : dictionaries) {
+                htmlResponse.setPath(dictionaryPath);
+                LOG.debug("Delete dictionary at path '{}'", dictionaryPath);
                 dictionaryService.deleteDictionaries(replicator, resourceResolver, dictionaryPath);
-            } catch (DictionaryException | ReplicationException | PersistenceException e) {
-                HtmlResponse htmlResponse = new HtmlResponse();
-                htmlResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST, String.format("Unable to delete dictionary '%s': %s", dictionaryPath, e.getMessage()));
-                htmlResponse.send(response, true);
-                return;
             }
+        } catch (DictionaryException e) {
+            htmlResponse.setStatus(HttpServletResponse.SC_NOT_FOUND, e.getMessage());
+            return;
         }
         resourceResolver.commit();
     }

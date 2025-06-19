@@ -49,6 +49,10 @@ import be.orbinson.aem.dictionarytranslator.services.impl.DictionaryImpl;
 )
 public class ImportDictionaryServlet extends AbstractDictionaryServlet {
 
+    public ImportDictionaryServlet() {
+        super("Unable to import CSV file");
+    }
+
     @Reference
     private DictionaryService dictionaryService;
 
@@ -56,18 +60,12 @@ public class ImportDictionaryServlet extends AbstractDictionaryServlet {
     private Replicator replicator;
 
     @Override
-    public void doPost(SlingHttpServletRequest request, @NotNull SlingHttpServletResponse response) throws IOException {
+    protected void internalDoPost(SlingHttpServletRequest request, HtmlResponse htmlResponse) throws Throwable {
         String dictionaryPath = getMandatoryParameter(request, "dictionary", false);
         RequestParameter csvfile = request.getRequestParameter("csvfile");
 
         if (csvfile != null) {
-            try {
-                processCsvFile(request, dictionaryPath, csvfile.getInputStream());
-            } catch (IOException | RepositoryException | DictionaryException | ReplicationException e) {
-                HtmlResponse htmlResponse = new HtmlResponse();
-                htmlResponse.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error while importing CSV file: " + e.getMessage());
-                htmlResponse.send(response, true);
-            }
+            processCsvFile(request, dictionaryPath, csvfile.getInputStream());
         }
     }
 

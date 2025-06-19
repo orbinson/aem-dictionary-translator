@@ -70,7 +70,7 @@ class CreateLanguageServletTest {
         context.request().setMethod("POST");
         servlet.service(context.request(), context.response());
 
-        assertEquals(HttpServletResponse.SC_OK, context.response().getStatus());
+        assertEquals(HttpServletResponse.SC_CREATED, context.response().getStatus());
 
         Resource resource = context.resourceResolver().getResource("/content/dictionaries/fruit/i18n/en");
         ValueMap properties = resource.getValueMap();
@@ -97,7 +97,7 @@ class CreateLanguageServletTest {
         ValueMap properties = resource.getValueMap();
 
         assertNotNull(resource);
-        assertEquals(HttpServletResponse.SC_OK, context.response().getStatus());
+        assertEquals(HttpServletResponse.SC_CREATED, context.response().getStatus());
         assertEquals("en", properties.get("jcr:language"));
         assertEquals("mix:language", properties.get("jcr:mixinTypes", String.class));
         assertEquals("namespace", properties.get("sling:basename", String.class));

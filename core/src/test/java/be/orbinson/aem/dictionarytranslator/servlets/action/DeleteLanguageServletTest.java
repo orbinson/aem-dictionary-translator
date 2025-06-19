@@ -104,6 +104,6 @@ class DeleteLanguageServletTest {
         servlet.service(context.request(), context.response());
 
         assertNotNull(context.resourceResolver().getResource("/content/dictionaries/i18n/en"));
-        assertEquals(HttpServletResponse.SC_BAD_REQUEST, context.response().getStatus());
+        assertEquals(HttpServletResponse.SC_NOT_FOUND, context.response().getStatus());
     }
 }
