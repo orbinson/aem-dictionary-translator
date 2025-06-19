@@ -22,6 +22,7 @@ import org.apache.sling.api.resource.ModifiableValueMap;
 import org.apache.sling.api.resource.PersistenceException;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
+import org.apache.sling.api.resource.ResourceUtil;
 import org.apache.sling.api.resource.ValueMap;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -129,7 +130,9 @@ public class SlingMessageDictionaryImpl extends DictionaryImpl {
     }
 
     private Resource createMessageEntryResource(ResourceResolver resourceResolver, String key) throws PersistenceException, DictionaryException {
-        Resource newResource = resourceResolver.create(getResource(resourceResolver), Text.escapeIllegalJcrChars(key), Map.of(JCR_PRIMARYTYPE, SLING_MESSAGEENTRY));
+        Resource parentResource = getResource(resourceResolver);
+        String name = ResourceUtil.createUniqueChildName(parentResource, Text.escapeIllegalJcrChars(key));
+        Resource newResource = resourceResolver.create(parentResource, name, Map.of(JCR_PRIMARYTYPE, SLING_MESSAGEENTRY));
         LOG.trace("Created message entry with key '{}' on path '{}'", key, newResource.getPath());
         return newResource;
     }
