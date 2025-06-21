@@ -30,8 +30,11 @@ test("Create new key", async ({ page }) => {
     // fill in the form in the modal
     await expect(page.getByRole("dialog")).toBeVisible();
 
+    await page.getByRole("textbox", { name: "Key *" }).focus();
     await page.getByRole("textbox", { name: "Key *" }).fill("another");
+    await page.getByRole("textbox", { name: "Dutch (nl)" }).focus();
     await page.getByRole("textbox", { name: "Dutch (nl)" }).fill("Nog een");
+    await page.getByRole("textbox", { name: "English (en)" }).focus();
     await page.getByRole("textbox", { name: "English (en)" }).fill("Another One");
 
     // submit the form and wait for the page to reload
