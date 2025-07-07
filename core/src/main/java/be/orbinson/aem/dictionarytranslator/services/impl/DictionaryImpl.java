@@ -6,9 +6,11 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
 
+import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.security.AccessControlManager;
@@ -155,11 +157,17 @@ public abstract class DictionaryImpl implements Dictionary {
         return resource;
     }
 
+    @Override
+    public Predicate<Node> getNodeFilter() {
+        return node -> true;
+    }
+
     /**
      * ---------------------------------------------------
      * Copied from https://github.com/apache/sling-org-apache-sling-i18n/blob/3f98ebf430e416226500c2975086423edc29dcb3/src/main/java/org/apache/sling/i18n/impl/JcrResourceBundleProvider.java#L668C5-L708C6
      */
-    
+
+
     /**
      * A regular expression pattern matching all custom country codes.
      * @see <a href="https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2#User-assigned_code_elements">User-assigned code elements</a>

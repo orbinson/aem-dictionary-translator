@@ -3,17 +3,23 @@
         name: "aem-dictionary-translator.dictionary.publish",
         handler: (name, element, config, collection, selections) => {
             const agentId = config.data?.agentId || "publish";
-            const paths = selections
-                .map(selection => selection.dataset.dictionaryPublishPaths.split(","))
-                .flat();
-            const recursive = selections[0].dataset.dictionaryPublishRecursive === "true";
-            publishPaths(agentId, paths, selections.length, recursive);
+            // is it dictionary items or dictionaries?
+            let paths;
+            let isDictionaryEntries;
+            if (selections[0].dataset.dictionaryEntryPublishPaths) {
+                isDictionaryEntries = true;
+                paths = selections.map(selection => selection.dataset.dictionaryEntryPublishPaths.split(",")).flat();
+            } else {
+                isDictionaryEntries = false;
+                paths = selections.map(selection => selection.dataset.dictionaryPublishPaths.split(",")).flat();
+            }
+            publishPaths(agentId, paths, selections.length, isDictionaryEntries);
         }
     });
 
-    async function publishPaths(agentId, paths, size, recursive) {
+    async function publishPaths(agentId, paths, size, isDictionaryEntries) {
         const ui = $(window).adaptTo("foundation-ui");
-        const title = Granite.I18n.get("Publish dictionary");
+        const title = Granite.I18n.get(`Publish dictionary${isDictionaryEntries === true ? '  entries' : ''}`);
         const message = Granite.I18n.get(`{0} item${size > 1 ? 's' : ''} will be published.`, size);
 
         ui.prompt(title, message, "notice", [
@@ -22,13 +28,14 @@
                 primary: true,
                 handler: async () => {
                     try {
-                        if (recursive) {
-                            await Promise.all(await replicateRecursive(agentId, paths[0]));
+                        if (isDictionaryEntries) {
+                            await Promise.all(await replicateBatchedDictionaryEntries(agentId, paths));
                         } else {
-                            await Promise.all(await replicateBatched(agentId, paths));
+                            await Promise.all(await replicateDictionaries(agentId, paths));
                         }
                         ui.notify(null, Granite.I18n.get("Publication succeeded."), "success");
                     } catch (error) {
+                        console.error(error, error.stack);
                         const title = Granite.I18n.get("Publication failed");
                         ui.alert(title, error.message, "error");
                     }
@@ -38,68 +45,56 @@
         ]);
     }
 
-    function query(path, limit, offset) {
-        const params = new URLSearchParams({
-            "path": path,
-            "p.limit": limit,
-            "p.offset": offset,
-            "p.hits": "selective",
-            "p.properties": "jcr:path",
-            "orderby": "@jcr:path",
-        });
-        const endpoint = Granite.HTTP.externalize("/bin/querybuilder.json");
-
-        return fetch(`${endpoint}?${params.toString()}`)
-            .then(response => response.json());
-    }
-
-    async function replicateRecursive(agentId, path, batchSize = 100) {
-        let offset = 0;
-        let total = null;
+    async function replicateDictionaries(agentId, paths) {
         let replications = [];
-
-        do {
-            const response = await query(path, batchSize, offset);
-            total = total ?? response.total;
-
-            const paths = response.hits.map(hit => hit["jcr:path"]);
-            replications.push(replicate(agentId, paths));
-
-            offset += batchSize;
-        } while (offset < total);
-
+        replications.push(replicate(agentId, paths, false));
         return replications;
     }
 
-    async function replicateBatched(agentId, paths, batchSize = 100) {
+    async function replicateBatchedDictionaryEntries(agentId, paths, batchSize = 100) {
         const replications = [];
 
         for (let i = 0; i < paths.length; i += batchSize) {
             const batch = paths.slice(i, i + batchSize);
-            replications.push(replicate(agentId, batch));
+            replications.push(replicate(agentId, batch, true));
         }
 
         return replications;
     }
 
-    function replicate(agentId, paths) {
+    function replicate(agentId, paths, isDictionaryEntries) {
+        let url;
+        let data;
+        if (isDictionaryEntries) {
+            url = Granite.HTTP.externalize("/bin/replicate");
+            data = {
+                _charset_: "utf-8",
+                cmd: "Activate",
+                path: paths,
+                agentId: agentId,
+                batch: "true"
+            }
+        } else {
+            url = Granite.HTTP.externalize("/apps/aem-dictionary-translator/content/granite/dialog/dictionary/replicate");
+            data = {
+                _charset_: "utf-8",
+                action: "Activate",
+                parentPath: paths,
+                agentId: agentId
+            }
+        }
         return new Promise((resolve, reject) => {
             $.ajax({
-                url: Granite.HTTP.externalize("/bin/replicate"),
+                url: url,
                 type: "POST",
-                data: {
-                    _charset_: "utf-8",
-                    cmd: "Activate",
-                    path: paths,
-                    agentId: agentId,
-                    batch: "true"
-                }
+                data: data
             }).done((data) => {
                 resolve();
             }).fail(xhr => {
-                const message = $(xhr.responseText).find("#Message").html() || "Failed to publish dictionary.";
+                const message = $(xhr.responseText).find("#Message").html() || "Failed to publish dictionary items.";
                 reject(new Error(message));
             });
         });
     }
+    
 })();
