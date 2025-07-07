@@ -12,11 +12,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
+import javax.jcr.Node;
+import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.jackrabbit.util.Text;
 import org.apache.sling.api.resource.ModifiableValueMap;
 import org.apache.sling.api.resource.PersistenceException;
@@ -33,6 +35,7 @@ import com.day.cq.replication.ReplicationException;
 import com.day.cq.replication.Replicator;
 
 import be.orbinson.aem.dictionarytranslator.exception.DictionaryException;
+import be.orbinson.aem.dictionarytranslator.utils.DictionaryConstants;
 
 public class SlingMessageDictionaryImpl extends DictionaryImpl {
 
@@ -145,4 +148,23 @@ public class SlingMessageDictionaryImpl extends DictionaryImpl {
         resourceResolver.delete(messageEntryResource);
     }
 
+    @Override
+    public Predicate<Node> getNodeFilter() {
+        return DEFAULT_NODE_FILTER;
+    }
+
+    public static final SlingMessageNodeFilter DEFAULT_NODE_FILTER = new SlingMessageNodeFilter();
+
+    private static final class SlingMessageNodeFilter implements Predicate<Node> {
+
+        @Override
+        public boolean test(Node node) {
+            try {
+                return node.isNodeType(DictionaryConstants.SLING_MESSAGE_MIXIN) || node.isNodeType(DictionaryConstants.MIX_LANGUAGE);
+            } catch (RepositoryException e) {
+                LOG.warn("Error checking node type for node, assume not relevant", e);
+                return false;
+            }
+        }
+    }
 }

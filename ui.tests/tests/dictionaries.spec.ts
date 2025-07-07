@@ -79,13 +79,13 @@ test("Publish dictionary", async ({ page, baseURL }) => {
 
     // wait until the async replication is handled
     await page.waitForEvent("requestfinished", {
-        predicate: request => request.url().endsWith("/bin/replicate")
+        predicate: request => request.url().endsWith("/apps/aem-dictionary-translator/content/granite/dialog/dictionary/replicate")
     });
 
-    // get items in the replication queue
+    // get items in the replication queue (107 items are expected, but only the first 50 are returned, order hard to predict!)
     const state = await replicationQueueState(baseURL);
 
-    expect(state.queue[0].path).toBe("/content/dictionaries/fruit/i18n/nl_be/redcurrant");
+    expect(state.queue.length, `Queue containing too few paths: ${state.queue.map(i => i.path)}`).toBe(50);
     expect(state.queue[0].type).toBe("Activate");
 });
 

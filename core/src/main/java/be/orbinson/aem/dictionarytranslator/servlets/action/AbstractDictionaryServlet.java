@@ -21,6 +21,9 @@ public abstract class AbstractDictionaryServlet extends SlingAllMethodsServlet {
 
     private static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger(AbstractDictionaryServlet.class);
     private static final long serialVersionUID = 1L;
+    
+    public static final String LANGUAGE_PARAM = "language";
+    public static final String PARENT_PATH_PARAM = "parentPath";
 
     private final String exceptionMessagePrefix;
 
@@ -29,16 +32,16 @@ public abstract class AbstractDictionaryServlet extends SlingAllMethodsServlet {
      * 
      * @param exceptionMessagePrefix the prefix to use for logging and printing exception messages. Separated by a colon and space (:) from the actual message.
      */
-    public AbstractDictionaryServlet(String exceptionMessagePrefix) {
+    protected AbstractDictionaryServlet(String exceptionMessagePrefix) {
         super();
         this.exceptionMessagePrefix = exceptionMessagePrefix;
     }
 
-    String getMandatoryParameter(SlingHttpServletRequest request, String parameterName, boolean allowEmptyValue) {
+    protected String getMandatoryParameter(SlingHttpServletRequest request, String parameterName, boolean allowEmptyValue) {
         return getMandatoryParameter(request, parameterName, allowEmptyValue, Function.identity());
     }
 
-    <T> T getMandatoryParameter(SlingHttpServletRequest request, String parameterName, boolean allowEmptyValue, Function<String, T> parameterConverter) {
+    protected <T> T getMandatoryParameter(SlingHttpServletRequest request, String parameterName, boolean allowEmptyValue, Function<String, T> parameterConverter) {
         String parameterValue = request.getParameter(parameterName);
         if (parameterValue == null) {
             throw new IllegalArgumentException("Missing mandatory parameter: " + parameterName);
@@ -49,11 +52,11 @@ public abstract class AbstractDictionaryServlet extends SlingAllMethodsServlet {
         return parameterConverter.apply(parameterValue);
     }
 
-    Collection<String> getMandatoryParameters(SlingHttpServletRequest request, String parameterName, boolean allowEmptyValues) {
+    protected Collection<String> getMandatoryParameters(SlingHttpServletRequest request, String parameterName, boolean allowEmptyValues) {
         return getMandatoryParameters(request, parameterName, allowEmptyValues, Function.identity());
     }
 
-    <T> Collection<T> getMandatoryParameters(SlingHttpServletRequest request, String parameterName, boolean allowEmptyValues, Function<String, T> parameterConverter) {
+    protected <T> Collection<T> getMandatoryParameters(SlingHttpServletRequest request, String parameterName, boolean allowEmptyValues, Function<String, T> parameterConverter) {
         String[] parameterValues = request.getParameterValues(parameterName);
         if (parameterValues == null || parameterValues.length == 0) {
             throw new IllegalArgumentException("Missing mandatory parameter: " + parameterName);
@@ -61,11 +64,11 @@ public abstract class AbstractDictionaryServlet extends SlingAllMethodsServlet {
         return getParameters(parameterValues, parameterName, allowEmptyValues, parameterConverter);
     }
 
-    Optional<String> getOptionalParameter(SlingHttpServletRequest request, String parameterName, boolean allowEmptyValue) {
+    protected Optional<String> getOptionalParameter(SlingHttpServletRequest request, String parameterName, boolean allowEmptyValue) {
         return getOptionalParameter(request, parameterName, allowEmptyValue, Function.identity());
     }
 
-    <T> Optional<T> getOptionalParameter(SlingHttpServletRequest request, String parameterName, boolean allowEmptyValue, Function<String, T> parameterConverter) {
+    protected <T> Optional<T> getOptionalParameter(SlingHttpServletRequest request, String parameterName, boolean allowEmptyValue, Function<String, T> parameterConverter) {
         String parameterValue = request.getParameter(parameterName);
         if (parameterValue == null) {
             return Optional.empty();
@@ -76,11 +79,11 @@ public abstract class AbstractDictionaryServlet extends SlingAllMethodsServlet {
         return Optional.of(parameterConverter.apply(parameterValue));
     }
     
-    Collection<String> getOptionalParameters(SlingHttpServletRequest request, String parameterName, boolean allowEmptyValues) {
+    protected Collection<String> getOptionalParameters(SlingHttpServletRequest request, String parameterName, boolean allowEmptyValues) {
         return getOptionalParameters(request, parameterName, allowEmptyValues, Function.identity());
     }
 
-    <T> Collection<T> getOptionalParameters(SlingHttpServletRequest request, String parameterName, boolean allowEmptyValues, Function<String, T> parameterConverter) {
+    protected <T> Collection<T> getOptionalParameters(SlingHttpServletRequest request, String parameterName, boolean allowEmptyValues, Function<String, T> parameterConverter) {
         String[] parameterValues = request.getParameterValues(parameterName);
         if (parameterValues == null || parameterValues.length == 0) {
             return Collections.emptySet();

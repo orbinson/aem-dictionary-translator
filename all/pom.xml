@@ -24,31 +24,39 @@
                 <configuration>
                     <group>be.orbinson.aem</group>
                     <packageType>container</packageType>
+                    <embeddedTarget>apps/aem-dictionary-translator-packages/application/install</embeddedTarget>
+                    <!-- list of embeds relevant for both container packages (classic and cloud) -->
                     <embeddeds>
                         <embedded>
-                            <groupId>be.orbinson.aem</groupId>
                             <artifactId>aem-dictionary-translator.ui.apps</artifactId>
-                            <type>zip</type>
-                            <target>/apps/aem-dictionary-translator-packages/application/install</target>
                         </embedded>
                         <embedded>
-                            <groupId>be.orbinson.aem</groupId>
                             <artifactId>aem-dictionary-translator.core</artifactId>
-                            <target>/apps/aem-dictionary-translator-packages/application/install</target>
                         </embedded>
                         <embedded>
-                            <groupId>be.orbinson.aem</groupId>
                             <artifactId>aem-dictionary-translator.ui.config</artifactId>
-                            <type>zip</type>
-                            <target>/apps/aem-dictionary-translator-packages/application/install</target>
                         </embedded>
                         <embedded>
-                            <groupId>org.apache.commons</groupId>
                             <artifactId>commons-csv</artifactId>
-                            <target>/apps/aem-dictionary-translator-packages/application/install</target>
                         </embedded>
                     </embeddeds>
                 </configuration>
+                <executions>
+                    <!-- the cloud package additionally contains the bundle fragment aem-dictionary-translator.core.cloud -->
+                    <execution>
+                        <id>default-generate-metadata</id>
+                        <goals>
+                            <goal>generate-metadata</goal>
+                        </goals>
+                        <configuration>
+                            <embeddeds combine.children="append">
+                                <embedded>
+                                    <artifactId>aem-dictionary-translator.core.cloud</artifactId>
+                                </embedded>
+                            </embeddeds>
+                        </configuration>
+                     </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>io.wcm.maven.plugins</groupId>
@@ -104,6 +112,48 @@
                 </plugins>
             </build>
         </profile>
+        <profile>
+            <id>classic</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <!-- add package for AEM 6.5 with classifier "classic" -->
+                        <groupId>org.apache.jackrabbit</groupId>
+                        <artifactId>filevault-package-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>classic-generate-metadata</id>
+                                <goals>
+                                    <goal>generate-metadata</goal>
+                                </goals>
+                                <configuration>
+                                    <classifier>classic</classifier>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>classic-package</id>
+                                <goals>
+                                    <goal>package</goal>
+                                </goals>
+                                <configuration>
+                                    <classifier>classic</classifier>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>default-validate-package</id>
+                                <configuration>
+                                    <!-- validate both generated packages in one execution -->
+                                    <classifier>classic</classifier>
+                                </configuration>
+                            </execution>
+                          </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
     </profiles>
 
     <dependencies>
@@ -116,6 +166,11 @@
         <dependency>
             <groupId>be.orbinson.aem</groupId>
             <artifactId>aem-dictionary-translator.core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>be.orbinson.aem</groupId>
+            <artifactId>aem-dictionary-translator.core.cloud</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
