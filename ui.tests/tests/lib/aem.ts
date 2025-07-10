@@ -18,6 +18,7 @@ async function getReplicationQueueState(baseURL: string) {
             headers: authenticationHeader({ username: "admin", password: "admin" })
         });
         if (response.ok) {
+            // this returns at most 50 items (even if more are in the queue)
             return await response.json();
         }
     } catch (error) {

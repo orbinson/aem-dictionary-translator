@@ -31,7 +31,6 @@ public class DeleteLanguageServlet extends AbstractDictionaryServlet {
         super("Unable to delete language");
     }
 
-    public static final String LANGUAGE_PARAM = "language";
     public static final String DICTIONARY_PARAM = "dictionary";
 
     private static final Logger LOG = LoggerFactory.getLogger(DeleteLanguageServlet.class);

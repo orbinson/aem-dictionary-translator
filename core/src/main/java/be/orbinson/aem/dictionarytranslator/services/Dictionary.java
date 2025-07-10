@@ -5,6 +5,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Predicate;
+
+import javax.jcr.Node;
 
 import org.apache.sling.api.resource.PersistenceException;
 import org.apache.sling.api.resource.ResourceResolver;
@@ -194,5 +197,14 @@ public interface Dictionary {
      * @see #isEditable(ResourceResolver)
      */
     void deleteEntry(Replicator replicator, ResourceResolver resourceResolver, String key)  throws PersistenceException, ReplicationException, DictionaryException;
+
+    /**
+     * Returns a predicate that filters nodes below the current dictionary's root path.
+     * Only those nodes belonging to this dictionary should return {@code true} for its {@link Predicate#test(Object)}.
+     * Other non-related sub nodes should return {@code false}.
+     * @return a predicate that filters nodes below the current dictionary's root path belonging to this dictionary.
+     * @see #getPath()
+     */
+    Predicate<Node> getNodeFilter();
 
 }
