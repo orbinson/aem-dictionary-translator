@@ -32,7 +32,7 @@ jobs:
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
-          distribution: zulu
+          distribution: oracle
           java-version: 21
           cache: maven
       - name: Get Playwright version from package-lock.json
