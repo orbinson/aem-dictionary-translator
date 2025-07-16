@@ -24,6 +24,8 @@
                 <configuration>
                     <group>be.orbinson.aem</group>
                     <packageType>container</packageType>
+                    <!-- all sub packages have been validated already -->
+                    <skipSubPackageValidation>true</skipSubPackageValidation>
                     <embeddeds>
                         <embedded>
                             <groupId>be.orbinson.aem</groupId>

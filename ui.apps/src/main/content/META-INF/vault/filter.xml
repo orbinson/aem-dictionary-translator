@@ -3,5 +3,8 @@
     <filter root="/apps/aem-dictionary-translator/clientlibs"/>
     <filter root="/apps/aem-dictionary-translator/components"/>
     <filter root="/apps/aem-dictionary-translator/content"/>
-    <filter root="/apps/cq/core/content/nav/tools/translation"/>
+    <filter root="/apps/cq/core/content/nav/tools">
+        <include pattern="/apps/cq/core/content/nav/tools"/>
+        <include pattern="/apps/cq/core/content/nav/tools/translation(.*)?"/>
+    </filter>
 </workspaceFilter>
