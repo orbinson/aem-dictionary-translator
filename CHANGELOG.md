@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Creating/Updating keys doesn't work in AEM 6.5 due to "checkbox.show is not a function" [#231](https://github.com/orbinson/aem-dictionary-translator/issues/231)
+
 ## [1.5.0] - 2025-06-19
 
 ### Fixed

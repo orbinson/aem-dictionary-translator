@@ -27,13 +27,15 @@
 
     function showHideCheckbox(name, isHide) {
         var checkbox = $('coral-checkbox[name="' + name + '"]')[0];
-        if (isHide) {
-            checkbox.hide();// this does not hide the description icon + hover, therefore only works without description
-            // always uncheck it if hidden
-            checkbox.set("checked", false, false);
-        } else {
-            checkbox.show();
-        }
+        Coral.commons.ready(checkbox, function() {
+            if (isHide) {
+                checkbox.hide();// this does not hide the description icon + hover, therefore only works without description
+                // always uncheck it if hidden
+                checkbox.set("checked", false, false);
+            } else {
+                checkbox.show();
+            }
+        });
     }
 
 })(document,Granite.$);
