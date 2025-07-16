@@ -35,6 +35,13 @@
                             <artifactId>aem-dictionary-translator.ui.apps.structure</artifactId>
                         </repositoryStructurePackage>
                     </repositoryStructurePackages>
+                    <validatorsSettings>
+                        <jackrabbit-packagetype>
+                            <options>
+                                <allowComplexFilterRulesInApplicationPackages>true</allowComplexFilterRulesInApplicationPackages>
+                            </options>
+                        </jackrabbit-packagetype>
+                    </validatorsSettings>
                     <dependencies>
                     </dependencies>
                 </configuration>
