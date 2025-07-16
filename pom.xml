@@ -14,6 +14,7 @@
     <modules>
         <module>all</module>
         <module>core</module>
+        <module>core.cloud</module>
         <module>it.content</module>
         <module>ui.apps</module>
         <module>ui.apps.structure</module>
@@ -33,6 +34,11 @@
             <name>Roy Teeuwen</name>
             <email>roy@orbinson.be</email>
             <id>royteeuwen</id>
+        </developer>
+        <developer>
+            <name>Konrad Windszus</name>
+            <email>konrad.windszus@netcentric.biz</email>
+            <id>kwin</id>
         </developer>
     </developers>
 
@@ -95,7 +101,7 @@
                     <scmCommentPrefix>[maven-scm] :</scmCommentPrefix>
                     <preparationGoals>clean install</preparationGoals>
                     <goals>install</goals>
-                    <releaseProfiles>release</releaseProfiles>
+                    <releaseProfiles>release,classic</releaseProfiles>
                 </configuration>
             </plugin>
             <plugin>

@@ -10,9 +10,9 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>aem-dictionary-translator.core</artifactId>
-    <name>Core</name>
-    <description>Core bundle for the Dictionary Translator</description>
+    <artifactId>aem-dictionary-translator.core.cloud</artifactId>
+    <name>Core Fragment (only for AEMaaCS)</name>
+    <description>Core bundle fragment for the Dictionary Translator (only for AEMaaCS) </description>
     <build>
         <plugins>
             <plugin>
@@ -29,17 +29,19 @@
                             <goal>bnd-process</goal>
                         </goals>
                         <configuration>
-                            <bnd><![CDATA[
-Import-Package: javax.annotation;version=0.0.0,*
-Service-Component: OSGI-INF/*.xml
+                    <bnd><![CDATA[
+Fragment-Host: be.orbinson.aem.aem-dictionary-translator.core
                                 ]]></bnd>
-                        </configuration>
+                </configuration>
                     </execution>
                 </executions>
             </plugin>
             <plugin>
                 <groupId>biz.aQute.bnd</groupId>
                 <artifactId>bnd-baseline-maven-plugin</artifactId>
+                <configuration>
+                    <failOnMissing>false</failOnMissing>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -59,6 +61,12 @@ Service-Component: OSGI-INF/*.xml
 
     <dependencies>
         <dependency>
+            <groupId>be.orbinson.aem</groupId>
+            <artifactId>aem-dictionary-translator.core</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
             <groupId>org.osgi</groupId>
             <artifactId>org.osgi.service.component.annotations</artifactId>
         </dependency>
@@ -71,19 +79,9 @@ Service-Component: OSGI-INF/*.xml
             <artifactId>org.osgi.annotation.versioning</artifactId>
         </dependency>
         <dependency>
-            <groupId>javax.servlet.jsp</groupId>
-            <artifactId>jsp-api</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.apache.sling</groupId>
             <artifactId>org.apache.sling.servlets.annotations</artifactId>
         </dependency>
-
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-csv</artifactId>
-        </dependency>
-
         <dependency>
             <groupId>org.jetbrains</groupId>
             <artifactId>annotations</artifactId>
@@ -113,12 +111,6 @@ Service-Component: OSGI-INF/*.xml
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-params</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.sling</groupId>
-            <artifactId>org.apache.sling.testing.sling-mock-oak</artifactId>
-            <version>4.0.0-1.62.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -161,9 +153,13 @@ Service-Component: OSGI-INF/*.xml
             <version>1.1.0</version>
             <scope>test</scope>
         </dependency>
+        <!-- the aem-sdk-api should be the last dependency, as other dependencies should take precedence in case of package clashes -->
         <dependency>
             <groupId>com.adobe.aem</groupId>
-            <artifactId>uber-jar</artifactId>
+            <artifactId>aem-sdk-api</artifactId>
+            <!-- we use "com/adobe/granite/replication/treeactivation" only provided in pretty recent versions -->
+            <version>2025.5.21005.20250522T173058Z-250400</version>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 </project>
