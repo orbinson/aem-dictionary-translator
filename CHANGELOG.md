@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.5.1] - 2025-07-23
+
 ### Fixed
 
 - `/apps/cq/core/content/nav/tools` is created with wrong jcr:primaryType [#232](https://github.com/orbinson/aem-dictionary-translator/issues/232)
@@ -227,7 +229,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Create, publish and edit dictionaries
 - Create, delete and update message entries in a dictionary
 
-[unreleased]: https://github.com/orbinson/aem-dictionary-translator/compare/1.5.0...HEAD
+[unreleased]: https://github.com/orbinson/aem-dictionary-translator/compare/1.5.1...HEAD
+[1.5.1]: https://github.com/orbinson/aem-dictionary-translator/compare/1.5.0...1.5.1
 [1.5.0]: https://github.com/orbinson/aem-dictionary-translator/compare/1.4.1...1.5.0
 [1.4.1]: https://github.com/orbinson/aem-dictionary-translator/compare/1.4.0...1.4.1
 [1.4.0]: https://github.com/orbinson/aem-dictionary-translator/compare/1.3.3...1.4.0
