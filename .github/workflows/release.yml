@@ -21,7 +21,7 @@ on:
 
 jobs:
   call-workflow:
-    uses: orbinson/workflows/.github/workflows/maven-release.yml@main
+    uses: orbinson/workflows/.github/workflows/maven-release.yml@njord
     with:
       central: ${{ inputs.central }}
       github: ${{ inputs.github }}
