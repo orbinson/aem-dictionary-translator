@@ -21,14 +21,14 @@ on:
 
 jobs:
   call-workflow:
-    uses: orbinson/workflows/.github/workflows/maven-release.yml@main
+    uses: orbinson/workflows/.github/workflows/maven-release.yml@njord
     with:
       central: ${{ inputs.central }}
       github: ${{ inputs.github }}
       push: ${{ inputs.push }}
       java-version: 11
     secrets:
-      username: ${{ secrets.SONATYPE_USERNAME }}
-      password: ${{ secrets.SONATYPE_PASSWORD }}
+      username: ${{ secrets.SONATYPE_CENTRAL_PORTAL_TOKEN_USER }}
+      password: ${{ secrets.SONATYPE_CENTRAL_PORTAL_TOKEN_PASSWORD }}
       gpg-passphrase: ${{ secrets.GPG_PASSPHRASE }}
       gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
