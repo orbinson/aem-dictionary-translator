@@ -7,10 +7,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [1.5.2] - 2025-07-23
-
-## [1.5.1] - 2025-07-23
-
 ### Fixed
 
 - `/apps/cq/core/content/nav/tools` is created with wrong jcr:primaryType [#232](https://github.com/orbinson/aem-dictionary-translator/issues/232)
