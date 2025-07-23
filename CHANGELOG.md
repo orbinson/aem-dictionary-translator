@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.5.2] - 2025-07-23
+
 ## [1.5.1] - 2025-07-23
 
 ### Fixed
@@ -229,7 +231,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Create, publish and edit dictionaries
 - Create, delete and update message entries in a dictionary
 
-[unreleased]: https://github.com/orbinson/aem-dictionary-translator/compare/1.5.1...HEAD
+[unreleased]: https://github.com/orbinson/aem-dictionary-translator/compare/1.5.2...HEAD
+[1.5.2]: https://github.com/orbinson/aem-dictionary-translator/compare/1.5.1...1.5.2
 [1.5.1]: https://github.com/orbinson/aem-dictionary-translator/compare/1.5.0...1.5.1
 [1.5.0]: https://github.com/orbinson/aem-dictionary-translator/compare/1.4.1...1.5.0
 [1.4.1]: https://github.com/orbinson/aem-dictionary-translator/compare/1.4.0...1.4.1
