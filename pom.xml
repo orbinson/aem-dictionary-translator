@@ -428,7 +428,7 @@ Bundle-DocURL:
                     <version>3.2.7</version>
                     <executions>
                         <execution>
-                            <phase>deploy</phase>
+                            <phase>verify</phase>
                             <goals>
                                 <goal>sign</goal>
                             </goals>
