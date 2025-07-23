@@ -7,7 +7,7 @@
     <parent>
         <groupId>be.orbinson.aem</groupId>
         <artifactId>aem-dictionary-translator</artifactId>
-        <version>1.5.1-SNAPSHOT</version>
+        <version>1.5.1</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
