@@ -39,6 +39,7 @@ import org.slf4j.LoggerFactory;
 import com.day.cq.commons.jcr.JcrUtil;
 import com.day.cq.replication.ReplicationActionType;
 import com.day.cq.replication.ReplicationException;
+import com.day.cq.replication.ReplicationOptions;
 import com.day.cq.replication.Replicator;
 
 import be.orbinson.aem.dictionarytranslator.exception.DictionaryException;

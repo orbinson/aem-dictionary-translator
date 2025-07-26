@@ -10,7 +10,9 @@ import org.apache.sling.api.resource.PersistenceException;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.osgi.annotation.versioning.ProviderType;
 
+import com.day.cq.replication.ReplicationActionType;
 import com.day.cq.replication.ReplicationException;
+import com.day.cq.replication.ReplicationOptions;
 import com.day.cq.replication.Replicator;
 
 import be.orbinson.aem.dictionarytranslator.exception.DictionaryException;
@@ -123,6 +125,5 @@ public interface DictionaryService {
      * @throws DictionaryException in case the container path does not exist or the language dictionary already exists
      */
     void createDictionary(ResourceResolver resourceResolver, String parentPath, Locale language, Collection<String> baseNames) throws PersistenceException, DictionaryException;
-
 
 }

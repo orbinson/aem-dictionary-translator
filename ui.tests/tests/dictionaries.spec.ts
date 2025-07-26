@@ -78,14 +78,16 @@ test("Publish dictionary", async ({ page, baseURL }) => {
     await page.getByRole("button", { name: "Publish" }).click();
 
     // wait until the async replication is handled
-    await page.waitForEvent("requestfinished", {
-        predicate: request => request.url().endsWith("/bin/replicate")
-    });
+    await page.waitForResponse(response => response.url().endsWith("/apps/aem-dictionary-translator/content/granite/dialog/dictionary/replicate") && response.status() === 200);
 
-    // get items in the replication queue
+    // there is still a delay until the replication queue is updated, so we wait a bit
+    // TODO: figure out a better condition to wait for
+    await page.waitForTimeout(5000);
+
+    // get items in the replication queue (107 items are expected, but only the first 50 are returned, order hard to predict!)
     const state = await replicationQueueState(baseURL);
 
-    expect(state.queue[0].path).toBe("/content/dictionaries/fruit/i18n/nl_be/redcurrant");
+    expect(state.queue.length, `Queue containing too few paths: ${state.queue.map(i => i.path)}`).toBe(50);
     expect(state.queue[0].type).toBe("Activate");
 });
 

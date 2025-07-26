@@ -18,16 +18,19 @@ The [AEM Dictionary Translator](http://localhost:4502/tools/translation/dictiona
 
 ## Installation
 
+
+
+
 ### Compatibility matrix
 
-The minimal required AEM and AEM Dictionary Translator versions are:
+The minimally required AEM and AEM Dictionary Translator versions are:
 
 | AEM Type | AEM version                     | AEM Dictionary Translator |
 |----------|---------------------------------|---------------------------|
-| AEM 6.5  | `6.5.17`                        | `1.3.0`                   |
-| AEMaaCS  | `2023.1.10912.20230130T173736Z` | `1.0.0`                   |
+| AEM 6.5  | `6.5.17`                         | `1.3.0`                   |
+| AEMaaCS  | `2025.5.21005`                   | `1.0.0`                   |
 
-The minimal required Java version is `11`.
+The minimally required Java version is `11`.
 
 **Note:** AEM 6.5 is supported on a best-effort basis and will not undergo active testing or bug fixing. Known issues exist in service packs 18, 19, and 20. We depend on the community to help identify and resolve bugs through pull request contributions.
 
@@ -43,29 +46,29 @@ To deploy the AEM Dictionary Translator as an embedded package you need to updat
      <artifactId>aem-dictionary-translator.all</artifactId>
      <version><!-- Replace with last released version on Maven Central --></version>
      <type>zip</type>
+     <classifier>classic</classifier> (only necessary for AEM 6.5, AEMaaCS uses the one without classifier)
    </dependency>
    ```
+
 2. Embed the package in with
    the [filevault-package-maven-plugin](https://jackrabbit.apache.org/filevault-package-maven-plugin/) in
    the `<embeddeds>` section
 
    ```xml
    <embedded>
-      <groupId>be.orbinson.aem</groupId>
       <artifactId>aem-dictionary-translator.all</artifactId>
       <target>/apps/vendor-packages/content/install</target>
    </embedded>
    ```
 
 3. Currently, AEMaaCS doesn't allow loading of i18n dictionaries outside `/apps`,  `/libs`, `/content/forms/af` and
-   `/content/dam/formsanddocuments`.
+   `/content/dam/formsanddocuments` by default.
+  To mitigate this, update the `org.apache.sling.i18n.impl.JcrResourceBundleProvider` OSGi config to allow dictionaries in
+  other folders, for example by using `/content/dictionaries` for all your editable dictionaries.
 
-To mitigate this, update the `org.apache.sling.i18n.impl.JcrResourceBundleProvider` OSGi config to allow dictionaries in
-other folders, for example by using `/content/dictionaries` for all your editable dictionaries.
+   Example `org.apache.sling.i18n.impl.JcrResourceBundleProvider` OSGi config
 
-Example `org.apache.sling.i18n.impl.JcrResourceBundleProvider` OSGi config
-
-```json
+   ```json
 {
   "included.paths": [
     "/libs",
@@ -76,7 +79,7 @@ Example `org.apache.sling.i18n.impl.JcrResourceBundleProvider` OSGi config
   ]
 }
 
-```
+   ```
 
 ## Limitations
 

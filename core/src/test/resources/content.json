@@ -41,10 +41,14 @@
           "pear": {
             "jcr:primaryType": "sling:MessageEntry",
             "sling:message": ""
+          },
+          "unrelated": {
+            "jcr:primaryType": "nt:unstructured",
+            "sling:message": "Must never appear in the dictionary"
           }
         },
         "nl_be": {
-          "jcr:primaryType": "nt:folder",
+          "jcr:primaryType": "nt:unstructured",
           "jcr:mixinTypes": [
             "mix:language"
           ],

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Rate limiting leading to a 503 in AEMaaCS during publication [#228](https://github.com/orbinson/aem-dictionary-translator/issues/228)
+
 ## [1.5.1] - 2025-07-23
 
 ### Fixed
