@@ -69,16 +69,15 @@ To deploy the AEM Dictionary Translator as an embedded package you need to updat
    Example `org.apache.sling.i18n.impl.JcrResourceBundleProvider` OSGi config
 
    ```json
-{
-  "included.paths": [
-    "/libs",
-    "/apps",
-    "/content/forms/af",
-    "/content/dam/formsanddocuments",
-    "/content/dictionaries"
-  ]
-}
-
+   {
+     "included.paths": [
+       "/libs",
+       "/apps",
+       "/content/forms/af",
+       "/content/dam/formsanddocuments",
+       "/content/dictionaries"
+     ]
+   }
    ```
 
 ## Limitations
