@@ -6,7 +6,7 @@
     <groupId>be.orbinson.aem</groupId>
     <artifactId>aem-dictionary-translator</artifactId>
     <packaging>pom</packaging>
-    <version>1.6.0-SNAPSHOT</version>
+    <version>1.6.0</version>
 
     <name>AEM Dictionary Translator</name>
     <description>Tool to translate AEM i18n dictionaries for internationalization</description>
