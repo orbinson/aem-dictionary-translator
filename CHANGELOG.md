@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Another NPE in Cloud Replication [#239](https://github.com/orbinson/aem-dictionary-translator/issues/239)
+
 ## [1.6.1] - 2025-07-31
 
 ### Fixed

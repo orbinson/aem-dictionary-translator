@@ -91,18 +91,7 @@ public class ReplicateDictionariesWithTreeActivationServlet extends AbstractDict
         for (String agentId : agentIds) {
             LOG.debug("Using agent ID: {}", agentId);
             try {
-                ActivationParameters activationParameters = ActivationParameters.builder()
-                        .path(path)
-                        //.rootPath(...)  is not evaluated in the TreeActivationJob
-                        .agentId(agentId)
-                        // for now just hardcode the filter name, as only the SlingMessageNodeFilter is available
-                        .filters(List.of(SlingMessageNodeFilter.NAME))
-                        .activationid(createActivationId())
-                        // the following should not have any effect (it is not evaluated in the TreeActivationJob)
-                        //.includeChildren(IncludeChildren.ALL_CHILDREN)
-                        .enableVersion(false)
-                        .userId(resourceResolver.getUserID())
-                        .build();
+                ActivationParameters activationParameters = createActivationParameters(resourceResolver.getUserID(), path, agentId);
                 String activationId = treeActivationService.start(activationParameters);
                 messages.add("Replication started for dictionary at " + path + " with activation ID: " + activationId);
             } catch (TreeActivationException e) {
@@ -118,7 +107,22 @@ public class ReplicateDictionariesWithTreeActivationServlet extends AbstractDict
         return HttpServletResponse.SC_OK;
     }
 
-    private String createActivationId() {
+    static ActivationParameters createActivationParameters(String userId, String path, String agentId) {
+        return ActivationParameters.builder()
+                .path(path)
+                .rootPath(path)  // is not evaluated in the TreeActivationJob but still is serialized (i.e. must not contain a null value)
+                .agentId(agentId)
+                // for now just hardcode the filter name, as only the SlingMessageNodeFilter is available
+                .filters(List.of(SlingMessageNodeFilter.NAME))
+                .activationid(createActivationId())
+                // the following should not have any effect (it is not evaluated in the TreeActivationJob)
+                //.includeChildren(IncludeChildren.ALL_CHILDREN)
+                .enableVersion(false)
+                .userId(userId)
+                .build();
+    }
+
+    static String createActivationId() {
         return UUID.randomUUID().toString();
     }
 }
