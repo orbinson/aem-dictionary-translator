@@ -92,7 +92,8 @@ public class ReplicateDictionariesWithTreeActivationServlet extends AbstractDict
             LOG.debug("Using agent ID: {}", agentId);
             try {
                 ActivationParameters activationParameters = ActivationParameters.builder()
-                        .rootPath(path)
+                        .path(path)
+                        //.rootPath(...)  is not evaluated in the TreeActivationJob
                         .agentId(agentId)
                         // for now just hardcode the filter name, as only the SlingMessageNodeFilter is available
                         .filters(List.of(SlingMessageNodeFilter.NAME))
@@ -103,7 +104,7 @@ public class ReplicateDictionariesWithTreeActivationServlet extends AbstractDict
                         .userId(resourceResolver.getUserID())
                         .build();
                 String activationId = treeActivationService.start(activationParameters);
-                messages.add("Replication started for dictionary " + path + " with activation ID: " + activationId);
+                messages.add("Replication started for dictionary at " + path + " with activation ID: " + activationId);
             } catch (TreeActivationException e) {
                 LOG.error("Error while replicating dictionary at {}", path, e);
                 messages.add("Error while replicating dictionary at " + path + ": " + e.getMessage());
