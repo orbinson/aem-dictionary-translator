@@ -158,7 +158,7 @@ Fragment-Host: be.orbinson.aem.aem-dictionary-translator.core
             <groupId>com.adobe.aem</groupId>
             <artifactId>aem-sdk-api</artifactId>
             <!-- we use "com/adobe/granite/replication/treeactivation" only provided in pretty recent versions -->
-            <version>2025.5.21005.20250522T173058Z-250400</version>
+            <version>2025.7.21706.20250723T205632Z-250600</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>
