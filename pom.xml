@@ -90,7 +90,7 @@
         <componentGroupName>Orbinson Tools</componentGroupName>
 
         <aem.version>6.5.17</aem.version>
-        <aemanalyser.version>1.6.6</aemanalyser.version>
+        <aemanalyser.version>1.6.12</aemanalyser.version>
     </properties>
 
     <build>
