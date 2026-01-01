@@ -38,7 +38,7 @@ jobs:
       - name: Get Playwright version from package-lock.json
         run: echo "PLAYWRIGHT_VERSION=$(jq -r '.packages["node_modules/playwright-core"].version' ui.tests/package-lock.json)" >> $GITHUB_ENV
       - name: Cache Playwright binaries
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.cache/ms-playwright
           key: ${{ runner.os }}-playwright-${{ env.PLAYWRIGHT_VERSION }}
