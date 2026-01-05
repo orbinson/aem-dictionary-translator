@@ -28,9 +28,9 @@ jobs:
           - 4502:4502
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Setup Java
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: oracle
           java-version: 21
@@ -38,7 +38,7 @@ jobs:
       - name: Get Playwright version from package-lock.json
         run: echo "PLAYWRIGHT_VERSION=$(jq -r '.packages["node_modules/playwright-core"].version' ui.tests/package-lock.json)" >> $GITHUB_ENV
       - name: Cache Playwright binaries
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.cache/ms-playwright
           key: ${{ runner.os }}-playwright-${{ env.PLAYWRIGHT_VERSION }}
@@ -54,7 +54,7 @@ jobs:
         env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Upload Playwright HTML report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         if: ${{ !cancelled() }}
         with:
           name: playwright-report
