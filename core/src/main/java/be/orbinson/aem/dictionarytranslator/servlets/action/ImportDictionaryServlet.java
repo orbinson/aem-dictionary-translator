@@ -2,8 +2,12 @@ package be.orbinson.aem.dictionarytranslator.servlets.action;
 
 import static be.orbinson.aem.dictionarytranslator.servlets.action.ExportDictionaryServlet.KEY_HEADER;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
 import java.util.Collection;
@@ -16,16 +20,16 @@ import java.util.stream.Collectors;
 
 import javax.jcr.RepositoryException;
 import javax.servlet.Servlet;
+
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.io.input.SequenceReader;
 import org.apache.sling.api.SlingHttpServletRequest;
 import org.apache.sling.api.request.RequestParameter;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.servlets.annotations.SlingServletResourceTypes;
 import org.apache.sling.servlets.post.HtmlResponse;
-import org.apache.tika.io.IOUtils;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
@@ -61,39 +65,43 @@ public class ImportDictionaryServlet extends AbstractDictionaryServlet {
         RequestParameter csvfile = request.getRequestParameter("csvfile");
 
         if (csvfile != null) {
-            processCsvFile(request, dictionaryPath, csvfile.getInputStream());
+            try (InputStream csvContent = csvfile.getInputStream()) {
+                processCsvFile(request, dictionaryPath, csvContent);
+            }
         }
     }
 
     private void processCsvFile(SlingHttpServletRequest request, String dictionaryPath, InputStream csvContent) throws IOException, RepositoryException, DictionaryException, ReplicationException {
         ResourceResolver resourceResolver = request.getResourceResolver();
 
-        List<String> lines = IOUtils.readLines(csvContent, String.valueOf(StandardCharsets.UTF_8));
-        String header = !lines.isEmpty() ? lines.get(0) : StringUtils.EMPTY;
-        String result = String.join("\n", lines);
+        try (InputStreamReader inputStreamReader = new InputStreamReader(csvContent, StandardCharsets.UTF_8);
+             BufferedReader bufferedReader = new BufferedReader(inputStreamReader)) {
+            String header = bufferedReader.readLine(); // Read the header line
+            if (header == null) {
+                throw new IOException("CSV file is empty");
+            }
+            CSVFormat format = determineCsvFormat(header);
+            // use a SequenceReader to read the header line again along with the rest of the file
+            // line separator is added back (to newline as even mixed line endings are properly handled)
+            try (Reader reader = new SequenceReader(new StringReader(header + "\n"), bufferedReader);
+                 CSVParser csvParser = CSVParser.parse(reader, format)) {
+                Map<String, Integer> headers = csvParser.getHeaderMap();
+                validateCsvHeaders(headers);
+                headers.remove(KEY_HEADER);
 
-        CSVFormat format = determineCsvFormat(header);
-        if (format == null) {
-            return;
-        }
+                Map<Locale, Dictionary> dictionaries = dictionaryService.getDictionariesByLanguage(resourceResolver, dictionaryPath);
+                if (!dictionaries.isEmpty()) {
+                    List<Locale> knownLanguages = dictionaries.keySet()
+                            .stream()
+                            .collect(Collectors.toList());
+                    Map<Locale, String> localeToHeaderMap = getLocalesToCsvHeadersMap(headers.keySet(), knownLanguages);
 
-        try (CSVParser csvParser = CSVParser.parse(result, format)) {
-            Map<String, Integer> headers = csvParser.getHeaderMap();
-            validateCsvHeaders(headers);
-            headers.remove(KEY_HEADER);
+                    for (CSVRecord csvRecord : csvParser) {
+                        processCsvRecord(resourceResolver, dictionaries, localeToHeaderMap, csvRecord);
+                    }
 
-            Map<Locale, Dictionary> dictionaries = dictionaryService.getDictionariesByLanguage(resourceResolver, dictionaryPath);
-            if (!dictionaries.isEmpty()) {
-                List<Locale> knownLanguages = dictionaries.keySet()
-                        .stream()
-                        .collect(Collectors.toList());
-                Map<Locale, String> localeToHeaderMap = getLocalesToCsvHeadersMap(headers.keySet(), knownLanguages);
-
-                for (CSVRecord csvRecord : csvParser) {
-                    processCsvRecord(resourceResolver, dictionaries, localeToHeaderMap, csvRecord);
+                    resourceResolver.commit();
                 }
-
-                resourceResolver.commit();
             }
         }
     }

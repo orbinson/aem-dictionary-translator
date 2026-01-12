@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Get rid of Tika dependency [#284](https://github.com/orbinson/aem-dictionary-translator/issues/284)
+
 ## [1.6.2] - 2025-07-31
 
 ### Fixed
