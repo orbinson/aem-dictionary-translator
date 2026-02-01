@@ -118,7 +118,7 @@ Service-Component: OSGI-INF/*.xml
         <dependency>
             <groupId>org.apache.sling</groupId>
             <artifactId>org.apache.sling.testing.sling-mock-oak</artifactId>
-            <version>4.0.0-1.62.0</version>
+            <version>4.1.0-1.86.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
