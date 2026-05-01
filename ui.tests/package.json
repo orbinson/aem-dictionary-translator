@@ -17,7 +17,7 @@
     "eslint": "10.2.1",
     "globals": "17.5.0",
     "playwright-ctrf-json-reporter": "^0.0.29",
-    "typescript": "6.0.2",
+    "typescript": "6.0.3",
     "typescript-eslint": "8.59.1"
   },
   "engines": {
