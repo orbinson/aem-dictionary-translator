@@ -82,7 +82,7 @@
         <vault.user>admin</vault.user>
         <vault.password>admin</vault.password>
 
-        <bnd.version>7.2.3</bnd.version>
+        <bnd.version>7.3.0</bnd.version>
         <njord.version>0.9.7</njord.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
