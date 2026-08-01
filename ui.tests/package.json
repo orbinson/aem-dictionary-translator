@@ -18,7 +18,7 @@
     "globals": "17.8.0",
     "playwright-ctrf-json-reporter": "^0.0.29",
     "typescript": "7.0.2",
-    "typescript-eslint": "8.62.1"
+    "typescript-eslint": "8.65.0"
   },
   "engines": {
     "npm": ">=10.9.0",
