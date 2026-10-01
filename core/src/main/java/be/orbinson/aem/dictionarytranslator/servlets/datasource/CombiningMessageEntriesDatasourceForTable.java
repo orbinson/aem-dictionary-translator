@@ -56,6 +56,8 @@ public class CombiningMessageEntriesDatasourceForTable extends SortedAndPaginate
 
     private static final Logger LOG = LoggerFactory.getLogger(CombiningMessageEntriesDatasourceForTable.class);
 
+    static final String PARAMETER_QUERY = "q";
+
     private final DictionaryService dictionaryService;
 
     private final CombiningMessageEntryResourceProvider combiningMessageEntryResourceProvider;
@@ -113,6 +115,7 @@ public class CombiningMessageEntriesDatasourceForTable extends SortedAndPaginate
         if ("columnsdatasource".equals(request.getResource().getName())) {
             setColumnsDataSource(resourceResolver, resourceList, dictionaries.stream().map(Dictionary::getLanguage).collect(Collectors.toList()), LanguageDatasource.getAllAvailableLanguages(request, response));
         } else {
+            String query = getQuery(request);
             // sort by key by default
             Collection<String> keys = dictionaries.stream().flatMap(
                     d -> {
@@ -124,10 +127,37 @@ public class CombiningMessageEntriesDatasourceForTable extends SortedAndPaginate
                         }
                     })
                     .distinct()
+                    .filter(key -> query.isEmpty() || matchesQuery(key, dictionaries, query))
                     .sorted()
                     .collect(Collectors.toList());
             setDataSource(resourceResolver, resourceList, dictionaryPath, keys);
         }
+    }
+
+    /**
+     * @return the trimmed, lower-cased search term from the request or an empty string if none is given
+     */
+    private static String getQuery(SlingHttpServletRequest request) {
+        String query = request.getParameter(PARAMETER_QUERY);
+        return query == null ? "" : query.trim().toLowerCase(Locale.ROOT);
+    }
+
+    /**
+     * @return {@code true} if the (unescaped) key or any of its translations contains the given lower-cased query
+     */
+    private static boolean matchesQuery(String key, Collection<Dictionary> dictionaries, String query) {
+        if (key.toLowerCase(Locale.ROOT).contains(query)) {
+            return true;
+        }
+        return dictionaries.stream().anyMatch(d -> {
+            try {
+                Dictionary.Message message = d.getEntries().get(key);
+                return message != null && message.getText() != null && message.getText().toLowerCase(Locale.ROOT).contains(query);
+            } catch (DictionaryException e) {
+                // already logged while collecting the keys
+                return false;
+            }
+        });
     }
 
     @Override

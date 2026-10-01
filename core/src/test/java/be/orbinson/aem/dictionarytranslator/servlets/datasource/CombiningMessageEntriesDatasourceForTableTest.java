@@ -143,6 +143,43 @@ class CombiningMessageEntriesDatasourceForTableTest {
     }
 
     @Test
+    void testListDataSourceFilteredByKeyIgnoringCase() throws ServletException, IOException {
+        DataSource dataSource = getListDataSourceForQuery("APP");
+        assertDataSourceEquals(dataSource,
+                new SyntheticResource(context.resourceResolver(), "/mnt/dictionary/content/dictionaries/fruit/i18n/apple", CombiningMessageEntryResourceProvider.RESOURCE_TYPE)
+        );
+    }
+
+    @Test
+    void testListDataSourceFilteredByTranslation() throws ServletException, IOException {
+        // "Kers" is only the Dutch translation of "cherry"
+        DataSource dataSource = getListDataSourceForQuery("kers");
+        assertDataSourceEquals(dataSource,
+                new SyntheticResource(context.resourceResolver(), "/mnt/dictionary/content/dictionaries/fruit/i18n/cherry", CombiningMessageEntryResourceProvider.RESOURCE_TYPE)
+        );
+    }
+
+    @Test
+    void testListDataSourceFilteredByKeyWithSpecialCharacters() throws ServletException, IOException {
+        DataSource dataSource = getListDataSourceForQuery(" / with / ");
+        assertDataSourceEquals(dataSource,
+                new SyntheticResource(context.resourceResolver(), CombiningMessageEntryResourceProvider.createPath("/content/dictionaries/fruit/i18n", KEY_SPECIAL_CHARACTERS), CombiningMessageEntryResourceProvider.RESOURCE_TYPE)
+        );
+    }
+
+    @Test
+    void testListDataSourceFilteredWithoutMatch() throws ServletException, IOException {
+        assertDataSourceEquals(getListDataSourceForQuery("does not exist"));
+    }
+
+    private DataSource getListDataSourceForQuery(String query) throws ServletException, IOException {
+        context.request().setResource(new SyntheticResource(context.resourceResolver(), "/some/path", "artificial test resource"));
+        context.request().setParameterMap(Map.of(CombiningMessageEntriesDatasourceForTable.PARAMETER_QUERY, query));
+        servlet.doGet(context.request(), context.response());
+        return (DataSource) context.request().getAttribute(DataSource.class.getName());
+    }
+
+    @Test
     void testColumnDataSource() throws ServletException, IOException {
         context.request().setResource(new SyntheticResource(context.resourceResolver(), "/some/path/columnsdatasource", "artificial test resource"));
         servlet.doGet(context.request(), context.response());
