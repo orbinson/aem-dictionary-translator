@@ -168,6 +168,12 @@ class CombiningMessageEntriesDatasourceForTableTest {
     }
 
     @Test
+    void testListDataSourceWithBlankQueryIsNotFiltered() throws ServletException, IOException {
+        DataSource dataSource = getListDataSourceForQuery("   ");
+        assertEquals(7, IteratorUtils.toList(dataSource.iterator()).size());
+    }
+
+    @Test
     void testListDataSourceFilteredWithoutMatch() throws ServletException, IOException {
         assertDataSourceEquals(getListDataSourceForQuery("does not exist"));
     }

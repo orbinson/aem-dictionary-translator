@@ -120,14 +120,15 @@ public class CombiningMessageEntriesDatasourceForTable extends SortedAndPaginate
             Collection<String> keys = dictionaries.stream().flatMap(
                     d -> {
                         try {
-                            return d.getEntries().keySet().stream();
+                            return d.getEntries().entrySet().stream();
                         } catch (DictionaryException e) {
                             LOG.warn("Unable to get entries for dictionary {}, skipping it", d.getPath(), e);
-                            return Stream.<String>empty();
+                            return Stream.<Map.Entry<String, Dictionary.Message>>empty();
                         }
                     })
+                    .filter(entry -> query.isEmpty() || containsQuery(entry.getKey(), query) || containsQuery(entry.getValue().getText(), query))
+                    .map(Map.Entry::getKey)
                     .distinct()
-                    .filter(key -> query.isEmpty() || matchesQuery(key, dictionaries, query))
                     .sorted()
                     .collect(Collectors.toList());
             setDataSource(resourceResolver, resourceList, dictionaryPath, keys);
@@ -142,22 +143,8 @@ public class CombiningMessageEntriesDatasourceForTable extends SortedAndPaginate
         return query == null ? "" : query.trim().toLowerCase(Locale.ROOT);
     }
 
-    /**
-     * @return {@code true} if the (unescaped) key or any of its translations contains the given lower-cased query
-     */
-    private static boolean matchesQuery(String key, Collection<Dictionary> dictionaries, String query) {
-        if (key.toLowerCase(Locale.ROOT).contains(query)) {
-            return true;
-        }
-        return dictionaries.stream().anyMatch(d -> {
-            try {
-                Dictionary.Message message = d.getEntries().get(key);
-                return message != null && message.getText() != null && message.getText().toLowerCase(Locale.ROOT).contains(query);
-            } catch (DictionaryException e) {
-                // already logged while collecting the keys
-                return false;
-            }
-        });
+    private static boolean containsQuery(String value, String query) {
+        return value != null && value.toLowerCase(Locale.ROOT).contains(query);
     }
 
     @Override

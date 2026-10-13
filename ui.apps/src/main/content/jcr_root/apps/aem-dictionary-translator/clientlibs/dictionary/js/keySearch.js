@@ -5,6 +5,7 @@
     var CLEAR_BUTTON = ".dictionary-translator-key-search-clear";
     var COLLECTION = ".key-list";
     var PARAMETER = "q";
+    // the term is rendered into the literal part of the table's src, see message-entries/.content.xml
     var PARAMETER_IN_SRC = new RegExp("([?&])" + PARAMETER + "=[^&{]*");
     var AUTO_SEARCH_MIN_LENGTH = 3;
     var AUTO_SEARCH_DELAY_MS = 500;
@@ -19,7 +20,6 @@
             return;
         }
         currentQuery = query;
-        updateClearButton();
         var params = new URLSearchParams(window.location.search);
         if (query) {
             params.set(PARAMETER, query);
@@ -28,37 +28,32 @@
         }
         var queryString = params.toString();
         // keeps the search when the page is reloaded or shared, without adding a history entry per search
-        window.history.replaceState(window.history.state, "", window.location.pathname + (queryString ? "?" + queryString : ""));
-        if (!reloading) {
-            reloadCollection();
-        }
+        window.history.replaceState(window.history.state, "",
+                window.location.pathname + (queryString ? "?" + queryString : "") + window.location.hash);
+        reloadCollection();
     }
 
     // reloads only the table instead of the whole page, so the search field keeps its focus
     function reloadCollection() {
-        var collection = document.querySelector(COLLECTION);
-        var src = collection && collection.dataset.foundationCollectionSrc;
-        var api = src && PARAMETER_IN_SRC.test(src) && $(collection).adaptTo("foundation-collection");
-        if (!api) {
-            window.location.reload();
+        if (reloading) {
             return;
         }
+        var collection = document.querySelector(COLLECTION);
         var query = currentQuery;
-        collection.dataset.foundationCollectionSrc = src.replace(PARAMETER_IN_SRC, "$1" + PARAMETER + "=" + encodeURIComponent(query));
+        collection.dataset.foundationCollectionSrc = collection.dataset.foundationCollectionSrc
+                .replace(PARAMETER_IN_SRC, "$1" + PARAMETER + "=" + encodeURIComponent(query));
         reloading = true;
-        api.reload().then(reloaded, reloaded);
-
-        function reloaded() {
+        $.when($(collection).adaptTo("foundation-collection").reload()).always(function() {
             reloading = false;
-            // the search term changed while the table was loading
+            // the term changed while the table was loading
             if (query !== currentQuery) {
                 reloadCollection();
             }
-        }
+        });
     }
 
     function updateClearButton() {
-        $(CLEAR_BUTTON).prop("disabled", !$(SEARCH_FIELD).val() && !currentQuery);
+        $(CLEAR_BUTTON).prop("disabled", !$(SEARCH_FIELD).val());
     }
 
     $(document).one("foundation-contentloaded", function() {
@@ -70,7 +65,8 @@
         var query = e.target.value.trim();
         updateClearButton();
         clearTimeout(autoSearchTimeout);
-        if (query.length >= AUTO_SEARCH_MIN_LENGTH || (!query && currentQuery)) {
+        // the minimum length only gates starting a search, an active one keeps following the field
+        if (query.length >= AUTO_SEARCH_MIN_LENGTH || currentQuery) {
             autoSearchTimeout = setTimeout(function() {
                 search(query);
             }, AUTO_SEARCH_DELAY_MS);

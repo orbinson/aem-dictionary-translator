@@ -67,6 +67,30 @@ test("Do not search automatically with less than 3 characters", async ({ page })
     await expect(page.getByRole("row", { name: "apple Apple Appel" })).toBeVisible();
 });
 
+test("Keep the table in sync when the search is shortened below 3 characters", async ({ page }) => {
+    await page.getByPlaceholder(SEARCH_FIELD).fill("appel");
+    await page.getByPlaceholder(SEARCH_FIELD).press("Enter");
+    await page.waitForURL(/\?q=appel$/);
+    await expect(page.getByRole("row", { name: "pineapple Pineapple Ananas" })).toHaveCount(0);
+
+    await page.getByPlaceholder(SEARCH_FIELD).fill("ap");
+    await page.waitForURL(/\?q=ap$/);
+
+    // "ap" matches more entries than "appel", so the table must follow the shortened term
+    await expect(page.getByRole("row", { name: "pineapple Pineapple Ananas" })).toBeVisible();
+    await expect(page.getByRole("row", { name: "apple Apple Appel" })).toBeVisible();
+    await expect(page.getByRole("row", { name: "banana Banana Banaan" })).toHaveCount(0);
+});
+
+test("Search for a term with special characters", async ({ page }) => {
+    await page.getByPlaceholder(SEARCH_FIELD).fill("a&b");
+    await page.waitForURL(/\?q=a%26b$/);
+
+    // no entry contains "a&b", so a term that lost its encoding would wrongly show every entry
+    await expect(page.getByRole("row", { name: "apple Apple Appel" })).toHaveCount(0);
+    await expect(page.getByRole("row", { name: "banana Banana Banaan" })).toHaveCount(0);
+});
+
 test("Clear button resets the search", async ({ page }) => {
     await expect(page.getByRole("button", { name: "Clear", exact: true })).toBeDisabled();
 
