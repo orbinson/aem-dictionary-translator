@@ -27,6 +27,10 @@ updates:
       - royteeuwen
     schedule:
       interval: "monthly"
+    ignore:
+      # typescript-eslint has no TS 7.0 support (no compiler API until 7.1)
+      - dependency-name: "typescript"
+        versions: [ ">= 7.0.0, < 7.1.0" ]
   - package-ecosystem: "github-actions"
     directory: "/"
     reviewers:
