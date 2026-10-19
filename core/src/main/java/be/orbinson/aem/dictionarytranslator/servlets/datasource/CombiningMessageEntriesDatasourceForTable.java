@@ -56,6 +56,8 @@ public class CombiningMessageEntriesDatasourceForTable extends SortedAndPaginate
 
     private static final Logger LOG = LoggerFactory.getLogger(CombiningMessageEntriesDatasourceForTable.class);
 
+    static final String PARAMETER_QUERY = "q";
+
     private final DictionaryService dictionaryService;
 
     private final CombiningMessageEntryResourceProvider combiningMessageEntryResourceProvider;
@@ -113,21 +115,36 @@ public class CombiningMessageEntriesDatasourceForTable extends SortedAndPaginate
         if ("columnsdatasource".equals(request.getResource().getName())) {
             setColumnsDataSource(resourceResolver, resourceList, dictionaries.stream().map(Dictionary::getLanguage).collect(Collectors.toList()), LanguageDatasource.getAllAvailableLanguages(request, response));
         } else {
+            String query = getQuery(request);
             // sort by key by default
             Collection<String> keys = dictionaries.stream().flatMap(
                     d -> {
                         try {
-                            return d.getEntries().keySet().stream();
+                            return d.getEntries().entrySet().stream();
                         } catch (DictionaryException e) {
                             LOG.warn("Unable to get entries for dictionary {}, skipping it", d.getPath(), e);
-                            return Stream.<String>empty();
+                            return Stream.<Map.Entry<String, Dictionary.Message>>empty();
                         }
                     })
+                    .filter(entry -> query.isEmpty() || containsQuery(entry.getKey(), query) || containsQuery(entry.getValue().getText(), query))
+                    .map(Map.Entry::getKey)
                     .distinct()
                     .sorted()
                     .collect(Collectors.toList());
             setDataSource(resourceResolver, resourceList, dictionaryPath, keys);
         }
+    }
+
+    /**
+     * @return the trimmed, lower-cased search term from the request or an empty string if none is given
+     */
+    private static String getQuery(SlingHttpServletRequest request) {
+        String query = request.getParameter(PARAMETER_QUERY);
+        return query == null ? "" : query.trim().toLowerCase(Locale.ROOT);
+    }
+
+    private static boolean containsQuery(String value, String query) {
+        return value != null && value.toLowerCase(Locale.ROOT).contains(query);
     }
 
     @Override

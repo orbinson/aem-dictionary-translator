@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Search message entries of a dictionary by key or translation [#178](https://github.com/orbinson/aem-dictionary-translator/issues/178)
+
 ## [1.6.3] - 2026-04-22
 
 ### Fixed
