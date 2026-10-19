@@ -17,7 +17,7 @@ export async function clearReplicationQueue(baseURL: string) {
         });
         await response.text();
     } catch (error) {
-        throw new Error("Failed to clear replication queue: " + error);
+        throw new Error("Failed to clear replication queue: " + error, { cause: error });
     }
 }
 
@@ -40,6 +40,6 @@ export async function resetITContent(baseURL: string) {
         });
         await response.text();
     } catch (error) {
-        throw new Error("Failed to reset IT content: " + error);
+        throw new Error("Failed to reset IT content: " + error, { cause: error });
     }
 }
