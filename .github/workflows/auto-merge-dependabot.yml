@@ -1,9 +1,14 @@
 name: Auto-merge Dependabot PRs
 
+# Merge only after the PR build succeeded: the main ruleset has no required checks
+# (GitHub Actions can't be a bypass actor, which the release push would need).
 on:
-  pull_request_target:
+  workflow_run:
+    workflows: [ Build ]
+    types: [ completed ]
 
 permissions:
+  actions: write
   contents: write
   pull-requests: write
 
@@ -11,10 +16,23 @@ jobs:
   auto-merge:
     name: Auto-merge Dependabot PRs
     runs-on: ubuntu-latest
-    if: github.actor == 'dependabot[bot]'
+    if: >-
+      github.event.workflow_run.event == 'pull_request' &&
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.actor.login == 'dependabot[bot]'
     steps:
-      - name: Enable auto-merge for Dependabot PRs
-        run: gh pr merge --auto --merge "$PR_URL"
+      - name: Merge PR and build main
+        run: |
+          pr=$(gh pr list --repo "$REPO" --state open --author app/dependabot --json number,headRefOid \
+            --jq ".[] | select(.headRefOid == \"$HEAD_SHA\") | .number")
+          if [ -z "$pr" ]; then
+            echo "No open Dependabot PR at $HEAD_SHA"
+            exit 0
+          fi
+          gh pr merge "$pr" --repo "$REPO" --merge --match-head-commit "$HEAD_SHA"
+          # Merges with GITHUB_TOKEN don't trigger push workflows
+          gh workflow run build.yml --repo "$REPO" --ref main
         env:
-          PR_URL: ${{ github.event.pull_request.html_url }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
