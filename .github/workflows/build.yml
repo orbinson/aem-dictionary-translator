@@ -5,6 +5,8 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+  # Merges done with GITHUB_TOKEN (Dependabot auto-merge) don't trigger push builds
+  workflow_dispatch:
 
 jobs:
   aem-maven-build:
