@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.7.0] - 2026-10-20
+
 ### Added
 
 - Search message entries of a dictionary by key or translation [#178](https://github.com/orbinson/aem-dictionary-translator/issues/178)
@@ -257,7 +259,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Create, publish and edit dictionaries
 - Create, delete and update message entries in a dictionary
 
-[unreleased]: https://github.com/orbinson/aem-dictionary-translator/compare/1.6.3...HEAD
+[unreleased]: https://github.com/orbinson/aem-dictionary-translator/compare/1.7.0...HEAD
+[1.7.0]: https://github.com/orbinson/aem-dictionary-translator/compare/1.6.3...1.7.0
 [1.6.3]: https://github.com/orbinson/aem-dictionary-translator/compare/1.6.2...1.6.3
 [1.6.2]: https://github.com/orbinson/aem-dictionary-translator/compare/1.6.1...1.6.2
 [1.6.1]: https://github.com/orbinson/aem-dictionary-translator/compare/1.6.0...1.6.1
