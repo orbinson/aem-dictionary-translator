@@ -19,17 +19,33 @@ public class FieldValueMapResourceBuilder<T extends FieldValueMapResourceBuilder
     public static <T extends FieldValueMapResourceBuilder<T>> FieldValueMapResourceBuilder<T> forTextField(ValueMapResourceBuilderFactory factory, String name, String label, String value) {
         FieldValueMapResourceBuilder<T> builder = new FieldValueMapResourceBuilder<>(factory, name, "granite/ui/components/coral/foundation/form/textfield");
         builder.withFieldLabel(label);
-        builder.withProperty("value", value);
+        builder.withProperty("value", escapeExpressions(value));
         return builder;
     }
 
 
     public static <T extends FieldValueMapResourceBuilder<T>> FieldValueMapResourceBuilder<T> forHiddenField(ValueMapResourceBuilderFactory factory, String name, String value) {
         FieldValueMapResourceBuilder<T> builder = new FieldValueMapResourceBuilder<>(factory, name, "granite/ui/components/coral/foundation/form/hidden");
-        builder.withProperty("value", value);
+        builder.withProperty("value", escapeExpressions(value));
         return builder;
     }
 
+
+    /**
+     * Granite UI evaluates the configured {@code value} of a field as an expression (see
+     * {@code /libs/granite/ui/components/coral/foundation/form/field/init.jsp}), so a translation like
+     * {@code "Resolution #{number}"} would be resolved instead of shown, and the dialog fails. Escaping the
+     * expression delimiters makes the field show the text unchanged.
+     *
+     * @param value the text to show in the field, may be {@code null}
+     * @return the text with each expression start ("$" or "#" followed by an opening brace) escaped with a backslash
+     */
+    static String escapeExpressions(String value) {
+        if (value == null) {
+            return null;
+        }
+        return value.replace("${", "\\${").replace("#{", "\\#{");
+    }
 
     private FieldValueMapResourceBuilder(ValueMapResourceBuilderFactory factory, String name, String resourceType) {
         super(factory, name, resourceType);
