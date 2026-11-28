@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.7.1] - 2026-11-28
+
 ### Fixed
 
 - Edit dialog fails for translations containing `#{` or `${` [#397](https://github.com/orbinson/aem-dictionary-translator/issues/397)
@@ -263,7 +265,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Create, publish and edit dictionaries
 - Create, delete and update message entries in a dictionary
 
-[unreleased]: https://github.com/orbinson/aem-dictionary-translator/compare/1.7.0...HEAD
+[unreleased]: https://github.com/orbinson/aem-dictionary-translator/compare/1.7.1...HEAD
+[1.7.1]: https://github.com/orbinson/aem-dictionary-translator/compare/1.7.0...1.7.1
 [1.7.0]: https://github.com/orbinson/aem-dictionary-translator/compare/1.6.3...1.7.0
 [1.6.3]: https://github.com/orbinson/aem-dictionary-translator/compare/1.6.2...1.6.3
 [1.6.2]: https://github.com/orbinson/aem-dictionary-translator/compare/1.6.1...1.6.2
