@@ -39,6 +39,8 @@ public class FieldValueMapResourceBuilder<T extends FieldValueMapResourceBuilder
      *
      * @param value the text to show in the field, may be {@code null}
      * @return the text with each expression start ("$" or "#" followed by an opening brace) escaped with a backslash
+     * @see <a href="https://experienceleague.adobe.com/en/tools/aem-api-documentation/6-5/granite-ui/api/jcr_root/libs/granite/ui/docs/server/el.html">Granite UI Expression Language</a>
+     * @see <a href="https://docs.oracle.com/javaee/6/tutorial/doc/bnaid.html">Expression Language: Literal Expressions</a>
      */
     static String escapeExpressions(String value) {
         if (value == null) {
